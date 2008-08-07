@@ -1,0 +1,13 @@
+Add public/private field to activity
+Check license of all imported code
+show only users tracks on dashboards
+show public tracks dashboards somewhere
+search public tracks
+allow proper naming of tracks
+Geocode start and stop points of track to names
+layout redo, make it non table based, that's sooo last century
+add max number of tracks per user
+check max length of text property (where we store the lists of points etc)
+add time labels to bottom of the graphs
+better TCX parsing and graceful failure
+only store downsampled data?

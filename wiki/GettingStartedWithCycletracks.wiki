@@ -10,6 +10,9 @@ Very Basic intro:
   * point your browser to http://localhost:8000
   * check the source for TODOs and do them!
 
+Tech:
+  * Based on django (my first app, so there are many rough edges)
+  * most of the interesting bits are under gcycle/ and urls.py
 
 Notes:
   * I'm using svn versions of django and appengine_django plugins so there are a few warning of deprecated features when you start the server.

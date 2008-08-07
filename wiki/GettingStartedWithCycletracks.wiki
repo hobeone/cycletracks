@@ -1,0 +1,11 @@
+#summary Getting started
+
+= Introduction =
+
+Very Basic intro:
+  * install subversion and python
+  * svn co  http://cycletracks.googlecode.com/svn/trunk/cycletracks cycletracks
+  * cd cycletracks
+  * python manage.py runserver
+  * point your browser to http://localhost:8000
+  * check the source for TODOs and do them!

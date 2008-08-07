@@ -122,7 +122,8 @@ def dashboard(request, sorting='name'):
   totals = user.totals()
   return render_to_response('dashboard.html',
     {'activities' : activity_query.fetch(100),
-     'totals': totals}
+     'totals': totals,
+     'user' : user}
     )
 
 

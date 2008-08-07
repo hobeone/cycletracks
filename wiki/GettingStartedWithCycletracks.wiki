@@ -9,3 +9,8 @@ Very Basic intro:
   * python manage.py runserver
   * point your browser to http://localhost:8000
   * check the source for TODOs and do them!
+
+
+Notes:
+  * I'm using svn versions of django and appengine_django plugins so there are a few warning of deprecated features when you start the server.
+  * I hate XML

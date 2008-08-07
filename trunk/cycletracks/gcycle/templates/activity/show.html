@@ -63,6 +63,9 @@
   <tr>
     <td>Calories:</td><td>{{ activity.total_calories|floatformat:"-2" }}</td>
   </tr>
+  <tr>
+    <td>Uploaded By:</td><td>{{ activity.parent.user }}</td>
+  </tr>
 </table>
     <div id="map" style="width: 400px; height: 300px"></div>
 </td>

@@ -1,0 +1,49 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+    <title>{% block title %}{% endblock %}</title>
+    <meta name="keywords" content="" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" type="text/css" href="/static/style.css" />
+    {% block extra_head %}{% endblock %}
+  </head>
+  <body {% block extra_body %}{% endblock %}>
+
+    <div id="header">
+
+      <div id="header_inner" class="fluid">
+
+        <div id="logo">
+          <h1>{% block page_title %}CycleTracks{% endblock %}</h1>
+        </div>
+
+        <div id="menu">
+          <ul>
+            <li><a href="/" class="active">Dashboard</a></li>
+            <li><a href="/upload/">Upload</a></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+
+    <div id="main">
+      <div id="main_inner" class="fluid">
+        <div id="primaryContent_columnless">
+          <div id="columnA_columnless">
+            {% block content %}{% endblock %}
+          </div>
+        </div>
+        <br class="clear" />
+
+      </div>
+
+    </div>
+
+    <div id="footer" class="fluid">
+      Copyright &copy; 2006 Daniel Hobe. All rights reserved. Design by <a href="http://www.nodethirtythree.com/">NodeThirtyThree Design</a>.
+    </div>
+
+  </body>
+</html>

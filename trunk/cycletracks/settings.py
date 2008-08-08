@@ -16,7 +16,7 @@
 
 import os
 
-DEBUG = False
+DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
@@ -96,8 +96,11 @@ TEMPLATE_DIRS = (
     os.path.join(ROOT_PATH, 'gcycle', 'templates')
 )
 
+DOJANGO_DOJO_PROFILE = "google"
+
 INSTALLED_APPS = (
      'gcycle',
+     'dojango',
      'appengine_django',
      'django.contrib.auth',
 #    'django.contrib.sessions',

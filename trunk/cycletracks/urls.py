@@ -15,4 +15,5 @@ urlpatterns = patterns('',
   (r'^chart_cadence/(\S+)$', 'gcycle.views.chart_cadence'),
   (r'^chart_speed/(\S+)$', 'gcycle.views.chart_speed'),
   (r'^chart_altitude/(\S+)$', 'gcycle.views.chart_altitude'),
+  (r'^dojango/', include('dojango.urls')),
 )

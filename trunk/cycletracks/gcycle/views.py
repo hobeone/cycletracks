@@ -54,23 +54,23 @@ def downsample(items, factor=10):
 
 def chart_data(data_list, label, units, smooth_data=True, max_points=500.0):
   g = OpenFlashChart.graph()
-  g.title(label,
-          '{color: #999999; font-size: 12; text-align: center}' );
+#  g.title(label,
+#          '{color: #999999; font-size: 12; text-align: center}' );
   g.bg_colour = '#ffffff'
 
   data = data_list
   if smooth_data:
     data = data_list
     smooth_factor = int(len(data) / max_points)
-    d = rm3(downsample(data, smooth_factor))
+    data = rm3(downsample(data, smooth_factor))
 
   g.set_data( data )
   g.line( 1, '#333333', label, 1 )
 
-  y_min = min(d)
+  y_min = min(data)
   if y_min > 0: y_min = 0
   g.set_y_min(y_min)
-  g.set_y_max(max(d) + 4)
+  g.set_y_max(max(data) + 4)
 
   g.set_y_label_style( 10, '0x666666')
   g.y_label_steps(4)

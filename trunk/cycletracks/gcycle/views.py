@@ -8,8 +8,8 @@ from django import forms
 from google.appengine.api import users
 
 from gcycle import models
-from gcycle import pytcx
-from gcycle import OpenFlashChart
+from gcycle.lib import pytcx
+from gcycle.lib import OpenFlashChart
 
 from google.appengine.ext import db
 
@@ -74,7 +74,8 @@ def chart_data(data_list, label, units, smooth_data=True, max_points=500.0):
 
   g.set_y_label_style( 10, '0x666666')
   g.y_label_steps(4)
-  g.set_y_legend('%s %s' % (label,units), 12)
+  g.set_y_legend('%s %s' % (label, units), 12)
+
 
   g.set_x_axis_steps(200)
 

@@ -3,24 +3,29 @@
 
 {% block title %}CycleTracks Dashboard{% endblock %}
 
+{% block extra_head %}
+{% endblock %}
+
 {% block content %}
 <table>
   <tr>
-    <th><a href='/dashboard/name'>Activity Name</a></th>
-    <th><a href='/dashboard/total_meters'>Total Miles</a></th>
-    <th><a href='/dashboard/rolling_time'>Total Time</a></th>
-    <th><a href='/dashboard/average_cadence'>Avg Cadence</a></th>
-    <th><a href='/dashboard/average_cadence'>Max Cadence</a></th>
-    <th><a href='/dashboard/average_bpm'>Avg BPM</a></th>
-    <th><a href='/dashboard/maximum_bpm'>Max BPM</a></th>
-    <th><a href='/dashboard/average_speed'>Avg Speed</a></th>
-    <th><a href='/dashboard/maximum_speed'>Max Speed</a></th>
-    <th><a href='/dashboard/total_calories'>Total Calories</a></th>
-    <th>User</th>
+    <th align="center"><a href='/dashboard/name'>Activity Name</a></th>
+    <th align="center"><a href='/dashboard/start_time'>Start Time</a></th>
+    <th align="center"><a href='/dashboard/total_meters'>Total Miles</a></th>
+    <th align="center"><a href='/dashboard/rolling_time'>Total Time</a></th>
+    <th align="center"><a href='/dashboard/average_cadence'>Avg Cadence</a></th>
+    <th align="center"><a href='/dashboard/average_cadence'>Max Cadence</a></th>
+    <th align="center"><a href='/dashboard/average_bpm'>Avg BPM</a></th>
+    <th align="center"><a href='/dashboard/maximum_bpm'>Max BPM</a></th>
+    <th align="center"><a href='/dashboard/average_speed'>Avg Speed</a></th>
+    <th align="center"><a href='/dashboard/maximum_speed'>Max Speed</a></th>
+    <th align="center"><a href='/dashboard/total_calories'>Total Calories</a></th>
+    <th align="center">User</th>
   </tr>
   {% for entry in activities %}
     <tr>
-      <td align="center"><a href="/activity/show/{{ entry.key }}">{{ entry.start_time }}</a> UTC</td>
+      <td align="center"><a href="/activity/show/{{ entry.key }}">{{ entry.name }}</a></td>
+      <td align="center">{{ entry.start_time }} utc</td>
       <td align="center">{{ entry.total_meters|meters_to_miles|floatformat:"-2" }} Mi</td>
       <td align="center">{{ entry.rolling_time|seconds_to_hours|floatformat:"-2" }} Hours</td>
       <td align="center">{{ entry.average_cadence|floatformat:"-2" }} rpm</td>
@@ -32,33 +37,10 @@
       <td align="center">{{ entry.total_calories|floatformat:"-2" }} Cal</td>
       <td align="center">{{ entry.parent.user }}</td>
     </tr>
-    {% if not entry.lap_set %}
-    <tr>
-        <td colspan="5">
-            Laps:
-        </td>
-    </tr>
-
-    <tr>
-      {% for lap in entry.lap_set %}
-      <td> {{ forloop.counter }}</td>
-      <td align="center">{{ lap.total_meters|meters_to_miles|floatformat:"-2" }}</td>
-      <td align="center">{{ lap.total_time_seconds|seconds_to_hours|floatformat:"-2" }}</td>
-      <td align="center">{{ lap.average_cadence }} RPM</td>
-      <td align="center">{{ lap.maximum_cadence }} RPM</td>
-      <td align="center">{{ lap.average_bpm }}</td>
-      <td align="center">{{ lap.max_bpm }}</td>
-      <td align="center">{{ lap.average_speed|km_to_miles|floatformat:"-2" }}</td>
-      <td align="center">{{ lap.max_speed|floatformat:"-2" }}</td>
-      <td align="center">{{ lap.calories }}</td>
-      {% endfor %}
-    </tr>
-    {% endif %}
     {% endfor %}
     <tr>
-    </tr>
-    <tr>
       <td align="center">Totals:</a></td>
+      <td></td>
       <td align="center">{{ totals.total_meters|meters_to_miles|floatformat:"-2" }} Mi</td>
       <td align="center">{{ totals.rolling_time|seconds_to_hours|floatformat:"-2" }} Hours</td>
       <td align="center">{{ totals.average_cadence|floatformat:"-2" }} rpm</td>
@@ -70,5 +52,5 @@
       <td align="center">{{ totals.total_calories|floatformat:"-2" }} Cal</td>
       <td align="center"></td>
     </tr>
-</table>
+  </table>
 {% endblock %}

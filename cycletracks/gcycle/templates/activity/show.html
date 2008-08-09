@@ -7,7 +7,6 @@
 <script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key=ABQIAAAAoU2YDajIyJPdof6GDzJKshRpKIwH9gjHw5l4siVVB7mD23aSXhSHvrtQQCEPRhQENq4B3lk8joMYzQ" type="text/javascript"></script>
 
 <script type="text/javascript">
-
     //<![CDATA[
     function load() {
       if (GBrowserIsCompatible()) {
@@ -29,8 +28,74 @@
     }
     //]]>
 </script>
+  <script type="text/javascript">
+    function attributeChangeHandler(activity, attribute, value, status_id) {
+      dojo.xhrPost({url:"/activity/update/",
+          handleAs:"json",
+          content:{
+            activity_id:activity,
+            attribute:attribute,
+            value:value
+          },
+          load:function(response, ioArgs){
+            if (response.success){
+              dojo.byId(status_id).innerHTML = "Submitted successfully";
+            } else {
+              dojo.byId(status_id).innerHTML = "Error: "+response.error;
+            }
+          },
+          error:function(data){ // This happens on a 500 error or alikes.
+            dojo.byId(status_id).innerHTML = "Error sending data.";
+          }
+      });
+    }
+    dojo.require("dijit.InlineEditBox");
+    dojo.require("dijit.form.TextBox");
+    dojo.require("dojox.charting.themes.PlotKit.blue");
+    dojo.require("dojox.charting.Chart2D");
 
+    makeObjects = function(){
+      var bpm_chart = new dojox.charting.Chart2D("bpm");
+      bpm_chart.setTheme(dojox.charting.themes.PlotKit.blue);
+      bpm_chart.addPlot("default", {type: "Default", lines: true, markers: false, tension:2});
+      bpm_chart.addAxis("y", {vertical: true, includeZero: true,
+          majorTick: {stroke: "black", length: 3},
+          minorTick: {stroke: "gray", length: 3}});
+      bpm_chart.addSeries("BPM", {{ bpm }});
+      bpm_chart.render();
+
+      var bpm_chart = new dojox.charting.Chart2D("cadence");
+      bpm_chart.setTheme(dojox.charting.themes.PlotKit.blue);
+      bpm_chart.addPlot("default", {type: "Default", lines: true, markers: false, tension:2});
+      bpm_chart.addAxis("y", {vertical: true, includeZero: true,
+          majorTick: {stroke: "black", length: 3},
+          minorTick: {stroke: "gray", length: 3}});
+      bpm_chart.addSeries("BPM", {{ cadence }});
+      bpm_chart.render();
+
+      var bpm_chart = new dojox.charting.Chart2D("speed");
+      bpm_chart.setTheme(dojox.charting.themes.PlotKit.blue);
+      bpm_chart.addPlot("default", {type: "Default", lines: true, markers: false, tension:2});
+      bpm_chart.addAxis("y", {vertical: true, includeZero: true,
+          majorTick: {stroke: "black", length: 3},
+          minorTick: {stroke: "gray", length: 3}});
+      bpm_chart.addSeries("speed", {{ speed }});
+      bpm_chart.render();
+
+      var bpm_chart = new dojox.charting.Chart2D("altitude");
+      bpm_chart.setTheme(dojox.charting.themes.PlotKit.blue);
+      bpm_chart.addPlot("default", {type: "Default", lines: true, markers: false, tension:2});
+      bpm_chart.addAxis("y", {vertical: true, includeZero: true,
+          majorTick: {stroke: "black", length: 3},
+          minorTick: {stroke: "gray", length: 3}});
+      bpm_chart.addSeries("BPM", {{ altitude }});
+      bpm_chart.render();
+    };
+    dojo.addOnLoad(makeObjects);
+  </script>
 {% endblock %}
+
+
 
 {% block extra_body %}onload="load()" onunload="GUnload()"{% endblock %}
 
@@ -38,47 +103,70 @@
 <table width="100%">
   <tr width="50%">
     <td align="left" valign="top">
-<table>
-  <tr>
-    <td>Name:</td><td>{{ activity.name }}</td>
+      <table>
+        <tr>
+          <td>Name:</td><td>
+            <span id="editable_name" dojoType="dijit.InlineEditBox" onChange="attributeChangeHandler('{{activity.key}}','name',arguments[0], 'name_update_info')">{{ activity.name }}</span>
+            <span id="name_update_info"></span>
+          </td>
+        </tr>
+        <tr>
+          <td>Sport:</td><td>{{ activity.sport }}</td>
+        </tr>
+        <tr>
+          <td>Start Time:</td><td>{{ activity.start_time }}</td>
+        </tr>
+        <tr>
+          <td>End Time:</td><td>{{ activity.end_time }}</td>
+        </tr>
+        <tr>
+          <td>Distance:</td><td>{{ activity.total_meters|meters_to_miles|floatformat:"-2" }}</td>
+        </tr>
+        <tr>
+          <td>Rolling Time:</td><td>{{ activity.rolling_time|seconds_to_hours|floatformat:"-2" }}</td>
+        </tr>
+        <tr>
+          <td>Speed:</td>
+          <td>
+            Avg: {{ activity.average_speed|km_to_miles|floatformat:"-2" }},
+             Max: {{ activity.maximum_speed|km_to_miles|floatformat:"-2" }}
+           </td>
+        </tr>
+        <tr>
+          <td>Heart Rate:</td><td>Avg: {{ activity.average_bpm }}, Max: {{ activity.maximum_bpm }}</td>
+        </tr>
+        <tr>
+          <td>Cadence:</td><td>Avg: {{ activity.average_cadence }}, Max: {{ activity.maximum_cadence }}</td>
+        </tr>
+        <tr>
+          <td>Calories:</td><td>{{ activity.total_calories|floatformat:"-2" }}</td>
+        </tr>
+        <tr>
+          <td>Uploaded By:</td><td>{{ activity.parent.user }}</td>
+        </tr>
+        <tr>
+          <td>Comment:</td>
+          <td>
+            <span id="editable_comment" dojoType="dijit.InlineEditBox" onChange="attributeChangeHandler('{{activity.key}}','comment',arguments[0], 'comment_update_info')">{{ activity.comment }}</span>
+            <span id="comment_update_info"></span>
+          </td>
+        </tr>
+      </table>
+      <br>
+      <br>
+      <div id="map" style="width: 400px; height: 300px"></div>
+    </td>
+    <td>
+      BPM
+      <div id="bpm" style="width: 400px; height: 200px;"></div>
+      Cadence
+      <div id="cadence" style="width: 400px; height: 200px;"></div>
+      Speed
+      <div id="speed" style="width: 400px; height: 200px;"></div>
+      Altitude
+      <div id="altitude" style="width: 400px; height: 200px;"></div>
+    </td>
   </tr>
-  <tr>
-    <td>Sport:</td><td>{{ activity.sport }}</td>
-  </tr>
-  <tr>
-    <td>Distance:</td><td>{{ activity.total_meters|meters_to_miles|floatformat:"-2" }}</td>
-  </tr>
-  <tr>
-    <td>Rolling Time:</td><td>{{ activity.rolling_time|seconds_to_hours|floatformat:"-2" }}</td>
-  </tr>
-  <tr>
-    <td>Speed:</td><td>Avg: {{ activity.average_speed|km_to_miles|floatformat:"-2" }}, Max: {{ activity.maximum_speed|km_to_miles|floatformat:"-2" }}</td>
-  </tr>
-  <tr>
-    <td>Heart Rate:</td><td>Avg: {{ activity.average_bpm }}, Max: {{ activity.maximum_bpm }}</td>
-  </tr>
-  <tr>
-    <td>Cadence:</td><td>Avg: {{ activity.average_cadence }}, Max: {{ activity.maximum_cadence }}</td>
-  </tr>
-  <tr>
-    <td>Calories:</td><td>{{ activity.total_calories|floatformat:"-2" }}</td>
-  </tr>
-  <tr>
-    <td>Uploaded By:</td><td>{{ activity.parent.user }}</td>
-  </tr>
-</table>
-    <div id="map" style="width: 400px; height: 300px"></div>
-</td>
-  <td>
-    {% draw_chart activity.key "bpm" %}
-    <br/>
-    {% draw_chart activity.key "cadence" %}
-    <br/>
-    {% draw_chart activity.key "speed" %}
-    <br/>
-    {% draw_chart activity.key "altitude" %}
-  </td>
-</tr>
 
 </table>
 {% endblock %}

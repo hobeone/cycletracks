@@ -70,6 +70,7 @@ class Activity(BaseModel):
   # latitude and longitude coordinates.
   start_point = db.GeoPtProperty()
   end_point = db.GeoPtProperty()
+  comment = db.StringProperty()
 
   def bpm_list(self):
     bpm_list = []

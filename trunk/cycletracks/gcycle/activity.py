@@ -33,23 +33,19 @@ def downsample(items, factor=10):
 
   return samp
 
-def test_js_graph(request, activity):
+def process_data(data):
+  return str(rm3(downsample(data, int(len(data) / 500.0))))[1:-1]
+
+def graph(request, activity):
   user = views.get_user()
   a = Activity.get(activity)
-  bpm = a.bpm_list()
-
-  data = []
-  index = 0
-  for i in bpm:
-    data.append('{x:%s, y:%s}' % (index, i))
-    index += 1
-
-  data = '[%s]' % ','.join(data)
-  return render_to_response('activity/graphtest.html',
-      {'data' : a.bpm_list()})
-
-def process_data(data):
-  return rm3(downsample(data, int(len(data) / 500.0)))
+  return render_to_response('activity/graph.html',
+      {'activity' : a,
+       'user' : user,
+       'bpm' : ','.join([str(b) for b in process_data(a.bpm_list())]),
+       'cadence' : ','.join([str(b) for b in process_data(a.cadence_list())]),
+       'speed' : process_data(a.speed_list()),
+       'altitude' : ','.join([str(b) for b in process_data(a.altitude_list())]),})
 
 def show(request, activity):
   user = views.get_user()

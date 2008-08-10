@@ -21,9 +21,21 @@ import datetime
 
 def get_user():
   gaia_user = users.get_current_user()
-  return models.User.get_or_insert(gaia_user.email(), user = gaia_user)
+  return models.User.get_or_insert(gaia_user.email(), user = gaia_user, username = str(gaia_user))
+
+
+def dashboard_dojo(request):
+  user = get_user()
+  activity_query = models.Activity.all()
+  totals = user.totals()
+  return render_to_response('dashboard_dojo.html',
+      {'activities' : activity_query.fetch(100),
+        'totals': totals,
+        'user' : user}
+      )
 
 def dashboard(request, sorting='name'):
+  if sorting == None: sorting = 'name'
   #Add pagination
   user = get_user()
   activity_query = models.Activity.all()
@@ -35,7 +47,6 @@ def dashboard(request, sorting='name'):
      'totals': totals,
      'user' : user}
     )
-
 
 class UploadFileForm(forms.Form):
   file = forms.Field(widget=forms.FileInput())

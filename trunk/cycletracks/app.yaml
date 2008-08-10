@@ -3,6 +3,30 @@ version: 1
 runtime: python
 api_version: 1
 
+default_expiration: "1d"
+
+skip_files: |
+ ^(.*/)?(
+ (app\.yaml)|
+ (app\.yml)|
+ (index\.yaml)|
+ (index\.yml)|
+ (django/bin/.*)|
+ (django/contrib/admin/.*)|
+ (django/contrib/admindocs/.*)|
+ (django/contrib/syndication/.*)|
+ (django/contrib/gis/.*)|
+ (django/contrib/databrowse/.*)|
+ (django/contrib/localflavor/.*)|
+ (dojango/media/dojo/.*)|
+ (dojango/media/release/.*)|
+ (#.*#)|
+ (.*~)|
+ (.*\.py[co])|
+ (.*/RCS/.*)|
+ (\..*)|
+ )$
+
 handlers:
 - url: /static
   static_dir: static

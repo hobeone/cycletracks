@@ -52,46 +52,7 @@
     dojo.require("dijit.InlineEditBox");
     dojo.require("dijit.form.TextBox");
     dojo.require("dojox.charting.themes.PlotKit.blue");
-    dojo.require("dojox.charting.Chart2D");
-
-    makeObjects = function(){
-      var bpm_chart = new dojox.charting.Chart2D("bpm");
-      bpm_chart.setTheme(dojox.charting.themes.PlotKit.blue);
-      bpm_chart.addPlot("default", {type: "Default", lines: true, markers: false, tension:2});
-      bpm_chart.addAxis("y", {vertical: true, includeZero: true,
-          majorTick: {stroke: "black", length: 3},
-          minorTick: {stroke: "gray", length: 3}});
-      bpm_chart.addSeries("BPM", {{ bpm }});
-      bpm_chart.render();
-
-      var bpm_chart = new dojox.charting.Chart2D("cadence");
-      bpm_chart.setTheme(dojox.charting.themes.PlotKit.blue);
-      bpm_chart.addPlot("default", {type: "Default", lines: true, markers: false, tension:2});
-      bpm_chart.addAxis("y", {vertical: true, includeZero: true,
-          majorTick: {stroke: "black", length: 3},
-          minorTick: {stroke: "gray", length: 3}});
-      bpm_chart.addSeries("BPM", {{ cadence }});
-      bpm_chart.render();
-
-      var bpm_chart = new dojox.charting.Chart2D("speed");
-      bpm_chart.setTheme(dojox.charting.themes.PlotKit.blue);
-      bpm_chart.addPlot("default", {type: "Default", lines: true, markers: false, tension:2});
-      bpm_chart.addAxis("y", {vertical: true, includeZero: true,
-          majorTick: {stroke: "black", length: 3},
-          minorTick: {stroke: "gray", length: 3}});
-      bpm_chart.addSeries("speed", {{ speed }});
-      bpm_chart.render();
-
-      var bpm_chart = new dojox.charting.Chart2D("altitude");
-      bpm_chart.setTheme(dojox.charting.themes.PlotKit.blue);
-      bpm_chart.addPlot("default", {type: "Default", lines: true, markers: false, tension:2});
-      bpm_chart.addAxis("y", {vertical: true, includeZero: true,
-          majorTick: {stroke: "black", length: 3},
-          minorTick: {stroke: "gray", length: 3}});
-      bpm_chart.addSeries("BPM", {{ altitude }});
-      bpm_chart.render();
-    };
-    dojo.addOnLoad(makeObjects);
+    dojo.require("dojox.charting.widget.Chart2D");
   </script>
 {% endblock %}
 
@@ -158,13 +119,41 @@
     </td>
     <td>
       BPM
-      <div id="bpm" style="width: 400px; height: 200px;"></div>
+      <div dojoType="dojox.charting.widget.Chart2D" style="width: 500px; height: 200px;" theme="dojox.charting.themes.PlotKit.blue" margins="{l: 2, r: 2, t: 2, b: 5}">
+        <div class="axis" name="x" includeZero="true" majorLabels="false" minorTicks="false"></div>
+        <div class="axis" name="y" vertical="true" fixUpper="major" includeZero="true"></div>
+        <div class="plot" name="default" type="Lines" tension="2"></div>
+        <div class="plot" name="grid" type="Grid"></div>
+        <div class="series" name="bpm" data="{{ bpm }}"></div>
+      </div>
+
       Cadence
-      <div id="cadence" style="width: 400px; height: 200px;"></div>
+      <div dojoType="dojox.charting.widget.Chart2D" style="width: 500px; height: 200px;" theme="dojox.charting.themes.PlotKit.blue">
+        <div class="axis" name="x" includeZero="true" majorLabels="false" minorTicks="false"></div>
+        <div class="axis" name="y" vertical="true" fixUpper="major" includeZero="true"></div>
+        <div class="plot" name="default" type="Lines" tension="2"></div>
+        <div class="plot" name="grid" type="Grid"></div>
+        <div class="series" name="bpm" data="{{ cadence }}"></div>
+      </div>
+
       Speed
-      <div id="speed" style="width: 400px; height: 200px;"></div>
+      <div dojoType="dojox.charting.widget.Chart2D" style="width: 500px; height: 200px;" theme="dojox.charting.themes.PlotKit.blue">
+        <div class="axis" name="x" includeZero="true" majorLabels="false" minorTicks="false"></div>
+        <div class="axis" name="y" vertical="true" fixUpper="major" includeZero="true"></div>
+        <div class="plot" name="default" type="Lines" tension="2"></div>
+        <div class="plot" name="grid" type="Grid"></div>
+        <div class="series" name="bpm" data="{{ speed }}"></div>
+      </div>
+
       Altitude
-      <div id="altitude" style="width: 400px; height: 200px;"></div>
+      <div dojoType="dojox.charting.widget.Chart2D" style="width: 500px; height: 200px;" theme="dojox.charting.themes.PlotKit.blue">
+        <div class="axis" name="x" includeZero="true" majorLabels="false" minorTicks="false"></div>
+        <div class="axis" name="y" vertical="true" fixUpper="major" includeZero="true"></div>
+        <div class="plot" name="default" type="Lines" tension="2"></div>
+        <div class="plot" name="grid" type="Grid"></div>
+        <div class="series" name="bpm" data="{{ altitude }}"></div>
+      </div>
+
     </td>
   </tr>
 

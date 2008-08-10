@@ -16,7 +16,8 @@
 
 import os
 
-DEBUG = False
+DEBUG = True
+#DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
@@ -96,9 +97,9 @@ TEMPLATE_DIRS = (
     os.path.join(ROOT_PATH, 'gcycle', 'templates')
 )
 
-#DOJANGO_DOJO_PROFILE = "local"
+#DOJANGO_DOJO_PROFILE = "local_release"
 DOJANGO_DOJO_PROFILE = "aol_gfx"
-DOJANGO_DOJO_BUILD_JAVA_EXEC="/usr/lib/jvm/java-6-openjdk/jre/bin/java"
+
 INSTALLED_APPS = (
      'gcycle',
      'dojango',

@@ -34,7 +34,15 @@ def downsample(items, factor=10):
   return samp
 
 def process_data(data):
-  return str(rm3(downsample(data, int(len(data) / 500.0))))[1:-1]
+  data = rm3(downsample(data, int(len(data) / 500.0)))
+  index = 0
+  export_data = []
+  for i in data:
+    export_data.append('[%s,%s]' % (index, i))
+    index += 1
+
+  return ','.join(export_data)
+
 
 def graph(request, activity):
   user = views.get_user()

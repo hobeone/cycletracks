@@ -40,7 +40,7 @@ indexes:
   - name: maximum_speed
     direction: desc
 
-# Used 8 times in query history.
+# Used 26 times in query history.
 - kind: Activity
   properties:
   - name: name
@@ -70,6 +70,6 @@ indexes:
   - name: total_meters
     direction: desc
 
-# Used 8 times in query history.
+# Used 26 times in query history.
 - kind: Activity
   ancestor: yes

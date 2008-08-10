@@ -28,32 +28,10 @@
     }
     //]]>
 </script>
-  <script type="text/javascript">
-    function attributeChangeHandler(activity, attribute, value, status_id) {
-      dojo.xhrPost({url:"/activity/update/",
-          handleAs:"json",
-          content:{
-            activity_id:activity,
-            attribute:attribute,
-            value:value
-          },
-          load:function(response, ioArgs){
-            if (response.success){
-              dojo.byId(status_id).innerHTML = "Submitted successfully";
-            } else {
-              dojo.byId(status_id).innerHTML = "Error: "+response.error;
-            }
-          },
-          error:function(data){ // This happens on a 500 error or alikes.
-            dojo.byId(status_id).innerHTML = "Error sending data.";
-          }
-      });
-    }
-    dojo.require("dijit.InlineEditBox");
-    dojo.require("dijit.form.TextBox");
-    dojo.require("dojox.charting.themes.PlotKit.blue");
-    dojo.require("dojox.charting.widget.Chart2D");
-  </script>
+
+<script type="text/javascript" src="/static/MochiKit.js"></script>
+<script type="text/javascript" src="/static/PlotKit_Packed.js"></script>
+
 {% endblock %}
 
 
@@ -66,9 +44,16 @@
     <td align="left" valign="top">
       <table>
         <tr>
-          <td>Name:</td><td>
-            <span id="editable_name" dojoType="dijit.InlineEditBox" onChange="attributeChangeHandler('{{activity.key}}','name',arguments[0], 'name_update_info')">{{ activity.name }}</span>
-            <span id="name_update_info"></span>
+          <td>Name:</td>
+          <td>
+            <span id="editable_name">{{ activity.name }}</span>
+            <script type="text/javascript">
+              new Ajax.InPlaceEditor('editable_name', '/activity/update/', {
+                callback: function(form, value) {
+                  return 'activity_id={{activity.key}}&attribute=name&value='+escape(value)
+                }
+              })
+            </script>
           </td>
         </tr>
         <tr>
@@ -108,8 +93,12 @@
         <tr>
           <td>Comment:</td>
           <td>
-            <span id="editable_comment" dojoType="dijit.InlineEditBox" onChange="attributeChangeHandler('{{activity.key}}','comment',arguments[0], 'comment_update_info')">{{ activity.comment }}</span>
-            <span id="comment_update_info"></span>
+            <span id="editable_comment">{{ activity.comment }}</span>
+            <script type="text/javascript">
+              new Ajax.InPlaceEditor('editable_comment', '/activity/update/', {
+                callback: function(form, value) { return 'activity_id={{activity.key}}&attribute=comment&value='+escape(value) }
+              })
+            </script>
           </td>
         </tr>
       </table>
@@ -118,42 +107,37 @@
       <div id="map" style="width: 400px; height: 300px"></div>
     </td>
     <td>
-      BPM
-      <div dojoType="dojox.charting.widget.Chart2D" style="width: 500px; height: 200px;" theme="dojox.charting.themes.PlotKit.blue" margins="{l: 2, r: 2, t: 2, b: 5}">
-        <div class="axis" name="x" includeZero="true" majorLabels="false" minorTicks="false"></div>
-        <div class="axis" name="y" vertical="true" fixUpper="major" includeZero="true"></div>
-        <div class="plot" name="default" type="Lines" tension="2"></div>
-        <div class="plot" name="grid" type="Grid"></div>
-        <div class="series" name="bpm" data="{{ bpm }}"></div>
-      </div>
+      BPM<br><br>
+      <div id="bpm_graph" style="margin: 0 auto 0 auto;" width="500" height="200"></div>
 
-      Cadence
-      <div dojoType="dojox.charting.widget.Chart2D" style="width: 500px; height: 200px;" theme="dojox.charting.themes.PlotKit.blue">
-        <div class="axis" name="x" includeZero="true" majorLabels="false" minorTicks="false"></div>
-        <div class="axis" name="y" vertical="true" fixUpper="major" includeZero="true"></div>
-        <div class="plot" name="default" type="Lines" tension="2"></div>
-        <div class="plot" name="grid" type="Grid"></div>
-        <div class="series" name="bpm" data="{{ cadence }}"></div>
-      </div>
+      <script type="text/javascript">
+        var data = [{{bpm}}];
+        var plotter = EasyPlot("line", {}, $("bpm_graph"), [data]);
+      </script>
 
-      Speed
-      <div dojoType="dojox.charting.widget.Chart2D" style="width: 500px; height: 200px;" theme="dojox.charting.themes.PlotKit.blue">
-        <div class="axis" name="x" includeZero="true" majorLabels="false" minorTicks="false"></div>
-        <div class="axis" name="y" vertical="true" fixUpper="major" includeZero="true"></div>
-        <div class="plot" name="default" type="Lines" tension="2"></div>
-        <div class="plot" name="grid" type="Grid"></div>
-        <div class="series" name="bpm" data="{{ speed }}"></div>
-      </div>
+      Cadence<br><br>
+      <div id="cadence_graph" style="margin: 0 auto 0 auto;" width="500" height="200"></div>
 
-      Altitude
-      <div dojoType="dojox.charting.widget.Chart2D" style="width: 500px; height: 200px;" theme="dojox.charting.themes.PlotKit.blue">
-        <div class="axis" name="x" includeZero="true" majorLabels="false" minorTicks="false"></div>
-        <div class="axis" name="y" vertical="true" fixUpper="major" includeZero="true"></div>
-        <div class="plot" name="default" type="Lines" tension="2"></div>
-        <div class="plot" name="grid" type="Grid"></div>
-        <div class="series" name="bpm" data="{{ altitude }}"></div>
-      </div>
+      <script type="text/javascript">
+        var data = [{{cadence}}];
+        var plotter = EasyPlot("line", {}, $("cadence_graph"), [data]);
+      </script>
 
+      Speed<br><br>
+      <div id="speed_graph" style="margin: 0 auto 0 auto;" width="500" height="200"></div>
+
+      <script type="text/javascript">
+        var data = [{{speed}}];
+        var plotter = EasyPlot("line", {}, $("speed_graph"), [data]);
+      </script>
+
+      Altitude<br><br>
+      <div id="altitude_graph" style="margin: 0 auto 0 auto;" width="500" height="200"></div>
+
+      <script type="text/javascript">
+        var data = [{{altitude}}];
+        var plotter = EasyPlot("line", {xOriginIsZero: false, yOriginIsZero: false}, $("altitude_graph"), [data]);
+      </script>
     </td>
   </tr>
 

@@ -97,12 +97,8 @@ TEMPLATE_DIRS = (
     os.path.join(ROOT_PATH, 'gcycle', 'templates')
 )
 
-#DOJANGO_DOJO_PROFILE = "local_release"
-DOJANGO_DOJO_PROFILE = "aol_gfx"
-
 INSTALLED_APPS = (
      'gcycle',
-     'dojango',
      'appengine_django',
      'django.contrib.auth',
 #    'django.contrib.sessions',

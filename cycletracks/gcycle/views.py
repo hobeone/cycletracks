@@ -13,8 +13,6 @@ from gcycle.lib import pytcx
 from google.appengine.ext import db
 
 
-from dojango.decorators import json_response, expect_post_request
-
 import sys,os,glob
 import xml.etree.cElementTree as ET
 import datetime
@@ -77,8 +75,6 @@ def handle_uploaded_file(user, filedata):
 
 VALID_ACTIVITY_ATTRIBUTES = ['comment', 'name']
 
-@json_response
-@expect_post_request
 def activity_update(request):
   activity_id = request.POST['activity_id']
   activity_attribute = request.POST['attribute']
@@ -88,6 +84,4 @@ def activity_update(request):
     if activity.__dict__['_%s' % activity_attribute] != activity_value:
       activity.__dict__['_%s' % activity_attribute] = activity_value
       activity.put()
-    return {'success':True}
-  else:
-    return {'success':False}
+    return HttpResponse(activity_value)

@@ -1,4 +1,4 @@
-from gcycle import pytcx
+from gcycle.lib import pytcx
 import glob
 import pprint
 pp = pprint.PrettyPrinter(indent=4)

@@ -3,11 +3,9 @@
 
 {% block title %}CycleTracks Dashboard{% endblock %}
 
-{% block extra_head %}
-{% endblock %}
-
 {% block content %}
-<table>
+<table id="activities">
+  <thead>
   <tr>
     <th align="center"><a href='/dashboard/name'>Activity Name</a></th>
     <th align="center"><a href='/dashboard/start_time'>Start Time</a></th>
@@ -22,8 +20,10 @@
     <th align="center"><a href='/dashboard/total_calories'>Total Calories</a></th>
     <th align="center">User</th>
   </tr>
+  </thead>
+  <tbody>
   {% for entry in activities %}
-    <tr>
+  <tr>
       <td align="center"><a href="/activity/show/{{ entry.key }}">{{ entry.name }}</a></td>
       <td align="center">{{ entry.start_time }} utc</td>
       <td align="center">{{ entry.total_meters|meters_to_miles|floatformat:"-2" }} Mi</td>
@@ -38,6 +38,7 @@
       <td align="center">{{ entry.parent.user }}</td>
     </tr>
     {% endfor %}
+  </tbody>
     <tr>
       <td align="center">Totals:</a></td>
       <td></td>
@@ -52,5 +53,6 @@
       <td align="center">{{ totals.total_calories|floatformat:"-2" }} Cal</td>
       <td align="center"></td>
     </tr>
-  </table>
+</table>
+
 {% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load extra_filters %}
+
+{% block title %}CycleTracks: Activity {{ activity.name }}{% endblock %}
+
+{% block extra_head %}
+  <script type="text/javascript">
+
+    dojo.require("dijit.InlineEditBox");
+    dojo.require("dijit.form.TextBox");
+    dojo.require("dojox.charting.themes.PlotKit.blue");
+    dojo.require("dojox.charting.Chart2D");
+    dojo.require("dojox.charting.widget.Chart2D");
+    dojo.require("dojox.charting.themes.PlotKit.red");
+
+    makeObjects = function(){
+      var bpm_chart = new dojox.charting.Chart2D("bpm");
+      bpm_chart.setTheme(dojox.charting.themes.PlotKit.blue);
+      bpm_chart.addPlot("default", {type: "Default", lines: true, markers: false, tension:2});
+      bpm_chart.addAxis("y", {vertical: true, includeZero: true,
+          majorTick: {stroke: "black", length: 3},
+          minorTick: {stroke: "gray", length: 3}});
+      bpm_chart.addSeries("BPM", {{ bpm }});
+      bpm_chart.addSeries("Speed", {{ speed }});
+      bpm_chart.addSeries("cadence", {{ cadence }});
+      bpm_chart.addSeries("altitude", {{ altitude }});
+      bpm_chart.render();
+    };
+    dojo.addOnLoad(makeObjects);
+  </script>
+{% endblock %}
+
+{% block content %}
+
+  <div dojoType="dojox.charting.widget.Chart2D" style="width: 975px; height: 500px;" theme="dojox.charting.themes.PlotKit.blue">
+    <div class="axis" name="x" includeZero="true" majorLabels="false" minorTicks="false"></div>
+    <div class="axis" name="y" vertical="true" fixUpper="major" includeZero="true"></div>
+    <div class="plot" name="bpm" type="Lines" tension="2"></div>
+    <div class="plot" name="grid" type="Grid"></div>
+    <div class="series" name="Series A" data="{{ bpm }}" plot="bpm" stroke="'#FF0033'"></div>
+    <div class="series" name="Series B" data="{{ cadence }}" plot="bpm" stroke="'#666666'"></div>
+  </div>
+
+{% endblock %}
+

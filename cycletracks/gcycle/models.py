@@ -1,13 +1,12 @@
-from appengine_django.models import BaseModel
+from appengine_django import models
+from appengine_django import auth
 from google.appengine.ext import db
 
 def average(array):
   if len(array) == 0: return 0
   return (sum(array) / len(array))
 
-class User(BaseModel):
-  user = db.UserProperty(required=True)
-
+class User(auth.models.User):
   def activity_count(self):
     query = Activity.all()
     query.ancestor(self)
@@ -51,7 +50,7 @@ class User(BaseModel):
     return total_data
 
 
-class Activity(BaseModel):
+class Activity(models.BaseModel):
   user = db.ReferenceProperty(User, required=True)
   name = db.StringProperty(required=True)
   sport = db.StringProperty(required=True)
@@ -96,7 +95,7 @@ class Activity(BaseModel):
       altitude_list.extend(l.altitudes())
     return altitude_list
 
-class Lap(BaseModel):
+class Lap(models.BaseModel):
   activity = db.ReferenceProperty(Activity, required=True)
   total_meters = db.FloatProperty(required=True)
   total_time_seconds = db.FloatProperty(required=True)

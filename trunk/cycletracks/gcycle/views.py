@@ -43,8 +43,12 @@ def upload(request):
   if request.method == 'POST':
     form = UploadFileForm(request.POST, request.FILES)
     if form.is_valid():
+      assert False
+      try:
         handle_uploaded_file(user, request.FILES['file'])
         return HttpResponseRedirect('/')
+      except pytcx.UnknownTCXExpception, e:
+        return render_to_response('error.html', {'error': e})
   else:
     form = UploadFileForm()
   return render_to_response('upload.html', {'form': form, 'user': user})

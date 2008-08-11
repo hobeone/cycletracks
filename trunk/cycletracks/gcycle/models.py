@@ -15,6 +15,7 @@ class User(auth.models.User):
   def totals(self):
     total_data = {
         'total_meters' : 0,
+        'total_time' : 0,
         'rolling_time' : 0,
         'total_calories' : 0,
         'average_speed' : [],
@@ -28,6 +29,7 @@ class User(auth.models.User):
     query.ancestor(self)
     for activity in query:
       total_data['total_meters'] += activity.total_meters
+      total_data['total_time'] += activity.total_time
       total_data['rolling_time'] += activity.rolling_time
       total_data['total_calories'] += activity.total_calories
 
@@ -57,6 +59,7 @@ class Activity(models.BaseModel):
   total_meters = db.FloatProperty(required=True)
   start_time = db.DateTimeProperty(required=True)
   end_time = db.DateTimeProperty(required=True)
+  total_time = db.FloatProperty(required=True)
   rolling_time = db.FloatProperty(required=True)
   average_speed = db.FloatProperty(required=True)
   maximum_speed = db.FloatProperty(required=True)
@@ -100,7 +103,7 @@ class Lap(models.BaseModel):
   activity = db.ReferenceProperty(Activity, required=True)
   total_meters = db.FloatProperty(required=True)
   total_time_seconds = db.FloatProperty(required=True)
-  total_rolling_time_seconds = db.IntegerProperty()
+  total_rolling_time_seconds = db.FloatProperty(required=True)
   average_cadence = db.FloatProperty(required=True)
   maximum_cadence = db.FloatProperty(required=True)
   average_bpm = db.FloatProperty(required=True)

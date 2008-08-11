@@ -59,6 +59,9 @@ def average(array):
   if len(array) == 0: return 0
   return (sum(array) / len(array))
 
+class UnknownTCXExpception(Exception):
+  pass
+
 def parse_tcx(filedata):
   acts = []
 
@@ -71,6 +74,10 @@ def parse_tcx(filedata):
     activity_sport = activity.group(1)
 
     for l in r.finditer(activity.group()):
+      # the idea with the lap is to grab or create a datapoint for every axis
+      # we are interested in for each trackpoint (speed, cadence, bpm etc).
+      # this way we should have an equal number of them and can match them up
+      # to a the trackpoint time.
       lap = l.group(2)
       starttime = l.group(1)
       starttime = parse_zulu(starttime)
@@ -88,6 +95,7 @@ def parse_tcx(filedata):
       bpm_list = []
       speed_list = []
       altitude_list = []
+      timepoints = []
       prev_time = starttime
       prev_distance = 0
 
@@ -98,6 +106,7 @@ def parse_tcx(filedata):
         point_time = getTagVal(trackpoint, 'Time')
         point_time = parse_zulu(point_time)
 
+        timepoints.append((point_time - starttime).seconds)
         dist = getTagVal(trackpoint, 'DistanceMeters')
         if dist != None:
           dist = float(dist)
@@ -118,7 +127,7 @@ def parse_tcx(filedata):
         if cad != None:
           cadence_list.append(int(cad))
         else:
-          cadence_list.append(0)
+          cadence_list.append(cadence_list[-1])
 
         alt = getTagVal(trackpoint, 'AltitudeMeters')
         if alt != None:
@@ -130,6 +139,10 @@ def parse_tcx(filedata):
         long = getTagVal(trackpoint, 'LongitudeDegrees', None)
         if lat and long:
           geo_points.append('%s, %s' % (lat,long))
+        else:
+          if geo_points:
+            geo_points.append(geo_points[-1])
+
         bpm_list.append(getTagSubVal(trackpoint, 'HeartRateBpm'))
 
       endtime = prev_time
@@ -138,7 +151,8 @@ def parse_tcx(filedata):
         max_cadence = max(cadence_list)
       lap_record = {
         'total_meters': total_meters,
-        'total_time_seconds': total_time,
+        'total_rolling_time_seconds' : total_time,
+        'total_time_seconds': float(timepoints[-1]),
         'starttime': starttime,
         'endtime': endtime,
         'average_cadence': float(cadence),
@@ -153,17 +167,23 @@ def parse_tcx(filedata):
         'cadence_list' : ','.join([str(c) for c in cadence_list]),
         'speed_list' : ','.join([ '%.2f' % s for s in speed_list]),
         'altitude_list' : ','.join(altitude_list),
+        'timepoints' : ','.join([str(t) for t in timepoints]),
         }
       lap_records.append(lap_record)
 
+    if not lap_records:
+      raise UnknownTCXExpception("Activities must have at least 1 lap.")
+
     total_meters = [0 + l['total_meters'] for l in lap_records][0]
-    rolling_time = [0 + l['total_time_seconds'] for l in lap_records][0]
+    total_time = [0 + l['total_time_seconds'] for l in lap_records][0]
+    rolling_time = [0 + l['total_rolling_time_seconds'] for l in lap_records][0]
     activity_record = {
         'name': str(starttime),
         'sport': activity_sport,
         'total_meters': total_meters,
         'start_time': lap_records[0]['starttime'],
         'end_time': lap_records[0]['endtime'],
+        'total_time': total_time,
         'rolling_time': rolling_time,
         'average_speed': total_meters / rolling_time * 3.6,
         'maximum_speed': max([l['maximum_speed'] for l in lap_records]),
@@ -175,5 +195,8 @@ def parse_tcx(filedata):
         'laps': lap_records,
         }
     acts.append(activity_record)
+ 
+  if not acts:
+    raise UnknownTCXExpception("No activities found.")
 
   return acts

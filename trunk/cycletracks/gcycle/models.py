@@ -70,6 +70,7 @@ class Activity(models.BaseModel):
   start_point = db.GeoPtProperty()
   end_point = db.GeoPtProperty()
   comment = db.StringProperty()
+  public = db.BooleanProperty(default=False)
 
   def bpm_list(self):
     bpm_list = []

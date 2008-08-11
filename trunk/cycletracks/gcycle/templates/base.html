@@ -15,7 +15,7 @@
 {% endspaceless %}
   <body {% block extra_body %}{% endblock %}>
     <div id="header">
-      <div id="header_inner" class="fluid">
+      <div id="header_inner" class="{% block header_type %}fixed{% endblock %}">
         <div id="logo">
           <h1>{% block page_title %}CycleTracks - {{ user.user.email }}{% endblock %}</h1>
         </div>
@@ -31,7 +31,7 @@
     </div>
 
     <div id="main">
-      <div id="main_inner" class="fluid">
+      <div id="main_inner" class="{% block page_type %}fixed{% endblock %}">
         <div id="primaryContent_columnless">
           <div id="columnA_columnless">
             {% block content %}{% endblock %}

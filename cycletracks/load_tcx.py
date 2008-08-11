@@ -13,4 +13,4 @@ files = glob.glob('/home/hobe/garmin/*.tcx')
 files.sort()
 for file in files:
   print file
-  views.handle_uploaded_file(user, open(file).read())
+  views.handle_uploaded_file(user, open(file))

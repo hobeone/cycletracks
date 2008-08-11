@@ -88,32 +88,32 @@
           </td>
         </tr>
         <tr>
-          <td>Sport:</td><td>{{ activity.sport }}</td>
-        </tr>
-        <tr>
           <td>Start Time:</td><td>{{ activity.start_time }}</td>
         </tr>
         <tr>
           <td>End Time:</td><td>{{ activity.end_time }}</td>
         </tr>
         <tr>
-          <td>Distance:</td><td>{{ activity.total_meters|meters_to_miles|floatformat:"-2" }}</td>
+          <td>Distance:</td><td>{{ activity.total_meters|meters_to_miles|floatformat:"-2" }} Miles</td>
         </tr>
         <tr>
-          <td>Rolling Time:</td><td>{{ activity.rolling_time|seconds_to_hours|floatformat:"-2" }}</td>
+          <td>Rolling Time:</td><td>{{ activity.rolling_time|seconds_to_hours|floatformat:"-2" }} Hours</td>
+        </tr>
+        <tr>
+          <td>Total Time:</td><td>{{ activity.total_time|seconds_to_hours|floatformat:"-2" }} Hours</td>
         </tr>
         <tr>
           <td>Speed:</td>
           <td>
             Avg: {{ activity.average_speed|km_to_miles|floatformat:"-2" }},
-             Max: {{ activity.maximum_speed|km_to_miles|floatformat:"-2" }}
+             Max: {{ activity.maximum_speed|km_to_miles|floatformat:"-2" }} MPH
            </td>
         </tr>
         <tr>
-          <td>Heart Rate:</td><td>Avg: {{ activity.average_bpm }}, Max: {{ activity.maximum_bpm }}</td>
+          <td>Heart Rate:</td><td>Avg: {{ activity.average_bpm }}, Max: {{ activity.maximum_bpm }} BPM</td>
         </tr>
         <tr>
-          <td>Cadence:</td><td>Avg: {{ activity.average_cadence }}, Max: {{ activity.maximum_cadence }}</td>
+          <td>Cadence:</td><td>Avg: {{ activity.average_cadence }}, Max: {{ activity.maximum_cadence }} RPM</td>
         </tr>
         <tr>
           <td>Calories:</td><td>{{ activity.total_calories|floatformat:"-2" }}</td>

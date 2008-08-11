@@ -10,5 +10,5 @@ urlpatterns = patterns('',
   (r'^upload/$', 'gcycle.views.upload'),
   (r'^activity/show/(\S+)$', 'gcycle.activity.show'),
   (r'^activity/graph/(\S+)$', 'gcycle.activity.graph'),
-  (r'^activity/update/$', 'gcycle.views.activity_update'),
+  (r'^activity/update/$', 'gcycle.activity.update'),
 )

@@ -47,7 +47,7 @@ def upload(request):
         return HttpResponseRedirect('/')
   else:
     form = UploadFileForm()
-  return render_to_response('upload.html', {'form': form})
+  return render_to_response('upload.html', {'form': form, 'user': user})
 
 
 def handle_uploaded_file(user, filedata):
@@ -60,16 +60,3 @@ def handle_uploaded_file(user, filedata):
     for lap_dict in act_dict['laps']:
       lap = models.Lap(parent = activity, activity = activity, **lap_dict)
       lap.put()
-
-VALID_ACTIVITY_ATTRIBUTES = ['comment', 'name']
-
-def activity_update(request):
-  activity_id = request.POST['activity_id']
-  activity_attribute = request.POST['attribute']
-  activity_value = request.POST['value']
-  activity = models.Activity.get(activity_id)
-  if activity_attribute in VALID_ACTIVITY_ATTRIBUTES:
-    if activity.__dict__['_%s' % activity_attribute] != activity_value:
-      activity.__dict__['_%s' % activity_attribute] = activity_value
-      activity.put()
-    return HttpResponse(activity_value)

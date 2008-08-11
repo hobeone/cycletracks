@@ -128,6 +128,25 @@
           <td>Uploaded By:</td><td>{{ activity.parent.user }}</td>
         </tr>
         <tr>
+          <td>
+            Public:</td>
+          <td>
+            <span id="public_flag">{{ activity.public }}</span>
+            <script type="text/javascript">
+              new Ajax.InPlaceCollectionEditor(
+                  'public_flag',
+                  '/activity/update/',
+                  {
+                    collection: ['True', 'False'],
+                    callback: function(form, value) {
+                        return 'activity_id={{activity.key}}&attribute=public&value='+escape(value)
+                      }
+                    });
+            </script>
+
+          </td>
+        </tr>
+        <tr>
           <td>Comment:</td>
           <td>
             <span id="editable_comment">{{ activity.comment }}</span>
@@ -144,7 +163,7 @@
       <div id="map" style="width: 400px; height: 300px"></div>
     </td>
     <td>
-      BPM<br><br>
+      Heart Rate (BPM)<br><br>
       <div id="bpm_graph" style="margin: 0 auto 0 auto;" width="500" height="200"></div>
 
       <script type="text/javascript">
@@ -152,7 +171,7 @@
         var plotter = EasyPlot("line", {}, $("bpm_graph"), [data]);
       </script>
 
-      Cadence<br><br>
+      Cadence (RPM)<br><br>
       <div id="cadence_graph" style="margin: 0 auto 0 auto;" width="500" height="200"></div>
 
       <script type="text/javascript">
@@ -160,7 +179,7 @@
         var plotter = EasyPlot("line", {}, $("cadence_graph"), [data]);
       </script>
 
-      Speed<br><br>
+      Speed (kph)<br><br>
       <div id="speed_graph" style="margin: 0 auto 0 auto;" width="500" height="200"></div>
 
       <script type="text/javascript">
@@ -168,7 +187,7 @@
         var plotter = EasyPlot("line", {}, $("speed_graph"), [data]);
       </script>
 
-      Altitude<br><br>
+      Altitude (Meters)<br><br>
       <div id="altitude_graph" style="margin: 0 auto 0 auto;" width="500" height="200"></div>
 
       <script type="text/javascript">

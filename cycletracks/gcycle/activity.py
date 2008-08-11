@@ -85,12 +85,13 @@ def update(request):
   activity_value = request.POST['value']
 
   # LAME
-  if activity_attribute == 'False':
-    activity_value = False
-  else:
-    activity_value = True
+  if activity_attribute == 'public':
+    if activity_value == 'False':
+      activity_value = False
+    else:
+      activity_value = True
 
-  activity = models.Activity.get(activity_id)
+  activity = Activity.get(activity_id)
   if activity_attribute in VALID_ACTIVITY_ATTRIBUTES:
     if getattr(activity, activity_attribute) != activity_value:
       setattr(activity, activity_attribute, activity_value)

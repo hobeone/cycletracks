@@ -69,4 +69,6 @@ def show(request, activity):
        'speed' : process_data(a.speed_list()),
        'altitude' : process_data(a.altitude_list()),
        'points' : points[:-2],
+       'start_lat_lng' : points[0],
+       'end_lat_lng' : points[-2],
        'centerpoint' : points[int(len(points) / 2.0)]})

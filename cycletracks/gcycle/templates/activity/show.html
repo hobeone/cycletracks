@@ -6,6 +6,7 @@
 {% block extra_head %}
 <script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key=ABQIAAAAoU2YDajIyJPdof6GDzJKshRpKIwH9gjHw5l4siVVB7mD23aSXhSHvrtQQCEPRhQENq4B3lk8joMYzQ" type="text/javascript"></script>
 
+<script type="text/javascript" src="/static/greversegeocoder.js"></script>
 <script type="text/javascript">
     //<![CDATA[
     function load() {
@@ -24,6 +25,36 @@
         map.setZoom(map.getBoundsZoomLevel(bounds));
         map.setCenter(bounds.getCenter());
         map.addOverlay(polyline);
+
+        function goodresult(placemark) {
+          var html = placemark.address;
+          document.getElementById("start_location").innerHTML = html;
+        }
+
+        function badresult() {
+          document.getElementById("start_location").innerHTML = "Unable to reverse geocode";
+        }
+        var start_reversegeocoder = new GReverseGeocoder(map);
+        GEvent.addListener(start_reversegeocoder, "load", goodresult);
+        GEvent.addListener(start_reversegeocoder, "error", badresult);
+
+        start_reversegeocoder.reverseGeocode(new GLatLng({{ start_lat_lng }}));
+
+
+        // Find the finish location
+        function end_goodresult(placemark) {
+          var html = placemark.address;
+          document.getElementById("end_location").innerHTML = html;
+        }
+
+        function end_badresult() {
+          document.getElementById("end_location").innerHTML = "Unable to reverse geocode";
+        }
+        var end_reversegeocoder = new GReverseGeocoder(map);
+        GEvent.addListener(end_reversegeocoder, "load", end_goodresult);
+        GEvent.addListener(end_reversegeocoder, "error", end_badresult);
+
+        end_reversegeocoder.reverseGeocode(new GLatLng({{ end_lat_lng }}));
       }
     }
     //]]>
@@ -86,6 +117,12 @@
         </tr>
         <tr>
           <td>Calories:</td><td>{{ activity.total_calories|floatformat:"-2" }}</td>
+        </tr>
+        <tr>
+          <td>Start Location:</td><td id="start_location"></td>
+        </tr>
+        <tr>
+          <td>End Location:</td><td id="end_location"></td>
         </tr>
         <tr>
           <td>Uploaded By:</td><td>{{ activity.parent.user }}</td>

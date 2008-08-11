@@ -72,3 +72,24 @@ def show(request, activity):
        'start_lat_lng' : points[0],
        'end_lat_lng' : points[-2],
        'centerpoint' : points[int(len(points) / 2.0)]})
+
+
+VALID_ACTIVITY_ATTRIBUTES = ['comment', 'name', 'public']
+
+def update(request):
+  activity_id = request.POST['activity_id']
+  activity_attribute = request.POST['attribute']
+  activity_value = request.POST['value']
+
+  # LAME
+  if activity_attribute == 'False':
+    activity_value = False
+  else:
+    activity_value = True
+
+  activity = models.Activity.get(activity_id)
+  if activity_attribute in VALID_ACTIVITY_ATTRIBUTES:
+    if getattr(activity, activity_attribute) != activity_value:
+      setattr(activity, activity_attribute, activity_value)
+      activity.put()
+    return HttpResponse(activity_value)

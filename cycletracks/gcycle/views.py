@@ -51,7 +51,7 @@ def upload(request):
 
 def handle_uploaded_file(user, filedata):
 #TODO support gz/bzip/zip files
-  activities = pytcx.parse_tcx(filedata)
+  activities = pytcx.parse_tcx(filedata.read())
   for act_dict in activities:
     activity = models.Activity(parent = user, user = user, **act_dict)
     activity.put()

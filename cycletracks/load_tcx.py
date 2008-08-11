@@ -9,6 +9,8 @@ import os
 
 os.environ['USER_EMAIL'] = 'test@example.com'
 user = views.get_user()
-
-for file in glob.glob('/home/hobe/garmin/*.tcx'):
-  views.handle_uploaded_file(user, file)
+files = glob.glob('/home/hobe/garmin/*.tcx')
+files.sort()
+for file in files:
+  print file
+  views.handle_uploaded_file(user, open(file).read())

@@ -49,11 +49,9 @@ def upload(request):
     form = UploadFileForm()
   return render_to_response('upload.html', {'form': form, 'user': user})
 
-
 def handle_uploaded_file(user, filedata):
 #TODO support gz/bzip/zip files
   activities = pytcx.parse_tcx(filedata)
-
   for act_dict in activities:
     activity = models.Activity(parent = user, user = user, **act_dict)
     activity.put()

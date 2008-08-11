@@ -21,6 +21,7 @@ def downsample(items, factor=10):
   """Crappy downsample by averaging factor items at a time"""
   window_start = 0
   samp = []
+  if factor < 1: factor = 1
   while window_start < len(items):
     samp.append(
         int(
@@ -61,6 +62,7 @@ def show(request, activity):
   points = []
   for lap in a.lap_set:
     points.extend(lap.geo_points.split('\n'))
+
   return render_to_response('activity/show.html',
       {'activity' : a,
        'user' : user,
@@ -68,10 +70,11 @@ def show(request, activity):
        'cadence' : process_data(a.cadence_list()),
        'speed' : process_data(a.speed_list()),
        'altitude' : process_data(a.altitude_list()),
-       'points' : points[:-2],
+       'points': points,
        'start_lat_lng' : points[0],
        'end_lat_lng' : points[-2],
-       'centerpoint' : points[int(len(points) / 2.0)]})
+       'centerpoint' : points[int(len(points) / 2.0)]
+       })
 
 
 VALID_ACTIVITY_ATTRIBUTES = ['comment', 'name', 'public']

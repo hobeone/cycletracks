@@ -1,75 +1,106 @@
-import xml.etree.cElementTree as ET
+import re
+import os
 import datetime
+import sys
+
+reopts = (re.MULTILINE | re.DOTALL)
+
+def parse_zulu(s):
+    return datetime.datetime(int(s[0:4]), int(s[5:7]), int(s[8:10]),
+        int(s[11:13]), int(s[14:16]), int(s[17:19]))
+
+class memoized(object):
+   """Decorator that caches a function's return value each time it is called.
+   If called later with the same arguments, the cached value is returned, and
+   not re-evaluated.
+   """
+   def __init__(self, func):
+      self.func = func
+      self.cache = {}
+   def __call__(self, *args):
+      try:
+         return self.cache[args]
+      except KeyError:
+         self.cache[args] = value = self.func(*args)
+         return value
+      except TypeError:
+         # uncachable -- for instance, passing a list as an argument.
+         # Better to not cache than to blow up entirely.
+         return self.func(*args)
+   def __repr__(self):
+      """Return the function's docstring."""
+      return self.func.__doc__
+
+@memoized
+def make_tag_regex(tag):
+  return re.compile("<%s>(.+?)</%s>" % (tag,tag), reopts)
+
+def getTagVal(string, tag, default='0'):
+  r = make_tag_regex(tag)
+  m = r.search(string)
+  if m:
+    return m.group(1)
+  return default
+
+@memoized
+def make_tag_val_regex(tag):
+  return re.compile("<%s>\s*?<Value>(\d+?)</Value>\s*?</%s>" % (tag,tag),
+      reopts)
+
+def getTagSubVal(string, tag):
+  r = make_tag_val_regex(tag)
+  m = r.search(string)
+  if m:
+    return m.group(1)
+  else:
+    return '0'
 
 def average(array):
   if len(array) == 0: return 0
   return (sum(array) / len(array))
 
-main_ns = '{http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2}'
-def find_child_tag_data(parent, tag, ns=main_ns, default=0):
-  childtag = parent.find('.//%s%s' % (ns,tag))
-  if childtag == None:
-    return default
-  return childtag.text
-
-def find_child_tag_value(parent, tag, ns=main_ns, default=0):
-  childtag = parent.find('.//%s%s' % (ns,tag))
-  if childtag == None:
-    return default
-  return childtag[0].text
-
-
-def parse_to_kml(filedata):
-  et=ET.parse(filedata).getroot()
-  activities = et.findall('.//%sActivity' % main_ns)
-  for activity in activities:
-    trackpoints = activity.findall('*//%sTrackpoint' % main_ns)
-    for point in trackpoints:
-      alt = point.find('%sAltitudeMeters' % main_ns).text
-      try:
-        lat = point.find('*/%sLatitudeDegrees' % main_ns).text
-        lon = point.find('*/%sLongitudeDegrees' % main_ns).text
-      except AttributeError:
-        continue
-      print '%s,%s,%s' % (lon,lat,alt)
-
-
 def parse_tcx(filedata):
-  et=ET.parse(filedata).getroot()
   acts = []
-  activities = et.findall('.//%sActivity' % main_ns)
-  for activity in activities:
-    laps = activity.findall('%sLap' % main_ns)
-    lap_records = []
-    for lap in laps:
-      total_meters = float(find_child_tag_data(lap, 'DistanceMeters'))
-      total_time = float(find_child_tag_data(lap, 'TotalTimeSeconds'))
-      calories = float(find_child_tag_data(lap, 'Calories'))
-      cadence = float(find_child_tag_data(lap, 'Cadence'))
-      max_speed = float(find_child_tag_data(lap, 'MaximumSpeed')) * 3.6
-      avg_bpm = float(find_child_tag_value(lap, 'AverageHeartRateBpm'))
-      max_bpm = float(find_child_tag_value(lap, 'MaximumHeartRateBpm'))
-      starttime = lap.get('StartTime')
-      starttime = datetime.datetime.strptime(starttime, '%Y-%m-%dT%H:%M:%SZ')
-      avg_speed = total_meters / total_time * 3.6 # kph
 
-      trackpoints = lap.findall('*/%sTrackpoint' % main_ns)
-      endtime = None
+  r = re.compile('<Activity Sport="(\w+?)">(.*?)</Activity>',
+      re.MULTILINE | re.DOTALL)
+  for activity in r.finditer(filedata):
+    r = re.compile('<Lap StartTime="(.*?)">(.*?)</Lap>',
+        re.MULTILINE | re.DOTALL)
+    lap_records = []
+    activity_sport = activity.group(1)
+
+    for l in r.finditer(activity.group()):
+      lap = l.group(2)
+      starttime = l.group(1)
+      starttime = parse_zulu(starttime)
+      total_time = float(getTagVal(lap, 'TotalTimeSeconds'))
+      total_meters = float(getTagVal(lap, 'DistanceMeters'))
+      max_speed = float(getTagVal(lap, 'MaximumSpeed')) * 3.6
+      avg_speed = total_meters / total_time * 3.6 # kph
+      calories = float(getTagVal(lap, 'Calories'))
+      cadence = float(getTagVal(lap, 'Cadence'))
+      max_bpm =  float(getTagSubVal(lap, 'MaximumHeartRateBpm'))
+      avg_bpm = float(getTagSubVal(lap, 'AverageHeartRateBpm'))
+
       geo_points = []
       cadence_list = []
       bpm_list = []
       speed_list = []
       altitude_list = []
-
       prev_time = starttime
       prev_distance = 0
-      for point in trackpoints:
-        point_time = point.find('%sTime' % main_ns).text
-        point_time = datetime.datetime.strptime(point_time,'%Y-%m-%dT%H:%M:%SZ')
 
-        dist = point.find('%sDistanceMeters' % main_ns)
+      r = re.compile('<Trackpoint>(.*?)</Trackpoint>',
+          re.MULTILINE | re.DOTALL)
+      for t in r.finditer(lap):
+        trackpoint = t.group()
+        point_time = getTagVal(trackpoint, 'Time')
+        point_time = parse_zulu(point_time)
+
+        dist = getTagVal(trackpoint, 'DistanceMeters')
         if dist != None:
-          dist = float(dist.text)
+          dist = float(dist)
           tdelta = (point_time - prev_time).seconds
           if tdelta == 0:
             speed_list.append(0)
@@ -81,29 +112,25 @@ def parse_tcx(filedata):
 
         else:
           speed_list.append(0)
-
         prev_time = point_time
 
-        cad = point.find('%sCadence' % main_ns)
+        cad = getTagVal(trackpoint, 'Cadence')
         if cad != None:
-          cadence_list.append(float(cad.text))
+          cadence_list.append(int(cad))
         else:
-          cadence_list.append(0.0)
+          cadence_list.append(0)
 
-        alt = point.find('%sAltitudeMeters' % main_ns)
+        alt = getTagVal(trackpoint, 'AltitudeMeters')
         if alt != None:
-          altitude_list.append(alt.text)
+          altitude_list.append(alt)
+        else:
+          altitude_list.append(altitude_list[-1])
 
-        bpm_list.append(str(find_child_tag_value(point, 'HeartRateBpm')))
-
-        try:
-          lat = point.find('*/%sLatitudeDegrees' % main_ns).text
-          lon = point.find('*/%sLongitudeDegrees' % main_ns).text
-          geo_points.append('%s, %s' % (lat,lon))
-        except AttributeError:
-          continue
-
-
+        lat = getTagVal(trackpoint, 'LatitudeDegrees', None)
+        long = getTagVal(trackpoint, 'LongitudeDegrees', None)
+        if lat and long:
+          geo_points.append('%s, %s' % (lat,long))
+        bpm_list.append(getTagSubVal(trackpoint, 'HeartRateBpm'))
 
       endtime = prev_time
       max_cadence = 0.0
@@ -114,8 +141,8 @@ def parse_tcx(filedata):
         'total_time_seconds': total_time,
         'starttime': starttime,
         'endtime': endtime,
-        'average_cadence': cadence,
-        'maximum_cadence': max_cadence,
+        'average_cadence': float(cadence),
+        'maximum_cadence': float(max_cadence),
         'average_bpm': avg_bpm,
         'maximum_bpm': max_bpm,
         'calories': calories,
@@ -124,7 +151,7 @@ def parse_tcx(filedata):
         'bpm_list' : ','.join(bpm_list),
         'geo_points' : '\n'.join(geo_points),
         'cadence_list' : ','.join([str(c) for c in cadence_list]),
-        'speed_list' : ','.join([str(s) for s in speed_list]),
+        'speed_list' : ','.join([ '%.2f' % s for s in speed_list]),
         'altitude_list' : ','.join(altitude_list),
         }
       lap_records.append(lap_record)
@@ -132,8 +159,8 @@ def parse_tcx(filedata):
     total_meters = [0 + l['total_meters'] for l in lap_records][0]
     rolling_time = [0 + l['total_time_seconds'] for l in lap_records][0]
     activity_record = {
-        'name': activity.findall('%sId' % main_ns)[0].text,
-        'sport': activity.get('Sport'),
+        'name': str(starttime),
+        'sport': activity_sport,
         'total_meters': total_meters,
         'start_time': lap_records[0]['starttime'],
         'end_time': lap_records[0]['endtime'],
@@ -148,4 +175,5 @@ def parse_tcx(filedata):
         'laps': lap_records,
         }
     acts.append(activity_record)
-    return acts
+
+  return acts

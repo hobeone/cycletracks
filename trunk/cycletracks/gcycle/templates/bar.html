@@ -4,6 +4,7 @@
 {% block title %}CycleTracks Dashboard{% endblock %}
 
 {% block content %}
+
 <div id="activity_table">
 <table cellspacing="2" width="100%">
   <tr>
@@ -58,8 +59,9 @@
   </tr>
 </table>
 </div>
+
 <br><br>
-<h2>Last {{ user_activities|length }} tracks:</h2>
+<h2>Your Activities (page {{page}} of {{ pages }})</h2>
 <div class="datatable">
 <table cellspacing="2" width="100%">
   <thead>
@@ -76,8 +78,8 @@
   </tr>
 </thead>
 <tbody>
-  {% if user_activities %}
-    {% for entry in user_activities %}
+  {% if object_list %}
+    {% for entry in object_list %}
     <tr>
       <td><a href="/activity/show/{{ entry.key }}">{{ entry.name }}</a></td>
       <td>{{ entry.start_time|date:"n/j/y-H:i" }}Z</td>
@@ -102,5 +104,12 @@
     {% endif %}
   </tbody>
 </table>
+{% if has_previous %}
+<a href="/mytracks/page{{previous}}">prev</a>
+{% endif %}
+
+{% if has_next %}
+<a href="/mytracks/page{{next}}">next</a>
+{% endif %}
 </div>
 {% endblock %}

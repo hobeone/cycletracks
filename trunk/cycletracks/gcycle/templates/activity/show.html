@@ -65,14 +65,13 @@
 
 {% endblock %}
 
-
-
 {% block extra_body %}onload="load()" onunload="GUnload()"{% endblock %}
 
 {% block content %}
+<div id="activity_table">
 <table width="100%">
-  <tr width="50%">
-    <td align="left" valign="top">
+  <tr>
+    <td align="left" valign="top" width="50%">
       <table>
         <tr>
           <td>Name:</td>
@@ -162,40 +161,33 @@
       <br>
       <div id="map" style="width: 400px; height: 300px"></div>
     </td>
-    <td>
+    <td width="50%">
       Heart Rate (BPM)<br><br>
       <div id="bpm_graph" style="margin: 0 auto 0 auto;" width="500" height="200"></div>
 
-      <script type="text/javascript">
-        var data = [{{bpm}}];
-        var plotter = EasyPlot("line", {}, $("bpm_graph"), [data]);
-      </script>
-
-      Cadence (RPM)<br><br>
+      <br>Cadence (RPM)<br><br>
       <div id="cadence_graph" style="margin: 0 auto 0 auto;" width="500" height="200"></div>
 
-      <script type="text/javascript">
-        var data = [{{cadence}}];
-        var plotter = EasyPlot("line", {}, $("cadence_graph"), [data]);
-      </script>
-
-      Speed (kph)<br><br>
+      <br>Speed (kph)<br><br>
       <div id="speed_graph" style="margin: 0 auto 0 auto;" width="500" height="200"></div>
 
-      <script type="text/javascript">
-        var data = [{{speed}}];
-        var plotter = EasyPlot("line", {}, $("speed_graph"), [data]);
-      </script>
-
-      Altitude (Meters)<br><br>
+      <br>Altitude (Meters)<br><br>
       <div id="altitude_graph" style="margin: 0 auto 0 auto;" width="500" height="200"></div>
 
       <script type="text/javascript">
-        var data = [{{altitude}}];
-        var plotter = EasyPlot("line", {xOriginIsZero: false, yOriginIsZero: false}, $("altitude_graph"), [data]);
+        var xTicks = [
+        {% for v in times %}
+          {label: "{{v.1|seconds_to_human_readable}}", v: {{v.0}}},
+        {% endfor %}
+        ];
+
+        var plotter = EasyPlot("line", {"xTicks": xTicks}, $("bpm_graph"), [ [{{bpm}}] ]);
+        var plotter = EasyPlot("line", {"xTicks": xTicks}, $("cadence_graph"), [ [{{cadence}}] ]);
+        var plotter = EasyPlot("line", {"xTicks": xTicks}, $("speed_graph"), [ [{{speed}}] ]);
+        var plotter = EasyPlot("line", {"xTicks": xTicks}, $("altitude_graph"), [ [{{altitude}}] ]);
       </script>
     </td>
   </tr>
-
 </table>
+</div>
 {% endblock %}

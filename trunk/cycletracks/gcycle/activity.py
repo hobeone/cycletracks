@@ -62,7 +62,12 @@ def show(request, activity):
   points = []
   for lap in a.lap_set:
     points.extend(lap.geo_points.split('\n'))
-
+  tlist = a.time_list()
+  times = [
+      (0, tlist[0]),
+      (250, tlist[int(len(tlist) / 2)]),
+      (500, tlist[-1]),
+      ]
   return render_to_response('activity/show.html',
       {'activity' : a,
        'user' : user,
@@ -71,6 +76,7 @@ def show(request, activity):
        'speed' : process_data(a.speed_list()),
        'altitude' : process_data(a.altitude_list()),
        'points': points,
+       'times': times,
        'start_lat_lng' : points[0],
        'end_lat_lng' : points[-2],
        'centerpoint' : points[int(len(points) / 2.0)]

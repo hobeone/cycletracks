@@ -56,7 +56,6 @@ def upload(request):
   if request.method == 'POST':
     form = UploadFileForm(request.POST, request.FILES)
     if form.is_valid():
-      assert False
       try:
         handle_uploaded_file(user, request.FILES['file'])
         return HttpResponseRedirect('/')

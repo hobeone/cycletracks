@@ -106,7 +106,13 @@ def parse_tcx(filedata):
         point_time = getTagVal(trackpoint, 'Time')
         point_time = parse_zulu(point_time)
 
-        timepoints.append((point_time - starttime).seconds)
+        if point_time <= starttime:
+          # sometimes the first points has a timestamp 1 second or more before
+          # the lap timestamp
+          timepoints.append(0)
+        else:
+          timepoints.append((point_time - starttime).seconds)
+
         dist = getTagVal(trackpoint, 'DistanceMeters')
         if dist != None:
           dist = float(dist)

@@ -99,6 +99,12 @@ class Activity(models.BaseModel):
       altitude_list.extend(l.altitudes())
     return altitude_list
 
+  def time_list(self):
+    time_list = []
+    for t in self.lap_set:
+      time_list.extend(t.times())
+    return time_list
+
 class Lap(models.BaseModel):
   activity = db.ReferenceProperty(Activity, required=True)
   total_meters = db.FloatProperty(required=True)
@@ -118,6 +124,7 @@ class Lap(models.BaseModel):
   speed_list = db.TextProperty(required=True)
   cadence_list = db.TextProperty(required=True)
   geo_points = db.TextProperty()
+  timepoints = db.TextProperty(required=True)
 
   def speeds(self):
     return [int(float(b)) for b in self.speed_list.split(',') if b]
@@ -130,3 +137,6 @@ class Lap(models.BaseModel):
 
   def bpms(self):
     return [int(float(b)) for b in self.bpm_list.split(',') if b]
+
+  def times(self):
+    return [int(float(b)) for b in self.timepoints.split(',') ]

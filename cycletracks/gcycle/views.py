@@ -12,6 +12,9 @@ from gcycle.lib import pytcx
 
 from google.appengine.ext import db
 
+from django.conf.urls.defaults import *
+from django.views.generic import list_detail
+
 def get_user():
   gaia_user = users.get_current_user()
   return models.User.get_or_insert(
@@ -27,12 +30,22 @@ def dashboard(request, sorting='start_time'):
   activity_query = models.Activity.all()
   activity_query.ancestor(user)
   activity_query.order('-%s' % sorting)
-  totals = user.totals()
   return render_to_response('dashboard.html',
     {'user_activities' : activity_query.fetch(100),
-     'user_totals': totals,
+     'user_totals': user.totals(),
      'user' : user}
     )
+
+
+def getbasics():
+  user = get_user()
+  return {
+      'user': get_user(),
+      'user_totals': user.totals(),
+      }
+
+def getCurUserTotals():
+  return get_user().totals()
 
 class UploadFileForm(forms.Form):
   file = forms.Field(widget=forms.FileInput())

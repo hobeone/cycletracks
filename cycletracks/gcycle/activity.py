@@ -5,6 +5,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from gcycle.models import Activity, Lap
 from gcycle import views
+from google.appengine.api import datastore_errors
 
 def rm3(s):
   """knicked from the tubes:
@@ -58,29 +59,38 @@ def graph(request, activity):
 
 def show(request, activity):
   user = views.get_user()
-  a = Activity.get(activity)
-  points = []
-  for lap in a.lap_set:
-    points.extend(lap.geo_points.split('\n'))
-  tlist = a.time_list()
-  times = [
-      (0, tlist[0]),
-      (250, tlist[int(len(tlist) / 2)]),
-      (500, tlist[-1]),
-      ]
-  return render_to_response('activity/show.html',
-      {'activity' : a,
-       'user' : user,
-       'bpm' : process_data(a.bpm_list()),
-       'cadence' : process_data(a.cadence_list()),
-       'speed' : process_data(a.speed_list()),
-       'altitude' : process_data(a.altitude_list()),
-       'points': points,
-       'times': times,
-       'start_lat_lng' : points[0],
-       'end_lat_lng' : points[-2],
-       'centerpoint' : points[int(len(points) / 2.0)]
-       })
+  try:
+    a = Activity.get(activity)
+  except datastore_errors.BadKeyError, e:
+    return render_to_response('error.html',
+        {'error': "That activity doesn't exist."})
+
+  if not (a.user == user or a.public):
+    return render_to_response('error.html',
+        {'error': "You are not allowed to see this activity"})
+  else:
+    points = []
+    for lap in a.lap_set:
+      points.extend(lap.geo_points.split('\n'))
+    tlist = a.time_list()
+    times = [
+        (0, tlist[0]),
+        (250, tlist[int(len(tlist) / 2)]),
+        (500, tlist[-1]),
+        ]
+    return render_to_response('activity/show.html',
+        {'activity' : a,
+         'user' : user,
+         'bpm' : process_data(a.bpm_list()),
+         'cadence' : process_data(a.cadence_list()),
+         'speed' : process_data(a.speed_list()),
+         'altitude' : process_data(a.altitude_list()),
+         'points': points,
+         'times': times,
+         'start_lat_lng' : points[0],
+         'end_lat_lng' : points[-2],
+         'centerpoint' : points[int(len(points) / 2.0)]
+         })
 
 
 VALID_ACTIVITY_ATTRIBUTES = ['comment', 'name', 'public']

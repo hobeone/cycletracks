@@ -15,17 +15,18 @@ from google.appengine.ext import db
 from django.conf.urls.defaults import *
 from django.views.generic import list_detail
 
+class UserNotExist(Exception):
+  pass
+
 def get_user():
   gaia_user = users.get_current_user()
-  return models.User.get_or_insert(
-      gaia_user.email(),
-      user = gaia_user,
-      username = str(gaia_user))
-
+  q = db.GqlQuery("SELECT * FROM User WHERE user = :1", gaia_user)
+  user = q.get()
+  if not user: raise UserNotExist("User %s doesn't exist" % gaia_user)
+  return user
 
 def dashboard(request, sorting='start_time'):
   if sorting == None: sorting = 'start_time'
-  #Add pagination
   user = get_user()
   activity_query = models.Activity.all()
   activity_query.ancestor(user)

@@ -15,7 +15,7 @@
 {% endspaceless %}
   <body {% block extra_body %}{% endblock %}>
     <div id="header">
-      <div id="header_inner" class="{% block header_type %}fixed{% endblock %}">
+      <div id="header_inner" class="fixed">
         <div id="logo">
           <h1>{% block page_title %}CycleTracks - {{ user.user.email }}{% endblock %}</h1>
         </div>
@@ -31,7 +31,7 @@
     </div>
 
     <div id="main">
-      <div id="main_inner" class="{% block page_type %}fixed{% endblock %}">
+      <div id="main_inner" class="fixed">
         <div id="primaryContent_columnless">
           <div id="columnA_columnless">
             {% block content %}{% endblock %}
@@ -43,7 +43,7 @@
 
     </div>
 
-    <div id="footer" class="fluid">
+    <div id="footer" class="fixed">
       Copyright &copy; 2008 Daniel Hobe. All rights reserved. Design by <a href="http://www.nodethirtythree.com/">NodeThirtyThree Design</a>.
       <br/>
       <a href="http://code.google.com/appengine/"><img src="http://code.google.com/appengine/images/appengine-noborder-120x30.gif" alt="Powered by Google App Engine" /></a>

@@ -4,60 +4,66 @@
 {% block title %}CycleTracks: Activity {{ activity.name }}{% endblock %}
 
 {% block extra_head %}
-<script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key=ABQIAAAAoU2YDajIyJPdof6GDzJKshRpKIwH9gjHw5l4siVVB7mD23aSXhSHvrtQQCEPRhQENq4B3lk8joMYzQ" type="text/javascript"></script>
-
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAoU2YDajIyJPdof6GDzJKshRpKIwH9gjHw5l4siVVB7mD23aSXhSHvrtQQCEPRhQENq4B3lk8joMYzQ"></script>
 <script type="text/javascript" src="/static/greversegeocoder.js"></script>
+
 <script type="text/javascript">
-    //<![CDATA[
-    function load() {
-      if (GBrowserIsCompatible()) {
-        var map = new GMap2(document.getElementById("map"));
-        map.setCenter(new GLatLng({{ centerpoint }}), 10);
-        var polyline = new GPolyline([
-            {% for p in points %}new GLatLng({{ p }}),{% endfor %}
-            ], "#ff0000", 4);
-        map.addControl(new GSmallMapControl());
-        //map.addControl(new GMenuMapTypeControl());
+  google.load("maps", "2.x");
+  function initialize() {
+    var map = new google.maps.Map2(document.getElementById("map"));
+    map.setCenter(new google.maps.LatLng(0,0),0);
+    var sw = new google.maps.LatLng({{sw}});
+    var ne = new google.maps.LatLng({{ne}});
+    var bounds = new google.maps.LatLngBounds(sw, ne);
+    var mapZoomLevel = map.getBoundsZoomLevel(bounds);
+    var mapCenter = bounds.getCenter();
+    map.setCenter(mapCenter, mapZoomLevel);
 
-        var bounds = new GLatLngBounds();
-        {% for p in points %}bounds.extend(new GLatLng({{ p }}));{% endfor %}
-
-        map.setZoom(map.getBoundsZoomLevel(bounds));
-        map.setCenter(bounds.getCenter());
-        map.addOverlay(polyline);
-
-        function goodresult(placemark) {
-          var html = placemark.address;
-          document.getElementById("start_location").innerHTML = html;
-        }
-
-        function badresult() {
-          document.getElementById("start_location").innerHTML = "Unable to reverse geocode";
-        }
-        var start_reversegeocoder = new GReverseGeocoder(map);
-        GEvent.addListener(start_reversegeocoder, "load", goodresult);
-        GEvent.addListener(start_reversegeocoder, "error", badresult);
-
-        start_reversegeocoder.reverseGeocode(new GLatLng({{ start_lat_lng }}));
+    var polyline1_1 = new google.maps.Polyline.fromEncoded({
+      color: "#0000ff",
+      weight: 4,
+      opacity: 0.8,
+      points: {{pts|safe}},
+      levels: {{levs|safe}},
+      zoomFactor: 2,
+      numLevels: 18
+    });
+    map.addOverlay(polyline1_1);
+    map.addControl(new google.maps.SmallMapControl());
 
 
-        // Find the finish location
-        function end_goodresult(placemark) {
-          var html = placemark.address;
-          document.getElementById("end_location").innerHTML = html;
-        }
-
-        function end_badresult() {
-          document.getElementById("end_location").innerHTML = "Unable to reverse geocode";
-        }
-        var end_reversegeocoder = new GReverseGeocoder(map);
-        GEvent.addListener(end_reversegeocoder, "load", end_goodresult);
-        GEvent.addListener(end_reversegeocoder, "error", end_badresult);
-
-        end_reversegeocoder.reverseGeocode(new GLatLng({{ end_lat_lng }}));
-      }
+    function goodresult(placemark) {
+      var html = placemark.address;
+      document.getElementById("start_location").innerHTML = html;
     }
-    //]]>
+
+    function badresult() {
+      document.getElementById("start_location").innerHTML = "Unable to reverse geocode";
+    }
+    var start_reversegeocoder = new GReverseGeocoder(map);
+    GEvent.addListener(start_reversegeocoder, "load", goodresult);
+    GEvent.addListener(start_reversegeocoder, "error", badresult);
+
+    start_reversegeocoder.reverseGeocode(new GLatLng({{ start_lat_lng }}));
+
+
+    // Find the finish location
+    function end_goodresult(placemark) {
+      var html = placemark.address;
+      document.getElementById("end_location").innerHTML = html;
+    }
+
+    function end_badresult() {
+      document.getElementById("end_location").innerHTML = "Unable to reverse geocode";
+    }
+    var end_reversegeocoder = new GReverseGeocoder(map);
+    GEvent.addListener(end_reversegeocoder, "load", end_goodresult);
+    GEvent.addListener(end_reversegeocoder, "error", end_badresult);
+
+    end_reversegeocoder.reverseGeocode(new GLatLng({{ end_lat_lng }}));
+  }
+  google.setOnLoadCallback(initialize);
+
 </script>
 
 <script type="text/javascript" src="/static/MochiKit.js"></script>
@@ -65,7 +71,6 @@
 
 {% endblock %}
 
-{% block extra_body %}onload="load()" onunload="GUnload()"{% endblock %}
 
 {% block content %}
 <div id="activity_table">

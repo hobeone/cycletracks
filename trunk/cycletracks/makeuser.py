@@ -7,3 +7,9 @@ user = users.get_current_user()
 print user
 u = User(user = user, username = 'test')
 u.put()
+
+os.environ['USER_EMAIL'] = 'hobe@example.com'
+user = users.get_current_user()
+print user
+u = User(user = user, username = 'hobe')
+u.put()

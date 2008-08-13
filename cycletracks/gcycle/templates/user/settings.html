@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}CycleTracks User Settings{% endblock %}
+
+{% block content %}
+
+Username: {{ user.username }}
+<br>
+Use Imperial Units?: <span id="edit_units">{{user.use_imperial}}</span>
+<script type="text/javascript">
+  new Ajax.InPlaceCollectionEditor(
+      'edit_units',
+      '/user/update/',
+      {
+        collection: ['True', 'False'],
+        callback: function(form, value) {
+          return 'user_id={{user.key}}&attribute=use_imperial&value='+escape(value)
+          }
+        });
+</script>
+<p>
+(Old settings will be cached for up to an hour)
+{% endblock %}

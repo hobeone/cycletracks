@@ -71,9 +71,9 @@ def show(request, activity):
     return render_to_response('error.html',
         {'error': "That activity doesn't exist."})
 
-  if not (a.user == user or a.public):
+  if a.user != user and not a.public:
     return render_to_response('error.html',
-        {'error': "You are not allowed to see this activity"})
+        {'error': "You are not allowed to see this activity. %s" % a.public})
   else:
     activity_stats = memcache.get(str(a.key()))
     if activity_stats is None:
@@ -89,8 +89,8 @@ def show(request, activity):
         if lat < minlat: minlat = lat
         if long > maxlong: maxlong = long
         if long < minlong: minlong = long
-      sw = (minlat, maxlong)
-      ne = (maxlat, minlong)
+      sw = (minlat, minlong)
+      ne = (maxlat, maxlong)
 
       pts, levs = glineenc.encode_pairs(newp)
       tlist = a.time_list()
@@ -108,9 +108,10 @@ def show(request, activity):
            'pts': simplejson.dumps(pts),
            'levs' : simplejson.dumps(levs),
            'sw' : '%s,%s' % (sw[0],sw[1]),
-           'ne' : '%s,%s' % (ne[0],sw[1]),
+           'ne' : '%s,%s' % (ne[0],ne[1]),
            'times': times,
            'start_lat_lng' : points[0],
+           'mid_lat_lng' : points[int(len(points) / 2.0)],
            'end_lat_lng' : points[-2],
            }
       if not memcache.add(str(a.key()), activity_stats, 60 * 60):
@@ -124,22 +125,32 @@ def show(request, activity):
 VALID_ACTIVITY_ATTRIBUTES = ['comment', 'name', 'public']
 
 def update(request):
-  activity_id = request.POST['activity_id']
-  activity_attribute = request.POST['attribute']
-  activity_value = request.POST['value']
+  try:
+    user = views.get_user()
+    activity_id = request.POST['activity_id']
+    activity_attribute = request.POST['attribute']
+    activity_value = request.POST['value']
 
-  # LAME
-  if activity_attribute == 'public':
-    if activity_value == 'False':
-      activity_value = False
-    else:
-      activity_value = True
+    # LAME
+    if activity_attribute == 'public':
+      if activity_value == 'False':
+        activity_value = False
+      else:
+        activity_value = True
 
-  activity = Activity.get(activity_id)
-  if activity_attribute in VALID_ACTIVITY_ATTRIBUTES:
-    if getattr(activity, activity_attribute) != activity_value:
-      setattr(activity, activity_attribute, activity_value)
-      activity.put()
-      if not memcache.delete(str(activity.key())):
-        logging.error("Memcache delete failed.")
-    return HttpResponse(activity_value)
+    activity = Activity.get(activity_id)
+    if activity.user != user:
+      return render_to_response('error.html',
+        {'error': "You are not allowed to edit this activity"})
+
+
+
+    if activity_attribute in VALID_ACTIVITY_ATTRIBUTES:
+      if getattr(activity, activity_attribute) != activity_value:
+        setattr(activity, activity_attribute, activity_value)
+        activity.put()
+        if not memcache.delete(str(activity.key())):
+          logging.error("Memcache delete failed.")
+      return HttpResponse(activity_value)
+  except Exception, e:
+    return HttpResponse(e)

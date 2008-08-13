@@ -7,6 +7,8 @@ def average(array):
   return (sum(array) / len(array))
 
 class User(auth.models.User):
+  use_imperial = db.BooleanProperty(default=False)
+
   def activity_count(self):
     query = Activity.all()
     query.ancestor(self)

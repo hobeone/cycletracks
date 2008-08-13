@@ -13,7 +13,7 @@
   <tr>
     <td>
       Total Distance:</td>
-    <td> {{ user_totals.total_meters|meters_to_miles|floatformat:"-2" }} Mi
+    <td> {{ user_totals.total_meters|meters_to_prefered_distance:user.use_imperial }}
     </td>
   </tr>
   <tr>
@@ -43,13 +43,13 @@
   <tr>
     <td>
       Average Speed:</td>
-    <td> {{ user_totals.average_speed|km_to_miles|floatformat:"-2" }} mph
+    <td> {{ user_totals.average_speed|kph_to_prefered_speed:user.use_imperial }}
     </td>
   </tr>
   <tr>
     <td>
       Max Speed:</td>
-    <td> {{ user_totals.maximum_speed|km_to_miles|floatformat:"-2" }} mph
+    <td> {{ user_totals.maximum_speed|kph_to_prefered_speed:user.use_imperial }}
     </td>
   </tr>
   <tr>
@@ -66,7 +66,7 @@
   <tr>
     <th><a href='/dashboard/name'>Activity Name</a></th>
     <th><a href='/dashboard/start_time'>Start Time</a></th>
-    <th><a href='/dashboard/total_meters'>Miles</a></th>
+    <th><a href='/dashboard/total_meters'>Distance</a></th>
     <th><a href='/dashboard/rolling_time'>Time<br/>(Rolling)</a></th>
     <th><a href='/dashboard/average_cadence'>Avg/Max Cadence</a></th>
     <th><a href='/dashboard/average_bpm'>Avg/Max BPM</a></th>
@@ -81,15 +81,15 @@
     <tr>
       <td><a href="/activity/show/{{ entry.key }}">{{ entry.name }}</a></td>
       <td>{{ entry.start_time|date:"n/j/y-H:i" }}Z</td>
-      <td>{{ entry.total_meters|meters_to_miles|floatformat:"-2" }} Mi</td>
+      <td>{{ entry.total_meters|meters_to_prefered_distance:user.use_imperial}}</td>
       <td>{{ entry.total_time|seconds_to_hours|floatformat:"-2" }} Hours
         <br/>
         ({{ entry.rolling_time|seconds_to_hours|floatformat:"-2" }} Hours)
       </td>
       <td>{{ entry.average_cadence|floatformat:"-2" }} / {{ entry.maximum_cadence|floatformat:"-2" }} rpm</td>
       <td>{{ entry.average_bpm|floatformat:"-2" }} / {{ entry.maximum_bpm|floatformat:"-2" }} bpm</td>
-      <td>{{ entry.average_speed|km_to_miles|floatformat:"-2" }} mph</td>
-      <td>{{ entry.maximum_speed|km_to_miles|floatformat:"-2" }} mph</td>
+      <td>{{ entry.average_speed|kph_to_prefered_speed:user.use_imperial }}</td>
+      <td>{{ entry.maximum_speed|kph_to_prefered_speed:user.use_imperial }}</td>
       <td>{{ entry.total_calories|floatformat:"-2" }} Cal</td>
     </tr>
     {% endfor %}

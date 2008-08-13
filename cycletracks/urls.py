@@ -20,6 +20,9 @@ urlpatterns = patterns('',
   (r'^activity/show/(\S+)$', 'gcycle.activity.show'),
   (r'^activity/graph/(\S+)$', 'gcycle.activity.graph'),
   (r'^activity/update/$', 'gcycle.activity.update'),
+  (r'^user/settings/$', 'gcycle.user.settings'),
+  (r'^user/update/$', 'gcycle.user.update'),
+
   (r'mytracks/$', list_detail.object_list, activity_list_info),
   (r'^mytracks/page(?P<page>[0-9]+)/$', list_detail.object_list,
     activity_list_info)

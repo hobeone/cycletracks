@@ -11,6 +11,8 @@ from gcycle import models
 from gcycle.lib import pytcx
 
 from google.appengine.ext import db
+from google.appengine.api import memcache
+from django.views.decorators.cache import cache_page
 
 from django.conf.urls.defaults import *
 from django.views.generic import list_detail
@@ -31,19 +33,15 @@ def dashboard(request, sorting='start_time'):
   activity_query = models.Activity.all()
   activity_query.ancestor(user)
   activity_query.order('-%s' % sorting)
+  activities_exist = activity_query.count(1)
+  stats = memcache.get_stats()
   return render_to_response('dashboard.html',
-    {'user_activities' : activity_query.fetch(100),
+    {'user_activities' : activity_query,
+     'num_activities' :activities_exist,
      'user_totals': user.totals(),
-     'user' : user}
+     'user' : user,
+     'stats' : stats,}
     )
-
-
-def getbasics():
-  user = get_user()
-  return {
-      'user': get_user(),
-      'user_totals': user.totals(),
-      }
 
 def getCurUserTotals():
   return get_user().totals()

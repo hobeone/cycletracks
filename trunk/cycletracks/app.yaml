@@ -46,3 +46,6 @@ handlers:
 - url: /.*
   script: main.py
   login: required
+
+- url: /load
+  script: gcycle/tcxbulkloader.py

@@ -17,7 +17,7 @@ from gcycle import views
 
 urlpatterns = patterns('',
   (r'^$', 'gcycle.views.main'),
-  (r'^mytracks/$', 'gcycle.views.dashboard'),
+  (r'^mytracks/(\S+)?$', 'gcycle.views.dashboard'),
   (r'^upload/$', 'gcycle.views.upload'),
   (r'^newuser/$', 'gcycle.views.newuser'),
   (r'^about/$', 'gcycle.views.about'),

@@ -4,7 +4,7 @@
 {% block content %}
 
 Username: {{ user.username }}
-<br>
+<p>
 Use Imperial Units?: <span id="edit_units">{{user.use_imperial}}</span>
 <script type="text/javascript">
   new Ajax.InPlaceCollectionEditor(
@@ -17,6 +17,21 @@ Use Imperial Units?: <span id="edit_units">{{user.use_imperial}}</span>
           }
         });
 </script>
+
+<p>
+Time Zone Offset: <span id="edit_tzoffset">{{user.tzoffset}}</span>
+<script type="text/javascript">
+  new Ajax.InPlaceCollectionEditor(
+      'edit_tzoffset',
+      '/user/update/',
+      {
+        collection: {{offsets}},
+        callback: function(form, value) {
+          return 'user_id={{user.key}}&attribute=tzoffset&value='+escape(value)
+          }
+        });
+</script>
+
 <p>
 (Old settings will be cached for up to an hour)
 {% endblock %}

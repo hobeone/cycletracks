@@ -64,15 +64,15 @@
 <table cellspacing="2" width="100%">
   <thead>
   <tr>
-    <th><a href='/dashboard/name'>Activity Name</a></th>
-    <th><a href='/dashboard/start_time'>Start Time</a></th>
-    <th><a href='/dashboard/total_meters'>Distance</a></th>
-    <th><a href='/dashboard/rolling_time'>Time<br/>(Rolling)</a></th>
-    <th><a href='/dashboard/average_cadence'>Avg/Max Cadence</a></th>
-    <th><a href='/dashboard/average_bpm'>Avg/Max BPM</a></th>
-    <th><a href='/dashboard/average_speed'>Avg Speed</a></th>
-    <th><a href='/dashboard/maximum_speed'>Max Speed</a></th>
-    <th><a href='/dashboard/total_calories'>Calories</a></th>
+    <th><a href='/mytracks/name'>Activity Name</a></th>
+    <th><a href='/mytracks/start_time'>Start Time</a></th>
+    <th><a href='/mytracks/total_meters'>Distance</a></th>
+    <th><a href='/mytracks/rolling_time'>Time<br/>(Rolling)</a></th>
+    <th><a href='/mytracks/average_cadence'>Avg/Max Cadence</a></th>
+    <th><a href='/mytracks/average_bpm'>Avg/Max BPM</a></th>
+    <th><a href='/mytracks/average_speed'>Avg Speed</a></th>
+    <th><a href='/mytracks/maximum_speed'>Max Speed</a></th>
+    <th><a href='/mytracks/total_calories'>Calories</a></th>
   </tr>
 </thead>
 <tbody>
@@ -80,7 +80,7 @@
     {% for entry in user_activities %}
     <tr>
       <td><a href="/activity/show/{{ entry.key }}">{{ entry.name }}</a></td>
-      <td>{{ entry.start_time|date:"n/j/y-H:i" }}Z</td>
+      <td>{{ entry.start_time|time_to_offset:user.tzoffset|date:"n/j/y-H:i" }}</td>
       <td>{{ entry.total_meters|meters_to_prefered_distance:user.use_imperial}}</td>
       <td>{{ entry.total_time|seconds_to_human_readable }} Hours
         <br/>

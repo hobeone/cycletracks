@@ -37,3 +37,8 @@ def kph_to_prefered_speed(kph, use_imperial):
     units = 'mph'
   speed = '%.2f %s' % (speed, units)
   return speed
+
+@register.filter
+def time_to_offset(time, offset):
+  timedelta = datetime.timedelta(hours=offset)
+  return time + timedelta

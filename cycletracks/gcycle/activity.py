@@ -3,7 +3,6 @@ from django.template import Context
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
-import django.utils.safestring
 from gcycle.models import Activity, Lap, User
 from gcycle import views
 from gcycle.lib import pytcx
@@ -58,10 +57,11 @@ def graph(request, activity):
   return render_to_response('activity/graph.html',
       {'activity' : a,
        'user' : user,
-       'bpm' : ','.join([str(b) for b in process_data(a.bpm_list())]),
-       'cadence' : ','.join([str(b) for b in process_data(a.cadence_list())]),
-       'speed' : process_data(a.speed_list()),
-       'altitude' : ','.join([str(b) for b in process_data(a.altitude_list())]),})
+       'bpm' : process_data(a.bpm_list),
+       'cadence' : process_data(a.cadence_list),
+       'speed' : process_data(a.speed_list),
+       'altitude' : process_data(a.altitude_list),
+      })
 
 def show(request, activity):
   user = views.get_user()
@@ -75,21 +75,12 @@ def show(request, activity):
     return render_to_response('error.html',
         {'error': "You are not allowed to see this activity. %s" % a.public})
   else:
-    activity_stats = memcache.get(str(a.key()))
+    activity_stats = memcache.get(a.str_key)
     if activity_stats is None:
       if not a.has_encoded_points:
-        pts, levs, ne, sw, start_point, mid_point, end_point = pytcx.encode_activity_points(
-            [l.geo_points for l in a.lap_set()])
-        a.encoded_points = pts
-        a.encoded_levels = levs
-        a.start_point = start_point
-        a.mid_point = mid_point
-        a.end_point = end_point
-        a.ne_point = ne
-        a.sw_point = sw
-        a.put()
+        a.encode_activity_points()
 
-      tlist = a.time_list()
+      tlist = a.time_list
       times = [
           (0, tlist[0]),
           (250, tlist[int(len(tlist) / 2)]),
@@ -97,10 +88,10 @@ def show(request, activity):
           ]
       activity_stats = {'activity' : a,
            'user' : user,
-           'bpm' : process_data(a.bpm_list()),
-           'cadence' : process_data(a.cadence_list()),
-           'speed' : process_data(a.speed_list()),
-           'altitude' : process_data(a.altitude_list()),
+           'bpm' : process_data(a.bpm_list),
+           'cadence' : process_data(a.cadence_list),
+           'speed' : process_data(a.speed_list),
+           'altitude' : process_data(a.altitude_list),
            'pts': simplejson.dumps(a.encoded_points),
            'levs' : simplejson.dumps(a.encoded_levels),
            'sw' : a.sw_point,
@@ -109,8 +100,8 @@ def show(request, activity):
            'start_lat_lng' : a.start_point,
            'end_lat_lng' : a.end_point,
            }
-      if not memcache.set(str(a.key()), activity_stats, 60 * 60):
-        logging.error("Memcache set failed for %s." % str(a.key()))
+      if not memcache.set(a.str_key, activity_stats, 60 * 60):
+        logging.error("Memcache set failed for %s." % a.str_key)
     else:
       logging.debug('Got cached version of activity')
 

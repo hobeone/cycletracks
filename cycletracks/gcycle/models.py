@@ -1,6 +1,7 @@
 from appengine_django import models
 from appengine_django import auth
 from google.appengine.ext import db
+from gcycle.lib import pytcx
 
 def average(array):
   if len(array) == 0: return 0
@@ -8,6 +9,7 @@ def average(array):
 
 class User(auth.models.User):
   use_imperial = db.BooleanProperty(default=False)
+  tzoffset = db.IntegerProperty(default=0)
 
   def activity_count(self):
     query = Activity.all()
@@ -80,38 +82,62 @@ class Activity(models.BaseModel):
   mid_point = db.GeoPtProperty()
   end_point = db.GeoPtProperty()
 
-  def has_encoded_points():
-    return encoded_points and encoded_levels and ne_point and sw_point
+  @property
+  def has_encoded_points(self):
+    return (self.encoded_points and self.encoded_levels and
+            self.ne_point and self.sw_point)
 
+  @property
+  def str_key(self):
+    return str(self.key())
+
+  @property
   def bpm_list(self):
     bpm_list = []
     for l in self.lap_set:
-      bpm_list.extend(l.bpms())
+      bpm_list.extend(l.bpms)
     return bpm_list
 
+  @property
   def cadence_list(self):
     cadence_list = []
     for l in self.lap_set:
-      cadence_list.extend(l.cadences())
+      cadence_list.extend(l.cadences)
     return cadence_list
 
+  @property
   def speed_list(self):
     speed_list = []
     for l in self.lap_set:
-      speed_list.extend(l.speeds())
+      speed_list.extend(l.speeds)
     return speed_list
 
+  @property
   def altitude_list(self):
     altitude_list = []
     for l in self.lap_set:
-      altitude_list.extend(l.altitudes())
+      altitude_list.extend(l.altitudes)
     return altitude_list
 
+  @property
   def time_list(self):
     time_list = []
     for t in self.lap_set:
-      time_list.extend(t.times())
+      time_list.extend(t.times)
     return time_list
+
+  def encode_activity_points(self):
+    pts, levs, ne, sw, start_point, mid_point, end_point = \
+        pytcx.encode_activity_points([l.geo_points for l in self.lap_set()])
+    self.encoded_points = pts
+    self.encoded_levels = levs
+    self.start_point = start_point
+    self.mid_point = mid_point
+    self.end_point = end_point
+    self.ne_point = ne
+    self.sw_point = sw
+    self.put()
+
 
 class Lap(models.BaseModel):
   activity = db.ReferenceProperty(Activity, required=True)
@@ -134,17 +160,22 @@ class Lap(models.BaseModel):
   geo_points = db.TextProperty()
   timepoints = db.TextProperty(required=True)
 
+  @property
   def speeds(self):
     return [int(float(b)) for b in self.speed_list.split(',') if b]
 
+  @property
   def altitudes(self):
     return [int(float(b)) for b in self.altitude_list.split(',') if b]
 
+  @property
   def cadences(self):
     return [int(b) for b in self.cadence_list.split(',') if b]
 
+  @property
   def bpms(self):
     return [int(float(b)) for b in self.bpm_list.split(',') if b]
 
+  @property
   def times(self):
     return [int(float(b)) for b in self.timepoints.split(',') ]

@@ -4,9 +4,9 @@ from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 import django.utils.safestring
-from gcycle.models import Activity, Lap
+from gcycle.models import Activity, Lap, User
 from gcycle import views
-from gcycle.lib import glineenc
+from gcycle.lib import pytcx
 
 from google.appengine.api import datastore_errors
 from google.appengine.api import memcache
@@ -77,22 +77,18 @@ def show(request, activity):
   else:
     activity_stats = memcache.get(str(a.key()))
     if activity_stats is None:
-      points = []
-      for lap in a.lap_set:
-        points.extend(lap.geo_points.split('\n'))
-      newp = [ (float(p.split(',')[0]), float(p.split(',')[1])) for p in points]
-      minlat, maxlat = 90,-90
-      minlong, maxlong = 180,-180
-      for pt in newp:
-        lat,long = pt[0],pt[1]
-        if lat > maxlat: maxlat = lat
-        if lat < minlat: minlat = lat
-        if long > maxlong: maxlong = long
-        if long < minlong: minlong = long
-      sw = (minlat, minlong)
-      ne = (maxlat, maxlong)
+      if not a.has_encoded_points:
+        pts, levs, ne, sw, start_point, mid_point, end_point = pytcx.encode_activity_points(
+            [l.geo_points for l in a.lap_set()])
+        a.encoded_points = pts
+        a.encoded_levels = levs
+        a.start_point = start_point
+        a.mid_point = mid_point
+        a.end_point = end_point
+        a.ne_point = ne
+        a.sw_point = sw
+        a.put()
 
-      pts, levs = glineenc.encode_pairs(newp)
       tlist = a.time_list()
       times = [
           (0, tlist[0]),
@@ -105,14 +101,13 @@ def show(request, activity):
            'cadence' : process_data(a.cadence_list()),
            'speed' : process_data(a.speed_list()),
            'altitude' : process_data(a.altitude_list()),
-           'pts': simplejson.dumps(pts),
-           'levs' : simplejson.dumps(levs),
-           'sw' : '%s,%s' % (sw[0],sw[1]),
-           'ne' : '%s,%s' % (ne[0],ne[1]),
+           'pts': simplejson.dumps(a.encoded_points),
+           'levs' : simplejson.dumps(a.encoded_levels),
+           'sw' : a.sw_point,
+           'ne' : a.ne_point,
            'times': times,
-           'start_lat_lng' : points[0],
-           'mid_lat_lng' : points[int(len(points) / 2.0)],
-           'end_lat_lng' : points[-2],
+           'start_lat_lng' : a.start_point,
+           'end_lat_lng' : a.end_point,
            }
       if not memcache.set(str(a.key()), activity_stats, 60 * 60):
         logging.error("Memcache set failed for %s." % str(a.key()))

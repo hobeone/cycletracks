@@ -20,12 +20,31 @@ from django.views.generic import list_detail
 class UserNotExist(Exception):
   pass
 
-def get_user():
+def getUserAccount():
   gaia_user = users.get_current_user()
   q = db.GqlQuery("SELECT * FROM User WHERE user = :1", gaia_user)
   user = q.get()
-  if not user: raise UserNotExist("User %s doesn't exist" % gaia_user)
   return user
+
+def get_user():
+  user = getUserAccount()
+  if not user: raise UserNotExist(
+      "User %s doesn't exist" % users.get_current_user())
+  return user
+
+def main(request):
+  user = getUserAccount()
+  if not user:
+    return render_to_response('signup.html',
+        {'gaia_user' : users.get_current_user()})
+  else:
+    return HttpResponseRedirect('/mytracks/')
+
+def newuser(request):
+  user = users.get_current_user()
+  u = models.User(user = user, username = str(user))
+  u.put()
+  return HttpResponseRedirect('/mytracks/')
 
 def dashboard(request, sorting='start_time'):
   if sorting == None: sorting = 'start_time'
@@ -57,12 +76,13 @@ def upload(request):
     if form.is_valid():
       try:
         handle_uploaded_file(user, request.FILES['file'])
-        return HttpResponseRedirect('/')
+        return HttpResponseRedirect('/mytracks/')
       except pytcx.UnknownTCXExpception, e:
         return render_to_response('error.html', {'error': e})
   else:
     form = UploadFileForm()
   return render_to_response('upload.html', {'form': form, 'user': user})
+
 
 def handle_uploaded_file(user, filedata):
 #TODO support gz/bzip/zip files

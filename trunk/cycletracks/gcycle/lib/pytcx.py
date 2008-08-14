@@ -2,6 +2,7 @@ import re
 import os
 import datetime
 import sys
+from gcycle.lib import glineenc
 
 reopts = (re.MULTILINE | re.DOTALL)
 
@@ -47,20 +48,165 @@ def make_tag_val_regex(tag):
   return re.compile("<%s>\s*?<Value>(\d+?)</Value>\s*?</%s>" % (tag,tag),
       reopts)
 
-def getTagSubVal(string, tag):
+def getTagSubVal(string, tag, default='0'):
   r = make_tag_val_regex(tag)
   m = r.search(string)
   if m:
     return m.group(1)
   else:
-    return '0'
+    return default
 
 def average(array):
   if len(array) == 0: return 0
   return (sum(array) / len(array))
 
+def encode_activity_points(laps_points):
+  points = []
+  for lap in laps_points:
+    points.extend(lap.split('\n'))
+  newp = [ (float(p.split(',')[0]), float(p.split(',')[1])) for p in points]
+  minlat, maxlat = 90,-90
+  minlong, maxlong = 180,-180
+  for pt in newp:
+    lat,long = pt[0],pt[1]
+    if lat > maxlat: maxlat = lat
+    if lat < minlat: minlat = lat
+    if long > maxlong: maxlong = long
+    if long < minlong: minlong = long
+  sw = (minlat, minlong)
+  ne = (maxlat, maxlong)
+  start_point = points[0]
+  mid_point = points[len(points) / 2]
+  end_point = points[-1]
+
+  pts, levs = glineenc.encode_pairs(newp)
+  return pts, levs, ne, sw, start_point, mid_point, end_point
+
 class UnknownTCXExpception(Exception):
   pass
+
+def joinArrayOrNone(array, joinstr=','):
+  if array:
+    array = joinstr.join(array)
+  else:
+    array = None
+  return array
+
+
+def parse_lap(lap_match):
+  lap = lap_match.group(2)
+  # weed out laps that are too short for distance or time
+  total_meters = float(getTagVal(lap, 'DistanceMeters'))
+  if total_meters < 10: return None
+
+  total_time = float(getTagVal(lap, 'TotalTimeSeconds'))
+  if total_time < 60: return None
+
+  lap_record = {
+    'total_meters': total_meters,
+    'total_rolling_time_seconds' : total_time,
+    'starttime': parse_zulu(lap_match.group(1)),
+    'average_bpm': float(getTagSubVal(lap, 'AverageHeartRateBpm')),
+    'maximum_bpm': float(getTagSubVal(lap, 'MaximumHeartRateBpm')),
+    'calories': float(getTagVal(lap, 'Calories')),
+    'maximum_speed': float(getTagVal(lap, 'MaximumSpeed')) * 3.6,
+    'average_speed': total_meters / total_time * 3.6 # kph,
+    }
+
+  geo_points = []
+  cadence_list = []
+  bpm_list = []
+  speed_list = []
+  altitude_list = []
+  timepoints = []
+  starttime = lap_record['starttime']
+  prev_time = starttime
+  endtime = starttime
+  prev_distance = 0
+
+  r = re.compile('<Trackpoint>(.*?)</Trackpoint>', re.MULTILINE | re.DOTALL)
+  for t in r.finditer(lap):
+    trackpoint = t.group()
+    point_time = getTagVal(trackpoint, 'Time', None)
+    if not point_time:
+      continue
+
+    point_time = parse_zulu(point_time)
+    endtime = point_time
+
+    dist = getTagVal(trackpoint, 'DistanceMeters', None)
+
+    if dist is None:
+      # no distance delta == no speed
+      speed_list.append(0)
+    else:
+      dist = float(dist)
+      dist_delta = dist - prev_distance
+      if dist_delta == 0:
+        speed_list.append(0)
+      else:
+        timedelta = (point_time - prev_time).seconds
+        if timedelta > 0:
+          timepoints.append(timedelta)
+          speed_list.append(dist_delta / timedelta * 3.6) # for kph
+        else:
+          timepoints.append(0)
+
+      prev_distance = dist
+    prev_time = point_time
+
+    cad = getTagVal(trackpoint, 'Cadence', None)
+    if cad:
+      try:
+        cadence_list.append(int(cad))
+      except ValueError, e:
+        raise UnknownTCXExpception("Cadence must be an integer")
+    else:
+      if cadence_list:
+        cadence_list.append(cadence_list[-1])
+      else:
+        cadence_list.append(0)
+
+    bpm = getTagSubVal(trackpoint, 'HeartRateBpm', None)
+    if bpm:
+      bpm_list.append(bpm)
+    else:
+      if bpm_list:
+        bpm_list.append(bpm_list[-1])
+
+    alt = getTagVal(trackpoint, 'AltitudeMeters', None)
+    if alt:
+      altitude_list.append(alt)
+    else:
+      if altitude_list:
+        altitude_list.append(altitude_list[-1])
+
+    lat = getTagVal(trackpoint, 'LatitudeDegrees', None)
+    long = getTagVal(trackpoint, 'LongitudeDegrees', None)
+    if lat and long:
+      geo_points.append('%s, %s' % (lat,long))
+    else:
+      if geo_points:
+        geo_points.append(geo_points[-1])
+
+  max_cadence = 0
+  if cadence_list:
+    max_cadence = max(cadence_list)
+
+  lap_record.update({
+    'total_time_seconds': float(timepoints[-1]),
+    'endtime': endtime,
+    'average_cadence': int(average(cadence_list)),
+    'maximum_cadence': max_cadence,
+    'bpm_list' : joinArrayOrNone(bpm_list),
+    'geo_points' : joinArrayOrNone(geo_points,'\n'),
+    'cadence_list' : joinArrayOrNone([str(c) for c in cadence_list]),
+    'speed_list' : joinArrayOrNone([ '%.2f' % s for s in speed_list]),
+    'altitude_list' : joinArrayOrNone(altitude_list),
+    'timepoints' : joinArrayOrNone([str(t) for t in timepoints]),
+    })
+  return lap_record
+
 
 def parse_tcx(filedata):
   acts = []
@@ -78,115 +224,21 @@ def parse_tcx(filedata):
       # we are interested in for each trackpoint (speed, cadence, bpm etc).
       # this way we should have an equal number of them and can match them up
       # to a the trackpoint time.
-      lap = l.group(2)
-      starttime = l.group(1)
-      starttime = parse_zulu(starttime)
-      total_time = float(getTagVal(lap, 'TotalTimeSeconds'))
-      total_meters = float(getTagVal(lap, 'DistanceMeters'))
-      max_speed = float(getTagVal(lap, 'MaximumSpeed')) * 3.6
-      avg_speed = total_meters / total_time * 3.6 # kph
-      calories = float(getTagVal(lap, 'Calories'))
-      cadence = float(getTagVal(lap, 'Cadence'))
-      max_bpm =  float(getTagSubVal(lap, 'MaximumHeartRateBpm'))
-      avg_bpm = float(getTagSubVal(lap, 'AverageHeartRateBpm'))
-
-      geo_points = []
-      cadence_list = []
-      bpm_list = []
-      speed_list = []
-      altitude_list = []
-      timepoints = []
-      prev_time = starttime
-      prev_distance = 0
-
-      r = re.compile('<Trackpoint>(.*?)</Trackpoint>',
-          re.MULTILINE | re.DOTALL)
-      for t in r.finditer(lap):
-        trackpoint = t.group()
-        point_time = getTagVal(trackpoint, 'Time')
-        point_time = parse_zulu(point_time)
-
-
-        dist = getTagVal(trackpoint, 'DistanceMeters', None)
-        if dist != None:
-          if point_time <= starttime:
-            # sometimes the first points has a timestamp 1 second or more before
-            # the lap timestamp
-            timepoints.append(0)
-          else:
-            timepoints.append((point_time - starttime).seconds)
-
-          dist = float(dist)
-          tdelta = (point_time - prev_time).seconds
-          if tdelta == 0:
-            speed_list.append(0)
-          else:
-            speed = (dist - prev_distance) / tdelta
-            speed = speed * 3.6 # kph from mps
-
-            speed_list.append(speed)
-          prev_distance = dist
-
-        else:
-          speed_list.append(0)
-        prev_time = point_time
-
-        cad = getTagVal(trackpoint, 'Cadence')
-        if cad != None:
-          cadence_list.append(int(cad))
-        else:
-          cadence_list.append(cadence_list[-1])
-
-        alt = getTagVal(trackpoint, 'AltitudeMeters')
-        if alt != None:
-          altitude_list.append(alt)
-        else:
-          altitude_list.append(altitude_list[-1])
-
-        lat = getTagVal(trackpoint, 'LatitudeDegrees', None)
-        long = getTagVal(trackpoint, 'LongitudeDegrees', None)
-        if lat and long:
-          geo_points.append('%s, %s' % (lat,long))
-        else:
-          if geo_points:
-            geo_points.append(geo_points[-1])
-
-        bpm_list.append(getTagSubVal(trackpoint, 'HeartRateBpm'))
-
-      endtime = prev_time
-      max_cadence = 0.0
-      if cadence_list:
-        max_cadence = max(cadence_list)
-      lap_record = {
-        'total_meters': total_meters,
-        'total_rolling_time_seconds' : total_time,
-        'total_time_seconds': float(timepoints[-1]),
-        'starttime': starttime,
-        'endtime': endtime,
-        'average_cadence': float(cadence),
-        'maximum_cadence': float(max_cadence),
-        'average_bpm': avg_bpm,
-        'maximum_bpm': max_bpm,
-        'calories': calories,
-        'maximum_speed': max_speed,
-        'average_speed': avg_speed,
-        'bpm_list' : ','.join(bpm_list),
-        'geo_points' : '\n'.join(geo_points),
-        'cadence_list' : ','.join([str(c) for c in cadence_list]),
-        'speed_list' : ','.join([ '%.2f' % s for s in speed_list]),
-        'altitude_list' : ','.join(altitude_list),
-        'timepoints' : ','.join([str(t) for t in timepoints]),
-        }
-      lap_records.append(lap_record)
+      lap_record = parse_lap(l)
+      if lap_record:
+        lap_records.append(lap_record)
 
     if not lap_records:
-      raise UnknownTCXExpception("Activities must have at least 1 lap.")
+      raise UnknownTCXExpception("Activities must have at least 1 lap over 10 meters or 2 minutes long.")
 
     total_meters = [0 + l['total_meters'] for l in lap_records][0]
     total_time = [0 + l['total_time_seconds'] for l in lap_records][0]
     rolling_time = [0 + l['total_rolling_time_seconds'] for l in lap_records][0]
+
+    pts, levs, ne, sw, start_point, mid_point, end_point = encode_activity_points(
+        [l['geo_points'] for l in lap_records])
     activity_record = {
-        'name': str(starttime),
+        'name': '%s-%s' % (activity_sport, lap_records[0]['starttime']),
         'sport': activity_sport,
         'total_meters': total_meters,
         'start_time': lap_records[0]['starttime'],
@@ -201,6 +253,13 @@ def parse_tcx(filedata):
         'maximum_bpm': max([l['maximum_bpm'] for l in lap_records]),
         'total_calories': [0 + l['calories'] for l in lap_records][0],
         'laps': lap_records,
+        'start_point' : start_point,
+        'mid_point' : mid_point,
+        'end_point' : end_point,
+        'encoded_points' : pts,
+        'encoded_levels' : levs,
+        'ne_point' : '%s,%s' % (ne[0], ne[1]),
+        'sw_point' : '%s,%s' % (sw[0], sw[1]),
         }
     acts.append(activity_record)
  

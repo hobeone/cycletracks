@@ -65,17 +65,23 @@ class Activity(models.BaseModel):
   rolling_time = db.FloatProperty(required=True)
   average_speed = db.FloatProperty(required=True)
   maximum_speed = db.FloatProperty(required=True)
-  average_cadence = db.FloatProperty()
-  maximum_cadence = db.FloatProperty()
+  average_cadence = db.IntegerProperty()
+  maximum_cadence = db.IntegerProperty()
   average_bpm = db.FloatProperty()
   maximum_bpm = db.FloatProperty()
   total_calories = db.FloatProperty()
-  # A geographical point represented by floating-point
-  # latitude and longitude coordinates.
-  start_point = db.GeoPtProperty()
-  end_point = db.GeoPtProperty()
   comment = db.StringProperty()
   public = db.BooleanProperty(default=False)
+  encoded_points = db.TextProperty()
+  encoded_levels = db.TextProperty()
+  ne_point = db.GeoPtProperty()
+  sw_point = db.GeoPtProperty()
+  start_point = db.GeoPtProperty()
+  mid_point = db.GeoPtProperty()
+  end_point = db.GeoPtProperty()
+
+  def has_encoded_points():
+    return encoded_points and encoded_levels and ne_point and sw_point
 
   def bpm_list(self):
     bpm_list = []
@@ -112,8 +118,8 @@ class Lap(models.BaseModel):
   total_meters = db.FloatProperty(required=True)
   total_time_seconds = db.FloatProperty(required=True)
   total_rolling_time_seconds = db.FloatProperty(required=True)
-  average_cadence = db.FloatProperty(required=True)
-  maximum_cadence = db.FloatProperty(required=True)
+  average_cadence = db.IntegerProperty(required=True)
+  maximum_cadence = db.IntegerProperty(required=True)
   average_bpm = db.FloatProperty(required=True)
   maximum_bpm = db.FloatProperty(required=True)
   average_speed = db.FloatProperty(required=True)
@@ -135,7 +141,7 @@ class Lap(models.BaseModel):
     return [int(float(b)) for b in self.altitude_list.split(',') if b]
 
   def cadences(self):
-    return [int(float(b)) for b in self.cadence_list.split(',') if b]
+    return [int(b) for b in self.cadence_list.split(',') if b]
 
   def bpms(self):
     return [int(float(b)) for b in self.bpm_list.split(',') if b]

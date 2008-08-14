@@ -57,6 +57,7 @@ def profile_main():
  print "</pre>"
 
 main = real_main
+#main = profile_main
 
 if __name__ == '__main__':
   main()

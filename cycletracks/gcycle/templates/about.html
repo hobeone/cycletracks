@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}About CycleTracks{% endblock %}
+
+{% block content %}
+
+Caveats about data representation in cycletracks:
+
+<ul>
+  <li>Times are rounded to integers of seconds</li>
+  <li>Graph datapoints are compressed down to 500 points</li>
+  <li>Map data is encoded before rendering (to save space) but this may introduce some imprecision into the geo points.</li>
+  <li>It's kinda hacky
+</ul>
+
+{% endblock %}

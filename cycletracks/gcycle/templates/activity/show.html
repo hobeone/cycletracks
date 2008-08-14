@@ -114,10 +114,10 @@
           <td>Distance:</td><td>{{ activity.total_meters|meters_to_prefered_distance:user.use_imperial }}</td>
         </tr>
         <tr>
-          <td>Rolling Time:</td><td>{{ activity.rolling_time|seconds_to_hours|floatformat:"-2" }} Hours</td>
+          <td>Rolling Time:</td><td>{{ activity.rolling_time|seconds_to_human_readable }}</td>
         </tr>
         <tr>
-          <td>Total Time:</td><td>{{ activity.total_time|seconds_to_hours|floatformat:"-2" }} Hours</td>
+          <td>Total Time:</td><td>{{ activity.total_time|seconds_to_human_readable }}</td>
         </tr>
         <tr>
           <td>Speed:</td>

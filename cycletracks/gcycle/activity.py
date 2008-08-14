@@ -114,8 +114,8 @@ def show(request, activity):
            'mid_lat_lng' : points[int(len(points) / 2.0)],
            'end_lat_lng' : points[-2],
            }
-      if not memcache.add(str(a.key()), activity_stats, 60 * 60):
-        logging.error("Memcache set failed.")
+      if not memcache.set(str(a.key()), activity_stats, 60 * 60):
+        logging.error("Memcache set failed for %s." % str(a.key()))
     else:
       logging.debug('Got cached version of activity')
 

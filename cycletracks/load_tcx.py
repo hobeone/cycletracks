@@ -13,4 +13,7 @@ files = glob.glob('/home/hobe/garmin/*.tcx')
 files.sort()
 for file in files:
   print file
-  views.handle_uploaded_file(user, open(file))
+  try:
+    views.handle_uploaded_file(user, open(file))
+  except pytcx.UnknownTCXExpception, e:
+    print e

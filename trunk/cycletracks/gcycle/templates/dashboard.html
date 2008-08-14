@@ -82,9 +82,9 @@
       <td><a href="/activity/show/{{ entry.key }}">{{ entry.name }}</a></td>
       <td>{{ entry.start_time|date:"n/j/y-H:i" }}Z</td>
       <td>{{ entry.total_meters|meters_to_prefered_distance:user.use_imperial}}</td>
-      <td>{{ entry.total_time|seconds_to_hours|floatformat:"-2" }} Hours
+      <td>{{ entry.total_time|seconds_to_human_readable }} Hours
         <br/>
-        ({{ entry.rolling_time|seconds_to_hours|floatformat:"-2" }} Hours)
+        ({{ entry.rolling_time|seconds_to_human_readable }} Hours)
       </td>
       <td>{{ entry.average_cadence|floatformat:"-2" }} / {{ entry.maximum_cadence|floatformat:"-2" }} rpm</td>
       <td>{{ entry.average_bpm|floatformat:"-2" }} / {{ entry.maximum_bpm|floatformat:"-2" }} bpm</td>

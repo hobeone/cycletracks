@@ -46,6 +46,10 @@ def newuser(request):
   u.put()
   return HttpResponseRedirect('/mytracks/')
 
+def about(request):
+  user = get_user()
+  return render_to_response('about.html', {'user' : user})
+
 def dashboard(request, sorting='start_time'):
   if sorting == None: sorting = 'start_time'
   user = get_user()
@@ -85,7 +89,7 @@ def upload(request):
 
 
 def handle_uploaded_file(user, filedata):
-#TODO support gz/bzip/zip files
+  #TODO support gz/bzip/zip files
   activities = pytcx.parse_tcx(filedata.read())
   for act_dict in activities:
     activity = models.Activity(parent = user, user = user, **act_dict)

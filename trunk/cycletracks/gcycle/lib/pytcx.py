@@ -99,7 +99,7 @@ def parse_lap(lap_match):
   total_meters = float(getTagVal(lap, 'DistanceMeters'))
   if total_meters < 10: return None
 
-  total_time = float(getTagVal(lap, 'TotalTimeSeconds'))
+  total_time = int(float(getTagVal(lap, 'TotalTimeSeconds')))
   if total_time < 60: return None
 
   lap_record = {
@@ -147,7 +147,7 @@ def parse_lap(lap_match):
       else:
         timedelta = (point_time - prev_time).seconds
         if timedelta > 0:
-          timepoints.append(timedelta)
+          timepoints.append(int((point_time - starttime).seconds))
           speed_list.append(dist_delta / timedelta * 3.6) # for kph
         else:
           timepoints.append(0)
@@ -194,7 +194,7 @@ def parse_lap(lap_match):
     max_cadence = max(cadence_list)
 
   lap_record.update({
-    'total_time_seconds': float(timepoints[-1]),
+    'total_time_seconds': timepoints[-1],
     'endtime': endtime,
     'average_cadence': int(average(cadence_list)),
     'maximum_cadence': max_cadence,

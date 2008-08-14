@@ -105,10 +105,10 @@
           </td>
         </tr>
         <tr>
-          <td>Start Time:</td><td>{{ activity.start_time }}</td>
+          <td>Start Time:</td><td>{{ activity.start_time|time_to_offset:user.tzoffset }}</td>
         </tr>
         <tr>
-          <td>End Time:</td><td>{{ activity.end_time }}</td>
+          <td>End Time:</td><td>{{ activity.end_time|time_to_offset:user.tzoffset }}</td>
         </tr>
         <tr>
           <td>Distance:</td><td>{{ activity.total_meters|meters_to_prefered_distance:user.use_imperial }}</td>

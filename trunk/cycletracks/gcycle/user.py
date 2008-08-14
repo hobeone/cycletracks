@@ -14,9 +14,10 @@ import logging
 
 def settings(request):
   user = views.get_user()
-  return render_to_response('user/settings.html', {'user': user})
+  return render_to_response('user/settings.html',
+      {'user': user, 'offsets': range(-14,12)})
 
-VALID_USER_ATTRIBUTES = ['use_imperial']
+VALID_USER_ATTRIBUTES = ['use_imperial', 'tzoffset']
 
 def update(request):
   try:
@@ -36,6 +37,8 @@ def update(request):
         user_value = False
       else:
         user_value = True
+    if user_attribute == 'tzoffset':
+      user_value = int(user_value)
 
     if user_attribute in VALID_USER_ATTRIBUTES:
       if getattr(update_user, user_attribute) != user_value:

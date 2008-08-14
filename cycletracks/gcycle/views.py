@@ -17,6 +17,11 @@ from django.views.decorators.cache import cache_page
 from django.conf.urls.defaults import *
 from django.views.generic import list_detail
 
+import zipfile
+import tarfile
+import bz2
+import gzip
+
 class UserNotExist(Exception):
   pass
 
@@ -88,12 +93,58 @@ def upload(request):
   return render_to_response('upload.html', {'form': form, 'user': user})
 
 
+def ziperator(zfile):
+  files = zfile.namelist()
+  for f in files:
+    yield zfile.read(f)
+
+def tarerator(tfile):
+  files = tfile.getnames()
+  for f in files:
+    yield tfile.extractfile(f).read()
+
 def handle_uploaded_file(user, filedata):
-  #TODO support gz/bzip/zip files
-  activities = pytcx.parse_tcx(filedata.read())
-  for act_dict in activities:
-    activity = models.Activity(parent = user, user = user, **act_dict)
-    activity.put()
-    for lap_dict in act_dict['laps']:
-      lap = models.Lap(parent = activity, activity = activity, **lap_dict)
-      lap.put()
+  files = []
+  # .zip
+  try:
+    files = ziperator(zipfile.ZipFile(filedata, 'r'))
+  except zipfile.BadZipfile, e:
+    pass
+
+  # .bz2
+  if not files:
+    try:
+      filedata.seek(0)
+      files = [bz2.decompress(filedata.read())]
+    except IOError, e:
+      pass
+
+  # .gz
+  if not files:
+    try:
+      filedata.seek(0)
+      files = [gzip.GzipFile(fileobj=filedata).read()]
+    except IOError, e:
+      pass
+
+  # .tar.bz2 or .tar.gz
+  if not files:
+    try:
+      filedata.seek(0)
+      files = tarerator(tarfile.open(fileobj=filedata, mode='r'))
+    except tarfile.ReadError, e:
+      pass
+
+  # plain text
+  if not files:
+    filedata.seek(0)
+    files = [filedata.read()]
+
+  for f in files:
+    activities = pytcx.parse_tcx(f)
+    for act_dict in activities:
+      activity = models.Activity(parent = user, user = user, **act_dict)
+      activity.put()
+      for lap_dict in act_dict['laps']:
+        lap = models.Lap(parent = activity, activity = activity, **lap_dict)
+        lap.put()

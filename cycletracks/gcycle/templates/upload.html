@@ -2,6 +2,17 @@
 {% block title %}CycleTracks Upload{% endblock %}
 
 {% block content %}
+All files must be less than 2Mb and there is a 10 second timeout for processing the uploaded files so only pack in 5 or 6 large tcx files into an archive.
+<p></p>
+Valid Archive formats (filename doesn't matter):
+<ul>
+  <li>zip file</li>
+  <li>tar.[bz2|gz]</li>
+  <li>bz2</li>
+  <li>gz</li>
+  <li>plain text</li>
+</ul>
+
 <form action="/upload/" method="post" enctype="multipart/form-data">
     {{ form }}
     <input type="submit" value="Upload" />

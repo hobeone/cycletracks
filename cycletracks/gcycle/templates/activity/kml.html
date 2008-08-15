@@ -1,9 +1,47 @@
+{% spaceless %}
+{% load extra_filters %}
 <?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://earth.google.com/kml/2.2">
 <Placemark>
   <visibility>1</visibility>
   <name>CycleTrack</name>
-  <description>Track</description>
+  <description>
+    <![CDATA[
+<table><tr>
+    <td>Name: {{ activity.name }}</td><td></td>
+</tr>
+<tr>
+  <td>Start Time:</td><td>{{ activity.start_time|time_to_offset:user.get_profile.tzoffset }}</td>
+</tr>
+<tr>
+  <td>End Time:</td><td>{{ activity.end_time|time_to_offset:user.get_profile.tzoffset }}</td>
+</tr>
+<tr>
+  <td>Distance:</td><td>{{ activity.total_meters|meters_to_prefered_distance:user.get_profile.use_imperial }}</td>
+</tr>
+<tr>
+  <td>Rolling Time:</td><td>{{ activity.rolling_time|seconds_to_human_readable }}</td>
+</tr>
+<tr>
+  <td>Total Time:</td><td>{{ activity.total_time|seconds_to_human_readable }}</td>
+</tr>
+<tr>
+  <td>Speed:</td>
+  <td>Avg: {{ activity.average_speed|kph_to_prefered_speed:user.get_profile.use_imperial }},Max: {{ activity.maximum_speed|kph_to_prefered_speed:user.get_profile.use_imperial }}</td>
+</tr>
+<tr>
+  <td>Heart Rate:</td><td>Avg: {{ activity.average_bpm }}, Max: {{ activity.maximum_bpm }} BPM</td>
+</tr>
+<tr>
+  <td>Cadence:</td><td>Avg: {{ activity.average_cadence }}, Max: {{ activity.maximum_cadence }} RPM</td>
+</tr>
+<tr>
+  <td>Calories:</td><td>{{ activity.total_calories|floatformat:"-2" }}</td>
+</tr>
+</table>
+<a href="http://cycletracks.appspot.com/activity/show/{{activity.str_key}}">View at CycleTracks</a>
+]]>
+</description>
   <Style>
     <geomColor>ff2f2fc3</geomColor>
     <geomScale>3</geomScale>
@@ -12,4 +50,5 @@
     <coordinates>{{ points }}</coordinates>
   </LineString>
   </Placemark>
+{% endspaceless %}
 </kml>

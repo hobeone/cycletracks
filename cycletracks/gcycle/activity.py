@@ -2,6 +2,8 @@ from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 
 from django.shortcuts import render_to_response
+from django.template.loader import render_to_string
+
 from django.utils import simplejson
 from django.contrib.auth import decorators as auth_decorators
 
@@ -64,6 +66,16 @@ def graph(request, activity):
       })
 
 
+def activity_kml(request, activity_id):
+  a = Activity.get(activity_id)
+  return HttpResponse(
+      render_to_string('activity/kml.html', { 'points' : a.to_kml}),
+      mimetype='application/vnd.google-earth.kml+xml')
+
+def kml_location(request, activity):
+  return ("http://%s/activity/kml/%s" % (request.META['HTTP_HOST'], activity.str_key))
+
+
 @auth_decorators.login_required
 def show(request, activity):
   a = Activity.get(activity)
@@ -99,12 +111,14 @@ def show(request, activity):
            'times': times,
            'start_lat_lng' : a.start_point,
            'end_lat_lng' : a.end_point,
+           'kml_location' : kml_location(request, a),
            }
       if not memcache.set(a.str_key, activity_stats, 60 * 60):
         logging.error("Memcache set failed for %s." % a.str_key)
     else:
       logging.debug('Got cached version of activity')
     activity_stats['user'] = request.user
+
   return render_to_response('activity/show.html', activity_stats)
 
 

@@ -142,6 +142,17 @@ class Activity(BaseModel):
     self.sw_point = sw
     self.put()
 
+  @property
+  def to_kml(self):
+    points = []
+    for l in self.lap_set:
+      points.extend(l.points_list)
+
+    points =  ['%s,%s,0' % (l[1],l[0]) for l in [l.split(',') for l in points]]
+    return ' '.join(points)
+
+
+
 
 class Lap(BaseModel):
   activity = db.ReferenceProperty(Activity, required=True)
@@ -183,3 +194,7 @@ class Lap(BaseModel):
   @property
   def times(self):
     return [int(float(b)) for b in self.timepoints.split(',') ]
+
+  @property
+  def points_list(self):
+    return self.geo_points.split('\n')

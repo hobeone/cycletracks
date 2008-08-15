@@ -35,6 +35,9 @@ handlers:
   static_files: static/favicon.ico
   upload: static/favicon.ico
 
+- url: /activity/kml/.*
+  script: main.py
+
 - url: /admin/.*
   script: main.py
   login: admin

@@ -1,21 +1,21 @@
-from appengine_django import models
-from appengine_django import auth
+from appengine_django.models import BaseModel
+from appengine_django.auth.models import User
 from google.appengine.ext import db
 from gcycle.lib import pytcx
+from gcycle.lib.average import *
 
-def average(array):
-  if len(array) == 0: return 0
-  return (sum(array) / len(array))
-
-class User(auth.models.User):
+class UserProfile(BaseModel):
+  user = db.ReferenceProperty(User, required=True)
   use_imperial = db.BooleanProperty(default=False)
   tzoffset = db.IntegerProperty(default=0)
 
+  @property
   def activity_count(self):
     query = Activity.all()
     query.ancestor(self)
     return query.count()
 
+  @property
   def totals(self):
     total_data = {
         'total_meters' : 0,
@@ -56,7 +56,7 @@ class User(auth.models.User):
     return total_data
 
 
-class Activity(models.BaseModel):
+class Activity(BaseModel):
   user = db.ReferenceProperty(User, required=True)
   name = db.StringProperty(required=True)
   sport = db.StringProperty(required=True)
@@ -81,6 +81,10 @@ class Activity(models.BaseModel):
   start_point = db.GeoPtProperty()
   mid_point = db.GeoPtProperty()
   end_point = db.GeoPtProperty()
+
+  @property
+  def safeuser(self):
+    return db.get(self._user)
 
   @property
   def has_encoded_points(self):
@@ -139,7 +143,7 @@ class Activity(models.BaseModel):
     self.put()
 
 
-class Lap(models.BaseModel):
+class Lap(BaseModel):
   activity = db.ReferenceProperty(Activity, required=True)
   total_meters = db.FloatProperty(required=True)
   total_time_seconds = db.IntegerProperty(required=True)

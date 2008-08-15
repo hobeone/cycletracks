@@ -17,6 +17,7 @@
 import os
 
 DEBUG = True
+#DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
@@ -105,3 +106,5 @@ INSTALLED_APPS = (
 )
 
 CACHE_BACKEND = 'memcached://'
+
+AUTH_PROFILE_MODULE = 'gcycle.UserProfile'

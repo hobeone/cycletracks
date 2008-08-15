@@ -3,34 +3,14 @@ import os
 import datetime
 import sys
 from gcycle.lib import glineenc
+from gcycle.lib.average import *
+from gcycle.lib.memoized import *
 
 reopts = (re.MULTILINE | re.DOTALL)
 
 def parse_zulu(s):
     return datetime.datetime(int(s[0:4]), int(s[5:7]), int(s[8:10]),
         int(s[11:13]), int(s[14:16]), int(s[17:19]))
-
-class memoized(object):
-   """Decorator that caches a function's return value each time it is called.
-   If called later with the same arguments, the cached value is returned, and
-   not re-evaluated.
-   """
-   def __init__(self, func):
-      self.func = func
-      self.cache = {}
-   def __call__(self, *args):
-      try:
-         return self.cache[args]
-      except KeyError:
-         self.cache[args] = value = self.func(*args)
-         return value
-      except TypeError:
-         # uncachable -- for instance, passing a list as an argument.
-         # Better to not cache than to blow up entirely.
-         return self.func(*args)
-   def __repr__(self):
-      """Return the function's docstring."""
-      return self.func.__doc__
 
 @memoized
 def make_tag_regex(tag):
@@ -55,10 +35,6 @@ def getTagSubVal(string, tag, default='0'):
     return m.group(1)
   else:
     return default
-
-def average(array):
-  if len(array) == 0: return 0
-  return (sum(array) / len(array))
 
 def encode_activity_points(laps_points):
   points = []
@@ -235,8 +211,9 @@ def parse_tcx(filedata):
     total_time = [0 + l['total_time_seconds'] for l in lap_records][0]
     rolling_time = [0 + l['total_rolling_time_seconds'] for l in lap_records][0]
 
-    pts, levs, ne, sw, start_point, mid_point, end_point = encode_activity_points(
-        [l['geo_points'] for l in lap_records])
+    pts, levs, ne, sw, start_point, mid_point, end_point = \
+      encode_activity_points([l['geo_points'] for l in lap_records])
+
     activity_record = {
         'name': '%s-%s' % (activity_sport, lap_records[0]['starttime']),
         'sport': activity_sport,
@@ -247,8 +224,9 @@ def parse_tcx(filedata):
         'rolling_time': rolling_time,
         'average_speed': total_meters / rolling_time * 3.6,
         'maximum_speed': max([l['maximum_speed'] for l in lap_records]),
-        'average_cadence': average([l['average_cadence'] for l in lap_records]),
-        'maximum_cadence': average([l['maximum_cadence'] for l in lap_records]),
+        'average_cadence':
+          int(average([l['average_cadence'] for l in lap_records])),
+        'maximum_cadence': max([l['maximum_cadence'] for l in lap_records]),
         'average_bpm': average([l['average_bpm'] for l in lap_records]),
         'maximum_bpm': max([l['maximum_bpm'] for l in lap_records]),
         'total_calories': [0 + l['calories'] for l in lap_records][0],

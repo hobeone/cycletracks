@@ -35,17 +35,10 @@ handlers:
   static_files: static/favicon.ico
   upload: static/favicon.ico
 
-- url: /dojango/media/dojango/dojango.js
-  static_files: static/dojango.js
-  upload: dojango/media/dojango/dojango.js
-
-- url: /dojango/media/dojango/_base.js
-  static_files: static/_base.js
-  upload: dojango/media/dojango/_base.js
+- url: /admin/.*
+  script: main.py
+  login: admin
 
 - url: /.*
   script: main.py
   login: required
-
-- url: /load
-  script: gcycle/tcxbulkloader.py

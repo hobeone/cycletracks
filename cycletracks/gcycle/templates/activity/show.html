@@ -105,13 +105,13 @@
           </td>
         </tr>
         <tr>
-          <td>Start Time:</td><td>{{ activity.start_time|time_to_offset:user.tzoffset }}</td>
+          <td>Start Time:</td><td>{{ activity.start_time|time_to_offset:user.get_profile.tzoffset }}</td>
         </tr>
         <tr>
-          <td>End Time:</td><td>{{ activity.end_time|time_to_offset:user.tzoffset }}</td>
+          <td>End Time:</td><td>{{ activity.end_time|time_to_offset:user.get_profile.tzoffset }}</td>
         </tr>
         <tr>
-          <td>Distance:</td><td>{{ activity.total_meters|meters_to_prefered_distance:user.use_imperial }}</td>
+          <td>Distance:</td><td>{{ activity.total_meters|meters_to_prefered_distance:user.get_profile.use_imperial }}</td>
         </tr>
         <tr>
           <td>Rolling Time:</td><td>{{ activity.rolling_time|seconds_to_human_readable }}</td>
@@ -122,8 +122,8 @@
         <tr>
           <td>Speed:</td>
           <td>
-            Avg: {{ activity.average_speed|kph_to_prefered_speed:user.use_imperial }},
-             Max: {{ activity.maximum_speed|kph_to_prefered_speed:user.use_imperial }}
+            Avg: {{ activity.average_speed|kph_to_prefered_speed:user.get_profile.use_imperial }},
+             Max: {{ activity.maximum_speed|kph_to_prefered_speed:user.get_profile.use_imperial }}
            </td>
         </tr>
         <tr>

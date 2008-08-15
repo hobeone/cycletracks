@@ -1,16 +1,16 @@
-from django.template.loader import get_template
-from django.template import Context
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect
+
 from django.shortcuts import render_to_response
-from gcycle.models import Activity, Lap, User
-from gcycle import views
-from gcycle.lib import pytcx
+from django.utils import simplejson
+from django.contrib.auth import decorators as auth_decorators
 
 from google.appengine.api import datastore_errors
 from google.appengine.api import memcache
+
 import logging
-from django.utils import simplejson
+
+from gcycle.models import *
 
 def rm3(s):
   """knicked from the tubes:
@@ -51,29 +51,29 @@ def process_data(data):
   return ','.join(export_data)
 
 
+@auth_decorators.login_required
 def graph(request, activity):
-  user = views.get_user()
   a = Activity.get(activity)
   return render_to_response('activity/graph.html',
       {'activity' : a,
-       'user' : user,
+       'user' : request.user,
        'bpm' : process_data(a.bpm_list),
        'cadence' : process_data(a.cadence_list),
        'speed' : process_data(a.speed_list),
        'altitude' : process_data(a.altitude_list),
       })
 
+
+@auth_decorators.login_required
 def show(request, activity):
-  user = views.get_user()
-  try:
-    a = Activity.get(activity)
-  except datastore_errors.BadKeyError, e:
+  a = Activity.get(activity)
+  if a is None:
     return render_to_response('error.html',
         {'error': "That activity doesn't exist."})
 
-  if a.user != user and not a.public:
+  if a.safeuser != request.user and not a.public:
     return render_to_response('error.html',
-        {'error': "You are not allowed to see this activity. %s" % a.public})
+        {'error': "You are not allowed to see this activity."})
   else:
     activity_stats = memcache.get(a.str_key)
     if activity_stats is None:
@@ -87,7 +87,7 @@ def show(request, activity):
           (500, tlist[-1]),
           ]
       activity_stats = {'activity' : a,
-           'user' : user,
+           'user' : request.user,
            'bpm' : process_data(a.bpm_list),
            'cadence' : process_data(a.cadence_list),
            'speed' : process_data(a.speed_list),
@@ -104,15 +104,15 @@ def show(request, activity):
         logging.error("Memcache set failed for %s." % a.str_key)
     else:
       logging.debug('Got cached version of activity')
-
-    return render_to_response('activity/show.html', activity_stats)
+    activity_stats['user'] = request.user
+  return render_to_response('activity/show.html', activity_stats)
 
 
 VALID_ACTIVITY_ATTRIBUTES = ['comment', 'name', 'public']
 
+@auth_decorators.login_required
 def update(request):
   try:
-    user = views.get_user()
     activity_id = request.POST['activity_id']
     activity_attribute = request.POST['attribute']
     activity_value = request.POST['value']
@@ -125,11 +125,9 @@ def update(request):
         activity_value = True
 
     activity = Activity.get(activity_id)
-    if activity.user != user:
+    if activity.user != request.user:
       return render_to_response('error.html',
         {'error': "You are not allowed to edit this activity"})
-
-
 
     if activity_attribute in VALID_ACTIVITY_ATTRIBUTES:
       if getattr(activity, activity_attribute) != activity_value:

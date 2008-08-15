@@ -5,7 +5,7 @@
 
 Username: {{ user.username }}
 <p>
-Use Imperial Units?: <span id="edit_units">{{user.use_imperial}}</span>
+Use Imperial Units?: <span id="edit_units">{{user.get_profile.use_imperial}}</span>
 <script type="text/javascript">
   new Ajax.InPlaceCollectionEditor(
       'edit_units',
@@ -19,7 +19,7 @@ Use Imperial Units?: <span id="edit_units">{{user.use_imperial}}</span>
 </script>
 
 <p>
-Time Zone Offset: <span id="edit_tzoffset">{{user.tzoffset}}</span>
+Time Zone Offset: <span id="edit_tzoffset">{{user.get_profile.tzoffset}}</span>
 <script type="text/javascript">
   new Ajax.InPlaceCollectionEditor(
       'edit_tzoffset',

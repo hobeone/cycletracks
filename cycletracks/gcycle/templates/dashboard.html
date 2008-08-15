@@ -13,7 +13,7 @@
   <tr>
     <td>
       Total Distance:</td>
-    <td> {{ user_totals.total_meters|meters_to_prefered_distance:user.use_imperial }}
+    <td> {{ user_totals.total_meters|meters_to_prefered_distance:user.get_profile.use_imperial }}
     </td>
   </tr>
   <tr>
@@ -43,13 +43,13 @@
   <tr>
     <td>
       Average Speed:</td>
-    <td> {{ user_totals.average_speed|kph_to_prefered_speed:user.use_imperial }}
+    <td> {{ user_totals.average_speed|kph_to_prefered_speed:user.get_profile.use_imperial }}
     </td>
   </tr>
   <tr>
     <td>
       Max Speed:</td>
-    <td> {{ user_totals.maximum_speed|kph_to_prefered_speed:user.use_imperial }}
+    <td> {{ user_totals.maximum_speed|kph_to_prefered_speed:user.get_profile.use_imperial }}
     </td>
   </tr>
   <tr>
@@ -80,16 +80,16 @@
     {% for entry in user_activities %}
     <tr>
       <td><a href="/activity/show/{{ entry.key }}">{{ entry.name }}</a></td>
-      <td>{{ entry.start_time|time_to_offset:user.tzoffset|date:"n/j/y-H:i" }}</td>
-      <td>{{ entry.total_meters|meters_to_prefered_distance:user.use_imperial}}</td>
+      <td>{{ entry.start_time|time_to_offset:user.get_profile.tzoffset|date:"n/j/y-H:i" }}</td>
+      <td>{{ entry.total_meters|meters_to_prefered_distance:user.get_profile.use_imperial}}</td>
       <td>{{ entry.total_time|seconds_to_human_readable }} Hours
         <br/>
         ({{ entry.rolling_time|seconds_to_human_readable }} Hours)
       </td>
       <td>{{ entry.average_cadence|floatformat:"-2" }} / {{ entry.maximum_cadence|floatformat:"-2" }} rpm</td>
       <td>{{ entry.average_bpm|floatformat:"-2" }} / {{ entry.maximum_bpm|floatformat:"-2" }} bpm</td>
-      <td>{{ entry.average_speed|kph_to_prefered_speed:user.use_imperial }}</td>
-      <td>{{ entry.maximum_speed|kph_to_prefered_speed:user.use_imperial }}</td>
+      <td>{{ entry.average_speed|kph_to_prefered_speed:user.get_profile.use_imperial }}</td>
+      <td>{{ entry.maximum_speed|kph_to_prefered_speed:user.get_profile.use_imperial }}</td>
       <td>{{ entry.total_calories|floatformat:"-2" }} Cal</td>
     </tr>
     {% endfor %}

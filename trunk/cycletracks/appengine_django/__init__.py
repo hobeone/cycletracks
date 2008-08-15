@@ -230,9 +230,13 @@ def InstallDjangoModuleReplacements():
   # Rollback occurs automatically on Google App Engine. Disable the Django
   # rollback handler.
   try:
-    django.dispatch.dispatcher.disconnect(
-        django.db._rollback_on_exception,
-        django.core.signals.got_request_exception)
+    if VERSION[:2] >= (1, 0):
+      django.core.signals.got_request_exception.disconnect(
+          django.db._rollback_on_exception)
+    else:
+      django.dispatch.dispatcher.disconnect(
+          django.db._rollback_on_exception,
+          django.core.signals.got_request_exception)
   except django.dispatch.errors.DispatcherKeyError, e:
     logging.debug("Django rollback handler appears to be already disabled.")
 

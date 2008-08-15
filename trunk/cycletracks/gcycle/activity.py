@@ -69,8 +69,12 @@ def graph(request, activity):
 def activity_kml(request, activity_id):
   a = Activity.get(activity_id)
   return HttpResponse(
-      render_to_string('activity/kml.html', { 'points' : a.to_kml}),
-      mimetype='application/vnd.google-earth.kml+xml')
+      render_to_string('activity/kml.html',
+        { 'points' : a.to_kml,
+          'user' : a.user,
+          'activity' : a}),
+      mimetype='application/vnd.google-earth.kml+xml'
+      )
 
 def kml_location(request, activity):
   return ("http://%s/activity/kml/%s" % (request.META['HTTP_HOST'], activity.str_key))

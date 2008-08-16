@@ -30,7 +30,7 @@ class UserProfile(BaseModel):
         'maximum_bpm' : 0,
         }
     query = Activity.all()
-    query.ancestor(self)
+    query.ancestor(self.user)
     for activity in query:
       total_data['total_meters'] += activity.total_meters
       total_data['total_time'] += activity.total_time
@@ -69,8 +69,8 @@ class Activity(BaseModel):
   maximum_speed = db.FloatProperty(required=True)
   average_cadence = db.IntegerProperty(default=0)
   maximum_cadence = db.IntegerProperty(default=0)
-  average_bpm = db.FloatProperty(default=0.0)
-  maximum_bpm = db.FloatProperty(default=0.0)
+  average_bpm = db.IntegerProperty(default=0)
+  maximum_bpm = db.IntegerProperty(default=0)
   total_calories = db.FloatProperty(default=0.0)
   comment = db.StringProperty()
   public = db.BooleanProperty(default=False)
@@ -161,8 +161,8 @@ class Lap(BaseModel):
   total_rolling_time_seconds = db.IntegerProperty(required=True)
   average_cadence = db.IntegerProperty(required=True)
   maximum_cadence = db.IntegerProperty(required=True)
-  average_bpm = db.FloatProperty(required=True)
-  maximum_bpm = db.FloatProperty(required=True)
+  average_bpm = db.IntegerProperty(required=True)
+  maximum_bpm = db.IntegerProperty(required=True)
   average_speed = db.FloatProperty(required=True)
   maximum_speed = db.FloatProperty(required=True)
   calories = db.FloatProperty(required=True)
@@ -177,24 +177,24 @@ class Lap(BaseModel):
 
   @property
   def speeds(self):
-    return [int(float(b)) for b in self.speed_list.split(',') if b]
+    return [float(b) for b in self.speed_list.split(',')]
 
   @property
   def altitudes(self):
-    return [int(float(b)) for b in self.altitude_list.split(',') if b]
+    return [float(b) for b in self.altitude_list.split(',')]
 
   @property
   def cadences(self):
-    return [int(b) for b in self.cadence_list.split(',') if b]
+    return [int(b) for b in self.cadence_list.split(',')]
 
   @property
   def bpms(self):
-    return [int(float(b)) for b in self.bpm_list.split(',') if b]
+    return [int(b) for b in self.bpm_list.split(',')]
 
   @property
   def times(self):
-    return [int(float(b)) for b in self.timepoints.split(',') ]
+    return [int(b) for b in self.timepoints.split(',')]
 
   @property
   def points_list(self):
-    return self.geo_points.split('\n')
+    return self.geo_points.split(':')

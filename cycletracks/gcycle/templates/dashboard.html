@@ -3,6 +3,25 @@
 
 {% block title %}CycleTracks Dashboard{% endblock %}
 
+{% block extra_head %}
+<script type="text/javascript">
+  function delete_activity(id,element_id) {
+    if (confirm('Are you sure?'))
+    {
+    new Ajax.Request('/activity/delete/',
+                     {
+                       parameters: {activity_id: id},
+                       asynchronous:true,
+                       onSuccess: function(response) {
+                       new Effect.Fade('activity_'+id, {duration: 0.5})
+                       }
+                     }
+        );
+    }
+  };
+</script>
+{% endblock %}
+
 {% block content %}
 <div id="activity_table">
 <table cellspacing="2" width="100%">
@@ -73,12 +92,13 @@
     <th><a href='/mytracks/average_speed'>Avg Speed</a></th>
     <th><a href='/mytracks/maximum_speed'>Max Speed</a></th>
     <th><a href='/mytracks/total_calories'>Calories</a></th>
+    <th>Delete</th>
   </tr>
 </thead>
 <tbody>
   {% ifnotequal num_activities 0 %}
     {% for entry in user_activities %}
-    <tr>
+    <tr id="activity_{{entry.key}}">
       <td><a href="/activity/show/{{ entry.key }}">{{ entry.name }}</a></td>
       <td>{{ entry.start_time|time_to_offset:user.get_profile.tzoffset|date:"n/j/y-H:i" }}</td>
       <td>{{ entry.total_meters|meters_to_prefered_distance:user.get_profile.use_imperial}}</td>
@@ -91,6 +111,7 @@
       <td>{{ entry.average_speed|kph_to_prefered_speed:user.get_profile.use_imperial }}</td>
       <td>{{ entry.maximum_speed|kph_to_prefered_speed:user.get_profile.use_imperial }}</td>
       <td>{{ entry.total_calories|floatformat:"-2" }} Cal</td>
+      <td id="act_notice{{forloop.counter0}}" onclick="delete_activity('{{ entry.key }}', 'act_notice{{forloop.counter0}}')">delete</td>
     </tr>
     {% endfor %}
   {% else %}

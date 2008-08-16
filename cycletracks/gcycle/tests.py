@@ -14,6 +14,9 @@ from appengine_django.auth.models import User
 
 from django.test.client import Client
 
+import pprint
+pp = pprint.PrettyPrinter(indent=2)
+
 class testTcxParser(unittest.TestCase):
   multiline_tag = """<b>
 asd
@@ -50,6 +53,18 @@ asd
         pytcx.parse_tcx,
         testfile
         )
+
+  def testValidParse(self):
+    testfile = open('gcycle/test/valid_multi_lap.tcx').read()
+    acts = pytcx.parse_tcx(testfile)
+    self.assertEqual(len(acts), 1)
+    act = acts[0]
+    self.assertEqual(act['maximum_bpm'], 186)
+    self.assertEqual(act['total_calories'], 6754.0)
+    self.assertEqual(act['end_point'], '37.773787,-122.439899')
+    self.assertEqual(act['average_bpm'], 136)
+    self.assertEqual(act['average_cadence'], 80)
+    self.assertAlmostEqual(act['average_speed'], 14.326339080604534)
 
 class testMainViews(unittest.TestCase):
   def setUp(self):

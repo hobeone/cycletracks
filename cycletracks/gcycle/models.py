@@ -82,14 +82,14 @@ class Activity(BaseModel):
   mid_point = db.GeoPtProperty()
   end_point = db.GeoPtProperty()
 
+  def safe_delete(self):
+    for l in self.lap_set:
+      l.delete()
+    self.delete()
+
   @property
   def safeuser(self):
     return db.get(self._user)
-
-  @property
-  def has_encoded_points(self):
-    return (self.encoded_points and self.encoded_levels and
-            self.ne_point and self.sw_point)
 
   @property
   def str_key(self):

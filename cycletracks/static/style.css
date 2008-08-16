@@ -389,7 +389,7 @@ input.text
   font: bold 11px verdana, arial, helvetica, sans-serif;
   border: 1px solid #03476F;
   text-align: center;
-  color: #FFFFFF;
+  color: #000000;
   padding-top:3px;
 }
 .datatable tbody td {

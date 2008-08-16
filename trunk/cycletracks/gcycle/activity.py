@@ -93,9 +93,6 @@ def show(request, activity):
   else:
     activity_stats = memcache.get(a.str_key)
     if activity_stats is None:
-      if not a.has_encoded_points:
-        a.encode_activity_points()
-
       tlist = a.time_list
       times = [
           (0, tlist[0]),
@@ -114,6 +111,7 @@ def show(request, activity):
            'ne' : a.ne_point,
            'times': times,
            'start_lat_lng' : a.start_point,
+           'mid_lat_lng' : a.mid_point,
            'end_lat_lng' : a.end_point,
            'kml_location' : kml_location(request, a),
            }
@@ -156,3 +154,20 @@ def update(request):
       return HttpResponse(activity_value)
   except Exception, e:
     return HttpResponse(e)
+
+@auth_decorators.login_required
+def delete(request):
+  if request.method == 'POST':
+    try:
+      activity_id = request.POST['activity_id']
+      a = Activity.get(activity_id)
+      if request.user != a.user:
+        return HttpResponseServerError(
+            'You are not allowed to delete this activity')
+
+      a.safe_delete()
+      return HttpResponse('')
+    except Exception, e:
+      return HttpResponseServerError(e)
+  else:
+    return HttpResponse('Must use POST')

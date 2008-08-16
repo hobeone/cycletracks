@@ -96,6 +96,15 @@ def tarerator(tfile):
   for f in files:
     yield tfile.extractfile(f).read()
 
+def activity_save(user, activity_dict):
+  activity = models.Activity(parent = user, user = user, **activity_dict)
+  akey = activity.put()
+  for lap_dict in activity_dict['laps']:
+    lap = models.Lap(parent = activity, activity = activity, **lap_dict)
+    lap.put()
+
+  return akey
+
 def handle_uploaded_file(user, filedata):
   files = []
   # .zip
@@ -136,8 +145,4 @@ def handle_uploaded_file(user, filedata):
   for f in files:
     activities = pytcx.parse_tcx(f)
     for act_dict in activities:
-      activity = models.Activity(parent = user, user = user, **act_dict)
-      activity.put()
-      for lap_dict in act_dict['laps']:
-        lap = models.Lap(parent = activity, activity = activity, **lap_dict)
-        lap.put()
+      db.run_in_transaction(activity_save, user, act_dict)

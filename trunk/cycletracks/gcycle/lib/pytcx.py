@@ -67,9 +67,9 @@ def encode_activity_points(laps_points):
       'encoded_levels': levs,
       'ne_point': '%s,%s' % (ne[0], ne[1]),
       'sw_point': '%s,%s' % (sw[0], sw[1]),
-      'start_point': '%s,%s' % (start_point[0], start_point[1]),
-      'mid_point': '%s,%s' % (mid_point[0], mid_point[1]),
-      'end_point': '%s,%s' % (end_point[0], end_point[1])
+      'start_point': str(start_point),
+      'mid_point': str(mid_point),
+      'end_point': str(end_point)
       }
 
 class TCXExpception(Exception):

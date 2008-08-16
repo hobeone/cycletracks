@@ -13,33 +13,39 @@ def parse_zulu(s):
         int(s[11:13]), int(s[14:16]), int(s[17:19]))
 
 @memoized
-def make_tag_regex(tag):
-  return re.compile("<%s>(.+?)</%s>" % (tag,tag), reopts)
+def make_tag_regex(tag, grouper = '.+?'):
+  return re.compile("<%s>(%s)</%s>" % (tag,grouper,tag), reopts)
 
-def getTagVal(string, tag, default='0'):
+def getIntTagVal(string, tag, default=0):
+  """Get the numeric text inside of a tag and convert it to an int"""
+  val = getTagVal(string, tag, value_match='\d+?', default=default)
+  return val
+
+def getTagVal(string, tag, value_match = '.+?', default=None):
   r = make_tag_regex(tag)
   m = r.search(string)
   if m:
-    return m.group(1)
+    return m.group(1).strip()
   return default
 
 @memoized
 def make_tag_val_regex(tag):
-  return re.compile("<%s>\s*?<Value>(\d+?)</Value>\s*?</%s>" % (tag,tag),
-      reopts)
+  return re.compile("<%s>\s*?<Value>\s*?(\d+?)\s*?</Value>\s*?</%s>" %
+      (tag,tag), reopts)
 
-def getTagSubVal(string, tag, default='0'):
+def getIntTagSubVal(string, tag, default=None):
+  """Get an integer value from a tag: <tag><value>INT</value></tag>"""
   r = make_tag_val_regex(tag)
   m = r.search(string)
   if m:
-    return m.group(1)
+    return int(m.group(1))
   else:
     return default
 
 def encode_activity_points(laps_points):
   points = []
   for lap in laps_points:
-    points.extend(lap.split('\n'))
+    points.extend(lap.split(':'))
   newp = [ (float(p.split(',')[0]), float(p.split(',')[1])) for p in points]
   minlat, maxlat = 90,-90
   minlong, maxlong = 180,-180
@@ -56,12 +62,26 @@ def encode_activity_points(laps_points):
   end_point = points[-1]
 
   pts, levs = glineenc.encode_pairs(newp)
-  return pts, levs, ne, sw, start_point, mid_point, end_point
+  return {
+      'encoded_points': pts,
+      'encoded_levels': levs,
+      'ne_point': '%s,%s' % (ne[0], ne[1]),
+      'sw_point': '%s,%s' % (sw[0], sw[1]),
+      'start_point': '%s,%s' % (start_point[0], start_point[1]),
+      'mid_point': '%s,%s' % (mid_point[0], mid_point[1]),
+      'end_point': '%s,%s' % (end_point[0], end_point[1])
+      }
 
-class UnknownTCXExpception(Exception):
+class TCXExpception(Exception):
+  pass
+
+class InvalidTCXFormat(TCXExpception):
   pass
 
 def joinArrayOrNone(array, joinstr=','):
+  """Return a string of the array joined by joinstr or None if the the array is
+  empty"""
+
   if array:
     array = joinstr.join(array)
   else:
@@ -69,8 +89,8 @@ def joinArrayOrNone(array, joinstr=','):
   return array
 
 
-def parse_lap(lap_match):
-  lap = lap_match.group(2)
+def parse_lap(start_time, lap_string):
+  lap = lap_string
   # weed out laps that are too short for distance or time
   total_meters = float(getTagVal(lap, 'DistanceMeters'))
   if total_meters < 10: return None
@@ -81,9 +101,9 @@ def parse_lap(lap_match):
   lap_record = {
     'total_meters': total_meters,
     'total_rolling_time_seconds' : total_time,
-    'starttime': parse_zulu(lap_match.group(1)),
-    'average_bpm': float(getTagSubVal(lap, 'AverageHeartRateBpm')),
-    'maximum_bpm': float(getTagSubVal(lap, 'MaximumHeartRateBpm')),
+    'starttime': parse_zulu(start_time),
+    'average_bpm': getIntTagSubVal(lap, 'AverageHeartRateBpm'),
+    'maximum_bpm': getIntTagSubVal(lap, 'MaximumHeartRateBpm'),
     'calories': float(getTagVal(lap, 'Calories')),
     'maximum_speed': float(getTagVal(lap, 'MaximumSpeed')) * 3.6,
     'average_speed': total_meters / total_time * 3.6 # kph,
@@ -136,16 +156,16 @@ def parse_lap(lap_match):
       try:
         cadence_list.append(int(cad))
       except ValueError, e:
-        raise UnknownTCXExpception("Cadence must be an integer")
+        raise InvalidTCXFormat("Cadence must be an integer")
     else:
       if cadence_list:
         cadence_list.append(cadence_list[-1])
       else:
         cadence_list.append(0)
 
-    bpm = getTagSubVal(trackpoint, 'HeartRateBpm', None)
+    bpm = getIntTagSubVal(trackpoint, 'HeartRateBpm', None)
     if bpm:
-      bpm_list.append(bpm)
+      bpm_list.append(str(bpm))
     else:
       if bpm_list:
         bpm_list.append(bpm_list[-1])
@@ -160,7 +180,7 @@ def parse_lap(lap_match):
     lat = getTagVal(trackpoint, 'LatitudeDegrees', None)
     long = getTagVal(trackpoint, 'LongitudeDegrees', None)
     if lat and long:
-      geo_points.append('%s, %s' % (lat,long))
+      geo_points.append('%s,%s' % (lat,long))
     else:
       if geo_points:
         geo_points.append(geo_points[-1])
@@ -175,7 +195,7 @@ def parse_lap(lap_match):
     'average_cadence': int(average(cadence_list)),
     'maximum_cadence': max_cadence,
     'bpm_list' : joinArrayOrNone(bpm_list),
-    'geo_points' : joinArrayOrNone(geo_points,'\n'),
+    'geo_points' : joinArrayOrNone(geo_points,':'),
     'cadence_list' : joinArrayOrNone([str(c) for c in cadence_list]),
     'speed_list' : joinArrayOrNone([ '%.2f' % s for s in speed_list]),
     'altitude_list' : joinArrayOrNone(altitude_list),
@@ -200,26 +220,27 @@ def parse_tcx(filedata):
       # we are interested in for each trackpoint (speed, cadence, bpm etc).
       # this way we should have an equal number of them and can match them up
       # to a the trackpoint time.
-      lap_record = parse_lap(l)
+      lap_record = parse_lap(l.group(1), l.group(2))
       if lap_record:
         lap_records.append(lap_record)
 
     if not lap_records:
-      raise UnknownTCXExpception("Activities must have at least 1 lap over 10 meters or 2 minutes long.")
+      raise InvalidTCXFormat(
+          "Activities must have at least 1 lap over 10 meters or 2 minutes.")
 
-    total_meters = [0 + l['total_meters'] for l in lap_records][0]
-    total_time = [0 + l['total_time_seconds'] for l in lap_records][0]
-    rolling_time = [0 + l['total_rolling_time_seconds'] for l in lap_records][0]
+    encoded_activity =  encode_activity_points(
+        [l['geo_points'] for l in lap_records])
 
-    pts, levs, ne, sw, start_point, mid_point, end_point = \
-      encode_activity_points([l['geo_points'] for l in lap_records])
+    total_meters = sum([l['total_meters'] for l in lap_records])
+    total_time = sum([l['total_time_seconds'] for l in lap_records])
+    rolling_time = sum([l['total_rolling_time_seconds'] for l in lap_records])
 
     activity_record = {
         'name': '%s-%s' % (activity_sport, lap_records[0]['starttime']),
         'sport': activity_sport,
         'total_meters': total_meters,
         'start_time': lap_records[0]['starttime'],
-        'end_time': lap_records[0]['endtime'],
+        'end_time': lap_records[-1]['endtime'],
         'total_time': total_time,
         'rolling_time': rolling_time,
         'average_speed': total_meters / rolling_time * 3.6,
@@ -227,21 +248,15 @@ def parse_tcx(filedata):
         'average_cadence':
           int(average([l['average_cadence'] for l in lap_records])),
         'maximum_cadence': max([l['maximum_cadence'] for l in lap_records]),
-        'average_bpm': average([l['average_bpm'] for l in lap_records]),
+        'average_bpm': int(average([l['average_bpm'] for l in lap_records])),
         'maximum_bpm': max([l['maximum_bpm'] for l in lap_records]),
-        'total_calories': [0 + l['calories'] for l in lap_records][0],
+        'total_calories': sum([l['calories'] for l in lap_records]),
         'laps': lap_records,
-        'start_point' : start_point,
-        'mid_point' : mid_point,
-        'end_point' : end_point,
-        'encoded_points' : pts,
-        'encoded_levels' : levs,
-        'ne_point' : '%s,%s' % (ne[0], ne[1]),
-        'sw_point' : '%s,%s' % (sw[0], sw[1]),
-        }
+    }
+    activity_record.update(encoded_activity)
+
     acts.append(activity_record)
- 
-  if not acts:
-    raise UnknownTCXExpception("No activities found.")
+
+  if not acts: raise InvalidTCXFormat("No activities found.")
 
   return acts

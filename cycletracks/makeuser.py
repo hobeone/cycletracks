@@ -1,4 +1,6 @@
-from gcycle.models import Activity, Lap, User
+import main
+from appengine_django.auth.models import User
+from gcycle.models import *
 from google.appengine.api import users
 import os
 

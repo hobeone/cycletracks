@@ -4,6 +4,7 @@ import os
 
 from gcycle.models import *
 from gcycle import views
+from gcycle.lib import pytcx
 
 from google.appengine.api import datastore_errors
 from google.appengine.ext import db
@@ -12,6 +13,43 @@ from google.appengine.api import users
 from appengine_django.auth.models import User
 
 from django.test.client import Client
+
+class testTcxParser(unittest.TestCase):
+  multiline_tag = """<b>
+asd
+asd
+  </b>"""
+
+  multiline_val_tag = """<b>
+<Value>123</Value>
+</b>"""
+
+  def testParseZulu(self):
+    valid_format = '2008-06-01T13:55:04Z'
+    invalid_format = 'fooT13:55:04Z'
+    self.assert_(pytcx.parse_zulu(valid_format))
+    self.assertRaises(ValueError, pytcx.parse_zulu, invalid_format)
+
+  def testGetTagVal(self):
+    self.assert_(pytcx.getTagVal('<b>foo</b>', 'b', None))
+    self.assertEqual("asd\nasd", pytcx.getTagVal(self.multiline_tag, 'b', None))
+    # Default to None
+    self.assertEqual(None, pytcx.getTagVal('','b'))
+
+  def testGetIntTagVal(self):
+    self.assertEqual('123', pytcx.getIntTagVal('<int>123</int>','int', None))
+
+  def testGetTagSubVal(self):
+    val = pytcx.getIntTagSubVal(self.multiline_val_tag, 'b', None)
+    self.assertEqual(123, val)
+
+  def testParseOfShortTcx(self):
+    testfile = open('gcycle/test/invalid_tcx.tcx').read()
+    self.assertRaises(
+        pytcx.InvalidTCXFormat,
+        pytcx.parse_tcx,
+        testfile
+        )
 
 class testMainViews(unittest.TestCase):
   def setUp(self):

@@ -70,7 +70,7 @@ indexes:
   - name: total_meters
     direction: desc
 
-# Used 75 times in query history.
+# Used 2 times in query history.
 - kind: Activity
   ancestor: yes
 
@@ -81,14 +81,14 @@ indexes:
   - name: average_bpm
     direction: desc
 
-# Used 2 times in query history.
+# Unused in query history -- copied from input.
 - kind: Activity
   ancestor: yes
   properties:
   - name: average_cadence
     direction: desc
 
-# Used 2 times in query history.
+# Unused in query history -- copied from input.
 - kind: Activity
   ancestor: yes
   properties:
@@ -116,21 +116,21 @@ indexes:
   - name: rolling_time
     direction: desc
 
-# Used 139 times in query history.
+# Used 3 times in query history.
 - kind: Activity
   ancestor: yes
   properties:
   - name: start_time
     direction: desc
 
-# Used 2 times in query history.
+# Unused in query history -- copied from input.
 - kind: Activity
   ancestor: yes
   properties:
   - name: total_calories
     direction: desc
 
-# Used 2 times in query history.
+# Unused in query history -- copied from input.
 - kind: Activity
   ancestor: yes
   properties:

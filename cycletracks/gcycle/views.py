@@ -79,7 +79,7 @@ def upload(request):
       try:
         handle_uploaded_file(request.user, request.FILES['file'])
         return HttpResponseRedirect('/mytracks/')
-      except pytcx.UnknownTCXExpception, e:
+      except pytcx.TCXExpception, e:
         return render_to_response('error.html', {'error': e})
   else:
     form = UploadFileForm()

@@ -9,6 +9,21 @@
 
 <script type="text/javascript">
   google.load("maps", "2.x");
+  function handle_point(point, map, element_id) {
+    var reverse_gcode = new GReverseGeocoder(map);
+    GEvent.addListener(reverse_gcode, "error",
+      function() {
+        document.getElementById(element_id).innerHTML = "Unable to reverse GeoCode";
+      }
+    );
+    GEvent.addListener(reverse_gcode, "load",
+      function(placemark) {
+        document.getElementById(element_id).innerHTML = placemark.address;
+      }
+    );
+    reverse_gcode.reverseGeocode(point);
+  }
+
   function initialize() {
     var map = new google.maps.Map2(document.getElementById("map"));
     map.setCenter(new google.maps.LatLng(0,0),0);
@@ -31,49 +46,12 @@
     map.addOverlay(polyline1_1);
     map.addControl(new google.maps.SmallMapControl());
 
-
-    // start point
-    function goodresult(placemark) {
-      document.getElementById("start_location").innerHTML = placemark.address;
-    }
-
-    function badresult() {
-      document.getElementById("start_location").innerHTML = "Unable to reverse geocode";
-    }
-    var start_reversegeocoder = new GReverseGeocoder(map);
-    GEvent.addListener(start_reversegeocoder, "load", goodresult);
-    GEvent.addListener(start_reversegeocoder, "error", badresult);
-
-    start_reversegeocoder.reverseGeocode(new GLatLng({{ start_lat_lng }}));
-
-    // Mid point
-    function mid_goodresult(placemark) {
-      document.getElementById("mid_location").innerHTML = placemark.address;
-    }
-
-    function mid_badresult() {
-      document.getElementById("mid_location").innerHTML = "Unable to reverse geocode";
-    }
-    var mid_reversegeocoder = new GReverseGeocoder(map);
-    GEvent.addListener(mid_reversegeocoder, "load", mid_goodresult);
-    GEvent.addListener(mid_reversegeocoder, "error", mid_badresult);
-
-    mid_reversegeocoder.reverseGeocode(new GLatLng({{ mid_lat_lng }}));
-
-
-    // Find the finish location
-    function end_goodresult(placemark) {
-      document.getElementById("end_location").innerHTML = placemark.address;
-    }
-
-    function end_badresult() {
-      document.getElementById("end_location").innerHTML = "Unable to reverse geocode";
-    }
-    var end_reversegeocoder = new GReverseGeocoder(map);
-    GEvent.addListener(end_reversegeocoder, "load", end_goodresult);
-    GEvent.addListener(end_reversegeocoder, "error", end_badresult);
-
-    end_reversegeocoder.reverseGeocode(new GLatLng({{ end_lat_lng }}));
+    var start_point = new GLatLng({{ start_lat_lng }});
+    var mid_point = new GLatLng({{ mid_lat_lng }});
+    var end_point = new GLatLng({{ end_lat_lng }});
+    handle_point(start_point, map, 'start_location')
+    handle_point(mid_point, map, 'mid_location')
+    handle_point(end_point, map, 'end_location')
   }
   google.setOnLoadCallback(initialize);
 

@@ -64,7 +64,30 @@ asd
     self.assertEqual(act['end_point'], '37.773787,-122.439899')
     self.assertEqual(act['average_bpm'], 136)
     self.assertEqual(act['average_cadence'], 80)
-    self.assertAlmostEqual(act['average_speed'], 14.326339080604534)
+    self.assertAlmostEqual(act['average_speed'], 14.326339080604534, 2)
+    self.assertEqual(act['maximum_bpm'], 186)
+    self.assertEqual(act['maximum_cadence'], 81)
+    self.assertAlmostEqual(act['maximum_speed'], 56.35, 2)
+    self.assertEqual(len(act['laps']), 2)
+    self.assertEqual(act['total_calories'], 6754.0)
+    self.assertAlmostEqual(act['total_meters'], 78993.84, 2)
+    self.assertEqual(act['total_time'], 964)
+
+    u = User(username = 'test', user = users.User('test@ex.com'))
+    u.put()
+    a = Activity(user = u, **act)
+    self.assert_(a)
+    a.put()
+    for l in act['laps']:
+      lap = Lap(activity = a, **l)
+      lap.put()
+
+      self.assertEqual(len(lap.speeds), len(lap.altitudes))
+      self.assertEqual(len(lap.speeds), len(lap.cadences))
+      self.assertEqual(len(lap.speeds), len(lap.bpms))
+      self.assertEqual(len(lap.speeds), len(lap.times))
+      self.assertEqual(len(lap.speeds), len(lap.points_list))
+
 
 class testMainViews(unittest.TestCase):
   def setUp(self):

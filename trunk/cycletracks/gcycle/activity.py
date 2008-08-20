@@ -9,6 +9,9 @@ from django.contrib.auth import decorators as auth_decorators
 
 from google.appengine.api import datastore_errors
 from google.appengine.api import memcache
+from google.appengine.api import urlfetch
+import urllib
+import django.utils.simplejson
 
 import logging
 

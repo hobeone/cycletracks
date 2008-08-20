@@ -115,8 +115,8 @@ def parse_lap(start_time, lap_string):
   speed_list = []
   altitude_list = []
   timepoints = []
-  starttime = lap_record['starttime']
-  prev_time = starttime
+  starttime = None
+  prev_time = None
   endtime = starttime
   prev_distance = 0
 
@@ -125,25 +125,30 @@ def parse_lap(start_time, lap_string):
     trackpoint = t.group()
     point_time = getTagVal(trackpoint, 'Time', None)
     if not point_time:
-      continue
+      raise InvalidTCXFormat("Trackpoint has no time attribute.")
 
     point_time = parse_zulu(point_time)
     endtime = point_time
+    if starttime is None:
+      starttime = point_time
+      prev_time = point_time
 
     dist = getTagVal(trackpoint, 'DistanceMeters', None)
+    timedelta = (point_time - prev_time).seconds
 
     if dist is None:
       # no distance delta == no speed
       speed_list.append(0)
+      timepoints.append(int(timedelta))
     else:
       dist = float(dist)
       dist_delta = dist - prev_distance
       if dist_delta == 0:
         speed_list.append(0)
+        timepoints.append(int(timedelta))
       else:
-        timedelta = (point_time - prev_time).seconds
         if timedelta > 0:
-          timepoints.append(int((point_time - starttime).seconds))
+          timepoints.append(int(timedelta))
           speed_list.append(dist_delta / timedelta * 3.6) # for kph
         else:
           timepoints.append(0)

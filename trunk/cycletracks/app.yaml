@@ -11,15 +11,21 @@ skip_files: |
  (app\.yml)|
  (index\.yaml)|
  (index\.yml)|
+ (gcycle/test/.*)|
+ (gcycle/tests.py)|
  (django/bin/.*)|
  (django/contrib/admin/.*)|
  (django/contrib/admindocs/.*)|
+ (django/contrib/comments/.*)|
+ (django/contrib/flatpages/.*)|
+ (django/contrib/markup/.*)|
+ (django/contrib/sitemaps/.*)|
  (django/contrib/syndication/.*)|
  (django/contrib/gis/.*)|
  (django/contrib/databrowse/.*)|
  (django/contrib/localflavor/.*)|
- (dojango/media/dojo/.*)|
- (dojango/media/release/.*)|
+ (django/contrib/csrf/.*)|
+ (django/conf/locale.*)|
  (#.*#)|
  (.*~)|
  (.*\.py[co])|

@@ -96,12 +96,6 @@ def show(request, activity):
   else:
     activity_stats = memcache.get(a.str_key)
     if activity_stats is None:
-      tlist = a.time_list
-      times = [
-          (0, tlist[0]),
-          (250, tlist[int(len(tlist) / 2)]),
-          (500, tlist[-1]),
-          ]
       activity_stats = {'activity' : a,
            'user' : request.user,
            'bpm' : process_data(a.bpm_list),
@@ -112,12 +106,18 @@ def show(request, activity):
            'levs' : simplejson.dumps(a.encoded_levels),
            'sw' : a.sw_point,
            'ne' : a.ne_point,
-           'times': times,
            'start_lat_lng' : a.start_point,
            'mid_lat_lng' : a.mid_point,
            'end_lat_lng' : a.end_point,
            'kml_location' : kml_location(request, a),
            }
+      tlist = a.time_list
+      times = [
+          (0, tlist[0]),
+          ((len(activity_stats['bpm'].split(',')) - 1) / 4, tlist[int(len(tlist) / 2)]),
+          ((len(activity_stats['bpm'].split(',')) - 1) / 2, tlist[-1]),
+          ]
+      activity_stats['times'] = times
       if not memcache.set(a.str_key, activity_stats, 60 * 60):
         logging.error("Memcache set failed for %s." % a.str_key)
     else:

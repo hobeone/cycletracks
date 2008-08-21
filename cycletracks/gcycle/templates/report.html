@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% load extra_filters %}
+
+{% block title %}CycleTracks Reports{% endblock %}
+
+{% block extra_head %}
+<script type="text/javascript" src="/static/jquery.js"></script>
+<script type="text/javascript" src="/static/jquery.flot.pack.js"></script>
+<script>jQuery.noConflict();</script>
+
+{% endblock %}
+
+{% block content %}
+<div width="100%"></div>
+<div id="report_left">
+  Group by:<br/>
+  &nbsp;&nbsp;<a href="week">Week</a><br/>
+  &nbsp;&nbsp;<a href="month">Month</a>
+  <br/>
+  <br/>
+  <p id="choices">Show Data:</p>
+
+</div>
+<div id="report_right">
+  <h2>This functionality under major refinement</h2>
+  <div id="report_graph" style="width:830px;height:350px"></div>
+
+  <br/>
+  <br/>
+  <script id="source"  language="javascript" type="text/javascript">
+    jQuery(function () {
+        var datasets = {
+          "bpm": {
+            label: "Heart Rate",
+            data: {{data.ylabels|ziplist:data.average_bpm}}
+            },
+          "speed": {
+            label: "Speed",
+            data: {{data.ylabels|ziplist:data.average_speed}}
+          },
+          "cadence": {
+            label: "Cadence",
+            data: {{data.ylabels|ziplist:data.average_cadence}}
+          },
+        };
+        var i = 0;
+        jQuery.each(datasets, function(key, val) {
+          val.color = i;
+          ++i;
+        });
+        // insert checkboxes
+        var choiceContainer = jQuery("#choices");
+        jQuery.each(datasets, function(key, val) {
+          choiceContainer.append('<br/><input type="checkbox" name="' + key +
+            '" checked="checked" >' + val.label + '</input>');
+          });
+        choiceContainer.find("input").click(plotAccordingToChoices);
+
+        function plotAccordingToChoices() {
+          var data = [];
+
+          choiceContainer.find("input:checked").each(function () {
+              var key = jQuery(this).attr("name");
+              if (key && datasets[key])
+                data.push(datasets[key]);
+          });
+
+          if (data.length > 0)
+            jQuery.plot(jQuery("#report_graph"), data, {
+                yaxis: { min: 0 },
+                xaxis: { tickDecimals: 0 }
+            });
+         }
+
+         plotAccordingToChoices();
+});
+
+
+      </script>
+</div>
+{% endblock %}

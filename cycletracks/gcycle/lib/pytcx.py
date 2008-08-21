@@ -139,19 +139,22 @@ def parse_lap(start_time, lap_string):
     if dist is None:
       # no distance delta == no speed
       speed_list.append(0)
-      timepoints.append(int(timedelta))
+      timepoints.append((point_time - starttime).seconds)
     else:
       dist = float(dist)
       dist_delta = dist - prev_distance
       if dist_delta == 0:
         speed_list.append(0)
-        timepoints.append(int(timedelta))
+        timepoints.append((point_time - starttime).seconds)
       else:
         if timedelta > 0:
-          timepoints.append(int(timedelta))
+          timepoints.append((point_time - starttime).seconds)
           speed_list.append(dist_delta / timedelta * 3.6) # for kph
         else:
-          timepoints.append(0)
+          if timepoints:
+            timepoints.append(timepoints[-1])
+          else:
+            timepoints.append(0)
 
       prev_distance = dist
     prev_time = point_time

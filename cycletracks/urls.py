@@ -14,6 +14,7 @@ urlpatterns = patterns('',
   (r'^activity/kml/(\S+)$', 'gcycle.activity.activity_kml'),
   (r'^activity/graph/(\S+)$', 'gcycle.activity.graph'),
   (r'^activity/update/$', 'gcycle.activity.update'),
+  (r'^reports/(\S+)?$', 'gcycle.reports.report'),
   (r'^user/settings/$', 'gcycle.user.settings'),
   (r'^user/update/$', 'gcycle.user.update'),
 )

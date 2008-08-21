@@ -42,3 +42,16 @@ def kph_to_prefered_speed(kph, use_imperial):
 def time_to_offset(time, offset):
   timedelta = datetime.timedelta(hours=offset)
   return time + timedelta
+
+@register.filter
+def minlist(list):
+  return min(list)
+
+@register.filter
+def maxlist(list):
+  return max(list)
+
+
+@register.filter
+def ziplist(l, otherlist):
+  return map(list,zip(l,otherlist))

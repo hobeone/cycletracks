@@ -366,6 +366,24 @@ input.text
   margin-right: auto;
 }
 
+
+#report_left
+{
+  float: left;
+  width: 100px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#report_right
+{
+  float: left;
+  width: 840px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+
 /* 
 	TagBox table styles
 	written by TagBox http://www.tagbox.de

@@ -147,6 +147,40 @@ class ActivityTestCase(unittest.TestCase):
     self.app_user.put()
 
 
+  def testActivityAddition(self):
+    a = Activity(
+        user = self.app_user,
+        name = 'foo',
+        sport = 'bar',
+        total_meters = 4.0,
+        start_time = datetime.datetime.utcnow(),
+        end_time = datetime.datetime.utcnow(),
+        total_time = 2,
+        rolling_time = 2,
+        average_speed = 2.0,
+        maximum_speed = 2.0,
+    )
+
+    b = Activity(
+        user = self.app_user,
+        name = 'foo',
+        sport = 'bar',
+        total_meters = 16.0,
+        start_time = datetime.datetime.utcnow(),
+        end_time = datetime.datetime.utcnow(),
+        total_time = 4,
+        rolling_time = 4,
+        average_speed = 4.0,
+        maximum_speed = 6.0,
+    )
+
+    added = (a + b)
+    self.assertEqual(added.average_speed, 3.3333333333333335)
+    self.assertEqual(added.total_time, 6)
+    added = a
+    for act in [b]:
+      added += act
+
   def test_safe_user(self):
     a = Activity(
         user = self.app_user,

@@ -14,8 +14,6 @@ from google.appengine.api import users
 from gcycle import models
 from gcycle.lib import pytcx
 
-
-
 import zipfile
 import tarfile
 import bz2

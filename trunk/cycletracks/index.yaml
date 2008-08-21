@@ -116,6 +116,12 @@ indexes:
   - name: rolling_time
     direction: desc
 
+# Used once in query history.
+- kind: Activity
+  ancestor: yes
+  properties:
+  - name: start_time
+
 # Used 3 times in query history.
 - kind: Activity
   ancestor: yes

@@ -64,6 +64,7 @@ class Activity(BaseModel):
   start_time = db.DateTimeProperty(required=True)
   end_time = db.DateTimeProperty(required=True)
   total_time = db.IntegerProperty(required=True)
+  # verify rolling time > 0
   rolling_time = db.IntegerProperty(required=True)
   average_speed = db.FloatProperty(required=True)
   maximum_speed = db.FloatProperty(required=True)
@@ -151,6 +152,35 @@ class Activity(BaseModel):
     points =  ['%s,%s,0' % (l[1],l[0]) for l in [l.split(',') for l in points]]
     return ' '.join(points)
 
+  def __add__(self, other):
+    if not isinstance(other, self.__class__):
+      raise NotImplemented, ('%s only supports addition to %s' %
+          (self.__class__, self.__class))
+    added = {}
+    for p in ['average_bpm', 'average_cadence', 'average_speed']:
+      added[p] = self._add_averages(other, p)
+    added['start_point'] = other.start_point
+    added['end_point'] = other.end_point
+    added['mid_point'] = other.start_point
+
+    added['start_time'] = self.start_time
+    added['end_time'] = other.end_time
+    added['sport'] = self.sport
+    added['name'] = self.name
+    added['user'] = self.user
+
+    for p in ['maximum_bpm', 'maximum_speed', 'maximum_cadence']:
+      added[p] = max([getattr(self,p), getattr(other,p)])
+
+    for p in ['rolling_time', 'total_calories', 'total_meters', 'total_time']:
+      added[p] = sum([getattr(self,p), getattr(other,p)])
+
+    return Activity(**added)
+
+
+  def _add_averages(self,other,prop):
+    """Add averages weighted by rolling time"""
+    return (getattr(self,prop) * self.rolling_time + getattr(other,prop) * other.rolling_time) / (self.rolling_time + other.rolling_time)
 
 
 

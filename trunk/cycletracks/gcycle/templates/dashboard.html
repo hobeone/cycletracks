@@ -36,6 +36,12 @@
     </td>
   </tr>
   <tr>
+    <td>
+      Total Climbing:</td>
+    <td> {{ user_totals.total_ascent|meters_to_prefered_distance:user.get_profile.use_imperial }}
+    </td>
+  </tr>
+  <tr>
     <td>Total Time:</td>
     <td>
       {{ user_totals.total_time|seconds_to_human_readable }}
@@ -89,8 +95,8 @@
     <th><a href='/mytracks/rolling_time'>Time<br/>(Rolling)</a></th>
     <th><a href='/mytracks/average_cadence'>Avg/Max Cadence</a></th>
     <th><a href='/mytracks/average_bpm'>Avg/Max BPM</a></th>
-    <th><a href='/mytracks/average_speed'>Avg Speed</a></th>
-    <th><a href='/mytracks/maximum_speed'>Max Speed</a></th>
+    <th><a href='/mytracks/average_speed'>Avg/Max Speed</a></th>
+    <th><a href='/mytracks/total_ascent'>Ascent/Decent</a></th>
     <th><a href='/mytracks/total_calories'>Calories</a></th>
     <th>Delete</th>
   </tr>
@@ -102,14 +108,14 @@
       <td><a href="/activity/show/{{ entry.key }}">{{ entry.name }}</a></td>
       <td>{{ entry.start_time|time_to_offset:user.get_profile.tzoffset|date:"n/j/y-H:i" }}</td>
       <td>{{ entry.total_meters|meters_to_prefered_distance:user.get_profile.use_imperial}}</td>
-      <td>{{ entry.total_time|seconds_to_human_readable }} Hours
+      <td>{{ entry.total_time|seconds_to_human_readable }}
         <br/>
-        ({{ entry.rolling_time|seconds_to_human_readable }} Hours)
+        ({{ entry.rolling_time|seconds_to_human_readable }})
       </td>
-      <td>{{ entry.average_cadence|floatformat:"-2" }} / {{ entry.maximum_cadence|floatformat:"-2" }} rpm</td>
-      <td>{{ entry.average_bpm|floatformat:"-2" }} / {{ entry.maximum_bpm|floatformat:"-2" }} bpm</td>
-      <td>{{ entry.average_speed|kph_to_prefered_speed:user.get_profile.use_imperial }}</td>
-      <td>{{ entry.maximum_speed|kph_to_prefered_speed:user.get_profile.use_imperial }}</td>
+      <td>{{ entry.average_cadence|floatformat:"-2" }} rpm<br/> {{ entry.maximum_cadence|floatformat:"-2" }} rpm</td>
+      <td>{{ entry.average_bpm|floatformat:"-2" }} bpm<br/> {{ entry.maximum_bpm|floatformat:"-2" }} bpm</td>
+      <td>{{ entry.average_speed|kph_to_prefered_speed:user.get_profile.use_imperial }} <br/> {{ entry.maximum_speed|kph_to_prefered_speed:user.get_profile.use_imperial }}</td>
+      <td>{{ entry.total_ascent|format_meters:user.get_profile.use_imperial }} <br/> {{entry.total_descent|format_meters:user.get_profile.use_imperial}}</td>
       <td>{{ entry.total_calories|floatformat:"-2" }} Cal</td>
       <td id="act_notice{{forloop.counter0}}" onclick="delete_activity('{{ entry.key }}', 'act_notice{{forloop.counter0}}')">delete</td>
     </tr>

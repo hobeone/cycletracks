@@ -8,7 +8,7 @@ def meters_to_miles(value):
 
 @register.filter
 def meters_to_feet(meters):
-  return meters * 3.3
+  return meters * 3.2808399
 
 @register.filter
 def km_to_miles(value):

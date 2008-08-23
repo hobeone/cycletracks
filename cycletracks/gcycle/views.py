@@ -149,13 +149,13 @@ def handle_uploaded_file(user, filedata):
 
 @auth_decorators.login_required
 def update_ascent(request):
-  acts = Activity.all()
+  acts = models.Activity.all()
   for a in acts:
-    if a.total_ascent.empty():
+    if a.total_ascent == 0.0:
       for l in a.lap_set:
         total_ascent = 0.0
         total_descent = 0.0
-        altitude_list = [float(a) for a in l.altitude_list.split(',')]
+        altitude_list = [float(alt) for alt in l.altitude_list.split(',')]
         prev_altitude = altitude_list[0]
         for i in altitude_list:
           altitude_delta = i - prev_altitude
@@ -170,4 +170,5 @@ def update_ascent(request):
         l.save()
       a.total_ascent = sum([l.total_ascent for l in a.lap_set])
       a.total_descent = sum([l.total_descent for l in a.lap_set])
+      a.save()
   return HttpResponseRedirect('/mytracks/')

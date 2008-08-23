@@ -7,6 +7,10 @@ def meters_to_miles(value):
   return km_to_miles(value / 1000)
 
 @register.filter
+def meters_to_feet(meters):
+  return meters * 3.3
+
+@register.filter
 def km_to_miles(value):
   return value * 0.621371192
 
@@ -27,6 +31,17 @@ def meters_to_prefered_distance(meters, use_imperial):
     units = 'mi'
   dist = '%.2f %s' % (dist, units)
   return dist
+
+@register.filter
+def format_meters(meters, use_imperial):
+  units = 'm'
+  dist = meters
+  if use_imperial:
+    dist = meters_to_feet(dist)
+    units = 'ft'
+  dist = '%.2f %s' % (dist, units)
+  return dist
+
 
 @register.filter
 def kph_to_prefered_speed(kph, use_imperial):

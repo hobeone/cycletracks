@@ -180,7 +180,7 @@ def parse_lap(start_time, lap_string):
 
     alt = getTagVal(trackpoint, 'AltitudeMeters', None)
     if alt:
-      altitude_list.append(alt)
+      altitude_list.append(float(alt))
     else:
       if altitude_list:
         altitude_list.append(altitude_list[-1])
@@ -197,6 +197,19 @@ def parse_lap(start_time, lap_string):
   if cadence_list:
     max_cadence = max(cadence_list)
 
+  total_ascent = 0.0
+  total_descent = 0.0
+
+  prev_altitude = altitude_list[0]
+  for i in altitude_list:
+    altitude_delta = i - prev_altitude
+    if altitude_delta >= 0:
+      total_ascent += altitude_delta
+    else:
+      total_descent += altitude_delta * -1
+    prev_altitude = i
+
+
   lap_record.update({
     'total_time_seconds': timepoints[-1],
     'endtime': endtime,
@@ -206,8 +219,10 @@ def parse_lap(start_time, lap_string):
     'geo_points' : joinArrayOrNone(geo_points,':'),
     'cadence_list' : joinArrayOrNone([str(c) for c in cadence_list]),
     'speed_list' : joinArrayOrNone([ '%.2f' % s for s in speed_list]),
-    'altitude_list' : joinArrayOrNone(altitude_list),
+    'altitude_list' : joinArrayOrNone(map(str,altitude_list)),
     'timepoints' : joinArrayOrNone([str(t) for t in timepoints]),
+    'total_ascent' : total_ascent,
+    'total_descent' : total_descent
     })
   return lap_record
 
@@ -259,6 +274,8 @@ def parse_tcx(filedata):
         'average_bpm': int(average([l['average_bpm'] for l in lap_records])),
         'maximum_bpm': max([l['maximum_bpm'] for l in lap_records]),
         'total_calories': sum([l['calories'] for l in lap_records]),
+        'total_ascent': sum([l['total_ascent'] for l in lap_records]),
+        'total_descent': sum([l['total_descent'] for l in lap_records]),
         'laps': lap_records,
     }
     activity_record.update(encoded_activity)

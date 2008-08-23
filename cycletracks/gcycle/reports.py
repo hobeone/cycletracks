@@ -44,6 +44,8 @@ def report(request, group_by):
   timegroup = '%Y%U'
 
   series = 'Average Heart Rate (BPM)'
+  if group_by == 'day':
+    timegroup = '%Y%j'
   if group_by == 'month':
     timegroup = '%Y%m'
   acts = group_by_attr(acts, lambda a: int(a.start_time.strftime(timegroup)))

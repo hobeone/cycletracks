@@ -88,6 +88,11 @@ asd
       self.assertEqual(len(lap.speeds), len(lap.times))
       self.assertEqual(len(lap.speeds), len(lap.points_list))
 
+      self.assertEqual(lap.total_ascent, 0)
+      self.assertAlmostEqual(lap.total_descent, 9.1319, 2)
+
+    self.assertEqual(a.total_ascent, 0)
+    self.assertAlmostEqual(a.total_descent, 18.263, 2)
 
 class testMainViews(unittest.TestCase):
   def setUp(self):

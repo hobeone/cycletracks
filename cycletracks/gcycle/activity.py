@@ -96,21 +96,22 @@ def show(request, activity):
   else:
     activity_stats = memcache.get(a.str_key)
     if activity_stats is None:
-      activity_stats = {'activity' : a,
-           'user' : request.user,
-           'bpm' : process_data(a.bpm_list),
-           'cadence' : process_data(a.cadence_list),
-           'speed' : process_data(a.speed_list),
-           'altitude' : process_data(a.altitude_list),
-           'pts': simplejson.dumps(a.encoded_points),
-           'levs' : simplejson.dumps(a.encoded_levels),
-           'sw' : a.sw_point,
-           'ne' : a.ne_point,
-           'start_lat_lng' : a.start_point,
-           'mid_lat_lng' : a.mid_point,
-           'end_lat_lng' : a.end_point,
-           'kml_location' : kml_location(request, a),
-           }
+      activity_stats = {
+        'activity' : a,
+        'user' : request.user,
+        'bpm' : process_data(a.bpm_list),
+        'cadence' : process_data(a.cadence_list),
+        'speed' : process_data(a.speed_list),
+        'altitude' : process_data(a.altitude_list),
+        'pts': simplejson.dumps(a.encoded_points),
+        'levs' : simplejson.dumps(a.encoded_levels),
+        'sw' : a.sw_point,
+        'ne' : a.ne_point,
+        'start_lat_lng' : a.start_point,
+        'mid_lat_lng' : a.mid_point,
+        'end_lat_lng' : a.end_point,
+        'kml_location' : kml_location(request, a),
+      }
       tlist = a.time_list
       times = [
           (0, tlist[0]),

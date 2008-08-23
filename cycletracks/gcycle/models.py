@@ -28,6 +28,8 @@ class UserProfile(BaseModel):
         'maximum_cadence' : 0,
         'average_bpm' : [],
         'maximum_bpm' : 0,
+        'total_ascent' : 0,
+        'total_descent' : 0
         }
     query = Activity.all()
     query.ancestor(self.user)
@@ -36,6 +38,8 @@ class UserProfile(BaseModel):
       total_data['total_time'] += activity.total_time
       total_data['rolling_time'] += activity.rolling_time
       total_data['total_calories'] += activity.total_calories
+      total_data['total_ascent'] += activity.total_ascent
+      total_data['total_descent'] += activity.total_descent
 
       total_data['average_speed'].append(activity.average_speed)
       if activity.maximum_speed > total_data['maximum_speed']:
@@ -82,6 +86,8 @@ class Activity(BaseModel):
   start_point = db.GeoPtProperty()
   mid_point = db.GeoPtProperty()
   end_point = db.GeoPtProperty()
+  total_ascent = db.FloatProperty(default=0.0)
+  total_descent = db.FloatProperty(default=0.0)
 
   def safe_delete(self):
     for l in self.lap_set:
@@ -204,6 +210,8 @@ class Lap(BaseModel):
   cadence_list = db.TextProperty(required=True)
   geo_points = db.TextProperty()
   timepoints = db.TextProperty(required=True)
+  total_ascent = db.FloatProperty(default=0.0)
+  total_descent = db.FloatProperty(default=0.0)
 
   @property
   def speeds(self):

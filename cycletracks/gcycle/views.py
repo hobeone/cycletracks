@@ -144,3 +144,30 @@ def handle_uploaded_file(user, filedata):
     activities = pytcx.parse_tcx(f)
     for act_dict in activities:
       db.run_in_transaction(activity_save, user, act_dict)
+
+# TEMP model update actions
+
+@auth_decorators.login_required
+def update_ascent(request):
+  acts = Activity.all()
+  for a in acts:
+    if a.total_ascent.empty():
+      for l in a.lap_set:
+        total_ascent = 0.0
+        total_descent = 0.0
+        altitude_list = [float(a) for a in l.altitude_list.split(',')]
+        prev_altitude = altitude_list[0]
+        for i in altitude_list:
+          altitude_delta = i - prev_altitude
+          if altitude_delta >= 0:
+            total_ascent += altitude_delta
+          else:
+            total_descent += altitude_delta * -1
+          prev_altitude = i
+
+        l.total_ascent = total_ascent
+        l.total_descent = total_descent
+        l.save()
+      a.total_ascent = sum([l.total_ascent for l in a.lap_set])
+      a.total_descent = sum([l.total_descent for l in a.lap_set])
+  return HttpResponseRedirect('/mytracks/')

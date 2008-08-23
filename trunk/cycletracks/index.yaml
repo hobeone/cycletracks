@@ -70,7 +70,7 @@ indexes:
   - name: total_meters
     direction: desc
 
-# Used 10 times in query history.
+# Used 2 times in query history.
 - kind: Activity
   ancestor: yes
 
@@ -116,20 +116,20 @@ indexes:
   - name: rolling_time
     direction: desc
 
-# Used once in query history.
+# Unused in query history -- copied from input.
 - kind: Activity
   ancestor: yes
   properties:
   - name: start_time
 
-# Used 8 times in query history.
+# Used 3 times in query history.
 - kind: Activity
   ancestor: yes
   properties:
   - name: start_time
     direction: desc
 
-# Used 10 times in query history.
+# Unused in query history -- copied from input.
 - kind: Activity
   ancestor: yes
   properties:

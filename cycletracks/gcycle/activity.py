@@ -115,11 +115,11 @@ def show(request, activity):
       tlist = a.time_list
       times = [
           (0, tlist[0]),
-          ((len(activity_stats['bpm'].split(',')) - 1) / 4, tlist[int(len(tlist) / 2)]),
+          ((len(activity_stats['bpm'].split(',')) - 1) / 4, tlist[len(tlist) / 2]),
           ((len(activity_stats['bpm'].split(',')) - 1) / 2, tlist[-1]),
           ]
       activity_stats['times'] = times
-      if not memcache.set(a.str_key, activity_stats, 60 * 60):
+      if not memcache.set(a.str_key, activity_stats, 60 * 120):
         logging.error("Memcache set failed for %s." % a.str_key)
     else:
       logging.debug('Got cached version of activity')

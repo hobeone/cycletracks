@@ -5,13 +5,14 @@ from django.shortcuts import render_to_response
 from django.template.loader import render_to_string
 
 from django.utils import simplejson
+from django.utils.datastructures import SortedDict
 from django.contrib.auth import decorators as auth_decorators
 
 from google.appengine.api import datastore_errors
 from google.appengine.api import memcache
 
 import logging
-
+import datetime
 from gcycle.models import *
 
 def group_by_attr(activities, groupby):
@@ -24,47 +25,79 @@ def group_by_attr(activities, groupby):
 
   return group
 
-def sum_grouped(grouped):
-  added = {}
-  for key,acts in grouped.iteritems():
-    added[key] = acts[0]
-    for a in acts[1:]:
-      added[key] += a
+def next_month(dtime):
+  next_month = dtime.month + 1
+  next_year = dtime.year
+  if dtime.month == 12:
+    next_year += 1
+    next_month = 1
 
-  return added
+  return datetime.date(year=next_year, month=next_month, day=dtime.day)
 
-# [ {ylabels, bpm, cadence, speed, ....} ]
+def sum_by_buckets(activities, buckets, timegroup):
+  acts = group_by_attr(activities, timegroup)
+
+  data = SortedDict()
+  for bucket in buckets:
+    if bucket in acts.keys():
+      data[bucket] = acts[bucket][0]
+      for a in acts[bucket][1:]:
+        data[bucket] += a
+    else:
+      data[bucket] = None
+
+  return data
+
 
 @auth_decorators.login_required
 def report(request, group_by):
   if not group_by: group_by = "week"
   acts = Activity.all().order('start_time')
   acts.ancestor(request.user)
-  timegroup = '%Y%U'
+  acts = acts.fetch(1000)
+
+  firstdate = datetime.date(
+      year=acts[0].start_time.year,
+      month=acts[0].start_time.month,
+      day=acts[0].start_time.day)
+
+  lastdate = datetime.date(
+      year=acts[-1].start_time.year,
+      month=acts[-1].start_time.month,
+      day=acts[-1].start_time.day)
 
   if group_by == 'day':
-    timegroup = '%Y%j'
-  if group_by == 'month':
-    timegroup = '%Y%m'
-  acts = group_by_attr(acts, lambda a: int(a.start_time.strftime(timegroup)))
-  acts = sum_grouped(acts)
+    timedelta = datetime.timedelta(days=1)
+    timegroup = lambda a: datetime.date(a.start_time.year,a.start_time.month,a.start_time.day)
+    tickformat = "[7, 'day']"
+    firstdate = firstdate - (firstdate - firstdate.replace(day=firstdate.day - firstdate.weekday() + 1))
 
-  for i in xrange(min(acts.keys()), max(acts.keys())):
-    if not i in acts:
-      acts[i] = None
+  elif group_by == 'month':
+    tickformat = "[1, 'month']"
+    firstdate = firstdate.replace(day=1)
+    lastdate = lastdate.replace(day=1)
+    timegroup = lambda a: datetime.date(a.start_time.year,a.start_time.month,1)
 
-  keys = acts.keys()
-  keys.sort()
-  acts = map(acts.get, keys)
+  else:
+    group_by = 'week'
+    tickformat = "[7, 'day']"
+    firstdate = firstdate - (firstdate - firstdate.replace(day=firstdate.day - firstdate.weekday() + 1))
+    lastdate = lastdate.replace(day=1)
+    timedelta = datetime.timedelta(days=7)
+    timegroup = lambda a: datetime.date(a.start_time.year,a.start_time.month,a.start_time.day)
 
-  data = {}
-  data['ylabels'] = keys
+  buckets = [firstdate]
+  while buckets[-1] < lastdate:
+    if group_by in ['day','week']:
+      buckets.append(buckets[-1] + timedelta)
+    else:
+      pdate = buckets[-1]
+      buckets.append(next_month(buckets[-1]))
 
-  for i in ['average_bpm', 'average_cadence', 'average_speed', 'total_time', 'total_meters', 'total_calories']:
-    data[i] = [int(getattr(a,i,0)) for a in acts]
-
+  data = sum_by_buckets(acts, buckets, timegroup)
   return render_to_response('report.html',
       {'data' : data,
+       'tickformat' : tickformat,
        'group_by' : group_by,
        'user':  request.user}
   )

@@ -66,7 +66,16 @@ def minlist(list):
 def maxlist(list):
   return max(list)
 
-
 @register.filter
 def ziplist(l, otherlist):
   return map(list,zip(l,otherlist))
+
+@register.filter
+def date_to_js_epoch(date):
+  return int(date.strftime('%s')) * 1000
+
+@register.filter
+def value_or_zero(value):
+  if not value:
+    value = 0
+  return value

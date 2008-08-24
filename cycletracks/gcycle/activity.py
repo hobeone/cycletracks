@@ -155,6 +155,8 @@ def update(request):
         activity.put()
         if not memcache.delete(str(activity.key())):
           logging.error("Memcache delete failed.")
+        if not memcache.delete('%s-dashboard' % (request.user.username)):
+          logging.error("Memcache delete failed.")
       return HttpResponse(activity_value)
   except Exception, e:
     return HttpResponse(e)
@@ -170,6 +172,11 @@ def delete(request):
             'You are not allowed to delete this activity')
 
       a.safe_delete()
+      if not memcache.delete(str(a.key())):
+        logging.error("Memcache delete failed.")
+      if not memcache.delete('%s-dashboard' % (request.user.username)):
+        logging.error("Memcache delete failed.")
+
       return HttpResponse('')
     except Exception, e:
       return HttpResponseServerError(e)

@@ -1,6 +1,8 @@
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 from django.http import HttpResponseServerError
+from django.template import loader, Context
+
 from django.template.loader import render_to_string
 from django.shortcuts import render_to_response
 from django import forms
@@ -52,19 +54,28 @@ def about(request):
 
 @auth_decorators.login_required
 def dashboard(request, sorting='start_time'):
-  if sorting == None: sorting = 'start_time'
-  activity_query = models.Activity.all()
-  activity_query.ancestor(request.user)
-  activity_query.order('-%s' % sorting)
-  activities_exist = activity_query.count(1)
-  stats = memcache.get_stats()
-  return render_to_response('dashboard.html',
-    {'user_activities' : activity_query,
-     'num_activities' :activities_exist,
-     'user_totals': request.user.get_profile().totals,
-     'user' : request.user,
-     'stats' : stats,}
-    )
+  if sorting is None: sorting = 'start_time'
+  cache_key = '%s-dashboard' % (request.user.username)
+  cached = memcache.get(cache_key)
+  if cached is None or cached['sorting'] != sorting:
+    activity_query = models.Activity.all()
+    activity_query.ancestor(request.user)
+    activity_query.order('-%s' % sorting)
+    activities_exist = activity_query.count(1)
+    t = loader.get_template('dashboard.html')
+    c = Context({'user_activities' : activity_query,
+       'num_activities' :activities_exist,
+       'user_totals': request.user.get_profile().totals,
+       'user' : request.user,
+      })
+    rendered = t.render(c)
+    if not memcache.set(cache_key,
+        {'sorting': sorting, 'response': rendered}, 60*120):
+      logging.error("Memcache set failed for %s." % cache_key)
+    return HttpResponse(rendered)
+  else:
+    logging.error('Got cached version of dashboard')
+    return HttpResponse(cached['response'])
 
 class UploadFileForm(forms.Form):
   file = forms.Field(widget=forms.FileInput())
@@ -74,6 +85,9 @@ def upload(request):
   if request.method == 'POST':
     form = UploadFileForm(request.POST, request.FILES)
     if form.is_valid():
+      cache_key = '%s-dashboard' % (request.user.username)
+      if not memcache.delete(cache_key):
+        logging.error("Memcache delete failed.")
       try:
         handle_uploaded_file(request.user, request.FILES['file'])
         return HttpResponseRedirect('/mytracks/')

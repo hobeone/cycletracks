@@ -236,3 +236,8 @@ class Lap(BaseModel):
   @property
   def points_list(self):
     return self.geo_points.split(':')
+
+  @property
+  def to_kml(self):
+    points = ['%s,%s,0' % (l[1],l[0]) for l in [l.split(',') for l in self.points_list]]
+    return ' '.join(points)

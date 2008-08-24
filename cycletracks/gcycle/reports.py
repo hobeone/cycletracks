@@ -35,7 +35,6 @@ def sum_grouped(grouped):
 
 # [ {ylabels, bpm, cadence, speed, ....} ]
 
-
 @auth_decorators.login_required
 def report(request, group_by):
   if not group_by: group_by = "week"
@@ -43,7 +42,6 @@ def report(request, group_by):
   acts.ancestor(request.user)
   timegroup = '%Y%U'
 
-  series = 'Average Heart Rate (BPM)'
   if group_by == 'day':
     timegroup = '%Y%j'
   if group_by == 'month':
@@ -55,14 +53,18 @@ def report(request, group_by):
     if not i in acts:
       acts[i] = None
 
+  keys = acts.keys()
+  keys.sort()
+  acts = map(acts.get, keys)
+
   data = {}
-  data['ylabels'] = acts.keys()
-  for i in ['average_bpm', 'average_cadence', 'average_speed', 'total_time']:
-    data[i] = [int(getattr(v,i,0)) for k,v in acts.iteritems()]
+  data['ylabels'] = keys
+
+  for i in ['average_bpm', 'average_cadence', 'average_speed', 'total_time', 'total_meters', 'total_calories']:
+    data[i] = [int(getattr(a,i,0)) for a in acts]
 
   return render_to_response('report.html',
       {'data' : data,
-       'series' : series,
        'group_by' : group_by,
        'user':  request.user}
   )

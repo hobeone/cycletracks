@@ -42,6 +42,14 @@
             label: "Cadence",
             data: {{data.ylabels|ziplist:data.average_cadence}}
           },
+          "distance": {
+            label: "Distance",
+            data: {{data.ylabels|ziplist:data.total_meters}}
+          },
+          "calories": {
+            label: "Calories",
+            data: {{data.ylabels|ziplist:data.total_calories}}
+          },
         };
         var i = 0;
         jQuery.each(datasets, function(key, val) {
@@ -51,8 +59,16 @@
         // insert checkboxes
         var choiceContainer = jQuery("#choices");
         jQuery.each(datasets, function(key, val) {
-          choiceContainer.append('<br/><input type="checkbox" name="' + key +
-            '" checked="checked" >' + val.label + '</input>');
+          if(key == 'bpm' || key == 'speed' || key == 'cadence') {
+            choiceContainer.append('<br/><input type="checkbox" name="' + key +
+              '" checked="checked" >' + val.label + '</input>');
+          }
+          else {
+            choiceContainer.append('<br/><input type="checkbox" name="' + key +
+              '">' + val.label + '</input>');
+          }
+
+
           });
         choiceContainer.find("input").click(plotAccordingToChoices);
 
@@ -68,7 +84,7 @@
           if (data.length > 0)
             jQuery.plot(jQuery("#report_graph"), data, {
                 yaxis: { min: 0 },
-                xaxis: { tickDecimals: 0 }
+                xaxis: { tickDecimals: 0, ticks: {{data.ylabels|length}}}
             });
          }
 

@@ -26,6 +26,7 @@
 
   function initialize() {
     var map = new google.maps.Map2(document.getElementById("map"));
+    map.setMapType(G_PHYSICAL_MAP);
     map.setCenter(new google.maps.LatLng(0,0),0);
     var sw = new google.maps.LatLng({{sw}});
     var ne = new google.maps.LatLng({{ne}});

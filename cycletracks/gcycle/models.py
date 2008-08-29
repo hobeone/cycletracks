@@ -90,9 +90,9 @@ class Activity(BaseModel):
   total_descent = db.FloatProperty(default=0.0)
 
   def safe_delete(self):
-    for l in self.lap_set:
-      l.delete()
-    self.delete()
+    to_del = [self]
+    to_del.extend(self.lap_set)
+    return db.delete(to_del)
 
   @property
   def safeuser(self):

@@ -1,5 +1,4 @@
-from django.http import HttpResponse
-from django.http import HttpResponseRedirect
+from django.http import *
 
 from django.shortcuts import render_to_response
 from django.template.loader import render_to_string
@@ -14,7 +13,7 @@ import urllib
 import django.utils.simplejson
 
 import logging
-
+from gcycle import views
 from gcycle.models import *
 
 def rm3(s):
@@ -90,9 +89,10 @@ def show(request, activity):
     return render_to_response('error.html',
         {'error': "That activity doesn't exist."})
 
-  if a.safeuser != request.user and not a.public:
+  if (a.safeuser != request.user and not a.public
+      and not request.user.is_superuser):
     return render_to_response('error.html',
-        {'error': "You are not allowed to see this activity."})
+        {'error': "You are not allowed to see this activity.  The activity doesn't belong to you and the owner hasn't made it public."})
   else:
     activity_stats = memcache.get(a.str_key)
     if activity_stats is None:
@@ -155,7 +155,7 @@ def update(request):
         activity.put()
         if not memcache.delete(str(activity.key())):
           logging.error("Memcache delete failed.")
-        if not memcache.delete('%s-dashboard' % (request.user.username)):
+        if not memcache.delete(views.dashboard_cache_key(request.user)):
           logging.error("Memcache delete failed.")
       return HttpResponse(activity_value)
   except Exception, e:
@@ -164,21 +164,21 @@ def update(request):
 @auth_decorators.login_required
 def delete(request):
   if request.method == 'POST':
-    try:
       activity_id = request.POST['activity_id']
       a = Activity.get(activity_id)
+      if a is None:
+        return HttpResponseNotFound(
+            "That activity doesn't exist")
       if request.user != a.user:
-        return HttpResponseServerError(
+        return HttpResponseForbidden(
             'You are not allowed to delete this activity')
 
       a.safe_delete()
       if not memcache.delete(str(a.key())):
         logging.error("Memcache delete failed.")
-      if not memcache.delete('%s-dashboard' % (request.user.username)):
+      if not memcache.delete(views.dashboard_cache_key(request.user)):
         logging.error("Memcache delete failed.")
 
       return HttpResponse('')
-    except Exception, e:
-      return HttpResponseServerError(e)
   else:
     return HttpResponse('Must use POST')

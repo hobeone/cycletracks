@@ -5,10 +5,11 @@ from gcycle import views
 handler500 = 'gcycle.views.handle_view_exception'
 urlpatterns = patterns('',
   (r'^$', 'gcycle.views.main'),
-  (r'^mytracks/(\S+)?$', 'gcycle.views.dashboard'),
+  (r'^mytracks/(?P<sorting>\S+)?$', 'gcycle.views.dashboard'),
   (r'^upload/$', 'gcycle.views.upload'),
   (r'^about/$', 'gcycle.views.about'),
-  (r'^admin/update_ascent/$', 'gcycle.views.update_ascent'),
+  (r'^admin/users/$', 'gcycle.admin.users'),
+  (r'^admin/dashboard/(?P<user>\S+)$', 'gcycle.views.dashboard'),
   (r'^activity/show/(\S+)$', 'gcycle.activity.show'),
   (r'^activity/delete/$', 'gcycle.activity.delete'),
   (r'^activity/kml/(\S+)$', 'gcycle.activity.activity_kml'),

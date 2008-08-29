@@ -42,7 +42,9 @@
             data: []
           },
         };
-        {% for d,activity in data.items %}datasets['bpm'].data.push([{{d|date_to_js_epoch}}, {{activity.average_bpm|value_or_zero}}]); datasets['speed'].data.push([{{d|date_to_js_epoch}}, {{activity.average_speed|value_or_zero}}]); datasets['cadence'].data.push([{{d|date_to_js_epoch}}, {{activity.average_cadence|value_or_zero}}]);{% endfor %}
+        {% for d,activity in data.items %}datasets['bpm'].data.push([{{forloop.counter0}}, {{activity.average_bpm|value_or_zero}}]); datasets['speed'].data.push([{{forloop.counter0}}, {{activity.average_speed|value_or_zero}}]); datasets['cadence'].data.push([{{forloop.counter0}}, {{activity.average_cadence|value_or_zero}}]);{% endfor %}
+        var xticks = []
+        {% for d,activity in data.items %}xticks.push([{{forloop.counter0}}, "{{d|format_date:tickformat}}"]);{% endfor %}
 
         var i = 0;
         jQuery.each(datasets, function(key, val) {
@@ -77,7 +79,7 @@
           if (data.length > 0)
             jQuery.plot(jQuery("#report_graph"), data, {
                 yaxis: { min: 0 },
-                xaxis: { mode: "time", tickSize: {{tickformat|safe}} }
+                xaxis: { ticks: xticks}
             });
          }
 

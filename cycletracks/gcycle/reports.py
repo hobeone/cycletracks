@@ -69,18 +69,18 @@ def report(request, group_by):
   if group_by == 'day':
     timedelta = datetime.timedelta(days=1)
     timegroup = lambda a: datetime.date(a.start_time.year,a.start_time.month,a.start_time.day)
-    tickformat = "[7, 'day']"
+    tickformat = "%b %d %y"
     firstdate = firstdate - (firstdate - firstdate.replace(day=firstdate.day - firstdate.weekday() + 1))
 
   elif group_by == 'month':
-    tickformat = "[1, 'month']"
+    tickformat = "%b %Y"
     firstdate = firstdate.replace(day=1)
     lastdate = lastdate.replace(day=1)
     timegroup = lambda a: datetime.date(a.start_time.year,a.start_time.month,1)
 
   else:
     group_by = 'week'
-    tickformat = "[7, 'day']"
+    tickformat = "%b %d"
     firstdate = firstdate - (firstdate - firstdate.replace(day=firstdate.day - firstdate.weekday() + 1))
     lastdate = lastdate.replace(day=1)
     timedelta = datetime.timedelta(days=7)

@@ -13,7 +13,10 @@
                        parameters: {activity_id: id},
                        asynchronous:true,
                        onSuccess: function(response) {
-                       new Effect.Fade('activity_'+id, {duration: 0.5})
+                         new Effect.Fade('activity_'+id, {duration: 0.5})
+                       },
+                       onFailure: function(response) {
+                        alert('Error: ' + response.statusText)
                        }
                      }
         );

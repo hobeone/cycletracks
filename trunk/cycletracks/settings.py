@@ -17,7 +17,6 @@
 import os
 
 DEBUG = True
-#DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (

@@ -1,4 +1,5 @@
 from django.http import *
+from django.conf import settings
 
 from django.shortcuts import render_to_response
 from django.template.loader import render_to_string
@@ -16,21 +17,18 @@ import logging
 from gcycle import views
 from gcycle.models import *
 
-def rm3(s):
+def rm3gen(s):
   """knicked from the tubes:
   http://mail.python.org/pipermail/python-list/2002-September/163580.html"""
-  temp = map(lambda x,y,z:[x,y,z], s[:-2], s[1:-1], s[2:])
-  temp2 = []
+  temp = zip(s[:-2], s[1:-1], s[2:])
   for x in temp:
-    x.sort()
-    temp2.append(int(x[1]))
-  return temp2
+    yield (int(sorted(x)[1]))
 
-
-def downsample(items, factor=10):
+def downsample(items, timepoints, factor=10):
   """Crappy downsample by averaging factor items at a time"""
   window_start = 0
   samp = []
+  times = []
   if factor < 1: factor = 1
   while window_start < len(items):
     samp.append(
@@ -40,32 +38,21 @@ def downsample(items, factor=10):
           float(factor)
         )
     )
+    times.append(timepoints[window_start])
     window_start += factor
 
-  return samp
+  return samp, times
 
-def process_data(data):
-  data = rm3(downsample(data, int(len(data) / 500.0)))
+def process_data_with_time(data, times):
   index = 0
+  factor = int(len(data) / 500.0)
+  sampled_data, sampled_times = downsample(data,times,factor)
   export_data = []
-  for i in data:
-    export_data.append('[%s,%s]' % (index, i))
+  for i in rm3gen(sampled_data):
+    export_data.append('[%s,%s]' % (sampled_times[index], i))
     index += 1
 
   return ','.join(export_data)
-
-
-@auth_decorators.login_required
-def graph(request, activity):
-  a = Activity.get(activity)
-  return render_to_response('activity/graph.html',
-      {'activity' : a,
-       'user' : request.user,
-       'bpm' : process_data(a.bpm_list),
-       'cadence' : process_data(a.cadence_list),
-       'speed' : process_data(a.speed_list),
-       'altitude' : process_data(a.altitude_list),
-      })
 
 
 def activity_kml(request, activity_id):
@@ -95,14 +82,16 @@ def show(request, activity):
         {'error': "You are not allowed to see this activity.  The activity doesn't belong to you and the owner hasn't made it public."})
   else:
     activity_stats = memcache.get(a.str_key)
+    if settings.DEBUG: activity_stats = None
     if activity_stats is None:
       activity_stats = {
         'activity' : a,
         'user' : request.user,
-        'bpm' : process_data(a.bpm_list),
-        'cadence' : process_data(a.cadence_list),
-        'speed' : process_data(a.speed_list),
-        'altitude' : process_data(a.altitude_list),
+        'bpm' : process_data_with_time(a.bpm_list, a.time_list),
+        'cadence' : process_data_with_time(a.cadence_list, a.time_list),
+        'speed' : process_data_with_time(a.speed_list, a.time_list),
+        'altitude' : process_data_with_time(a.altitude_list, a.time_list),
+        'distance' : process_data_with_time(a.distance_list, a.time_list),
         'pts': simplejson.dumps(a.encoded_points),
         'levs' : simplejson.dumps(a.encoded_levels),
         'sw' : a.sw_point,
@@ -115,8 +104,8 @@ def show(request, activity):
       tlist = a.time_list
       times = [
           (0, tlist[0]),
-          ((len(activity_stats['bpm'].split(',')) - 1) / 4, tlist[len(tlist) / 2]),
-          ((len(activity_stats['bpm'].split(',')) - 1) / 2, tlist[-1]),
+          (tlist[-1] / 2, tlist[-1] / 2),
+          (activity_stats['speed'].split('],[')[-1].split(',')[0], tlist[-1]),
           ]
       activity_stats['times'] = times
       if not memcache.set(a.str_key, activity_stats, 60 * 120):

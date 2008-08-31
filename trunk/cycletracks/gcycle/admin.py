@@ -1,3 +1,4 @@
+from django.http import *
 from django.shortcuts import render_to_response
 from django.contrib.auth import decorators as auth_decorators
 from google.appengine.ext import db

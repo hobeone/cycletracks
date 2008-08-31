@@ -56,48 +56,56 @@ def report(request, group_by):
   acts.ancestor(request.user)
   acts = acts.fetch(1000)
 
-  firstdate = datetime.date(
-      year=acts[0].start_time.year,
-      month=acts[0].start_time.month,
-      day=acts[0].start_time.day)
 
-  lastdate = datetime.date(
-      year=acts[-1].start_time.year,
-      month=acts[-1].start_time.month,
-      day=acts[-1].start_time.day)
-
-  if group_by == 'day':
-    timedelta = datetime.timedelta(days=1)
-    timegroup = lambda a: datetime.date(a.start_time.year,a.start_time.month,a.start_time.day)
-    tickformat = "%b %d %y"
-    firstdate = firstdate - (firstdate - firstdate.replace(day=firstdate.day - firstdate.weekday() + 1))
-
-  elif group_by == 'month':
-    tickformat = "%b %Y"
-    firstdate = firstdate.replace(day=1)
-    lastdate = lastdate.replace(day=1)
-    timegroup = lambda a: datetime.date(a.start_time.year,a.start_time.month,1)
+  if not acts:
+    return render_to_response('report.html', {
+      'data': None,
+      'user': request.user
+      })
 
   else:
-    group_by = 'week'
-    tickformat = "%b %d"
-    firstdate = firstdate - (firstdate - firstdate.replace(day=firstdate.day - firstdate.weekday() + 1))
-    lastdate = lastdate.replace(day=1)
-    timedelta = datetime.timedelta(days=7)
-    timegroup = lambda a: datetime.date(a.start_time.year,a.start_time.month,a.start_time.day)
+    firstdate = datetime.date(
+        year=acts[0].start_time.year,
+        month=acts[0].start_time.month,
+        day=acts[0].start_time.day)
 
-  buckets = [firstdate]
-  while buckets[-1] < lastdate:
-    if group_by in ['day','week']:
-      buckets.append(buckets[-1] + timedelta)
+    lastdate = datetime.date(
+        year=acts[-1].start_time.year,
+        month=acts[-1].start_time.month,
+        day=acts[-1].start_time.day)
+
+    if group_by == 'day':
+      timedelta = datetime.timedelta(days=1)
+      timegroup = lambda a: datetime.date(a.start_time.year,a.start_time.month,a.start_time.day)
+      tickformat = "%b %d %y"
+      firstdate = firstdate - (firstdate - firstdate.replace(day=firstdate.day - firstdate.weekday() + 1))
+
+    elif group_by == 'month':
+      tickformat = "%b %Y"
+      firstdate = firstdate.replace(day=1)
+      lastdate = lastdate.replace(day=1)
+      timegroup = lambda a: datetime.date(a.start_time.year,a.start_time.month,1)
+
     else:
-      pdate = buckets[-1]
-      buckets.append(next_month(buckets[-1]))
+      group_by = 'week'
+      tickformat = "%b %d"
+      firstdate = firstdate - (firstdate - firstdate.replace(day=firstdate.day - firstdate.weekday() + 1))
+      lastdate = lastdate.replace(day=1)
+      timedelta = datetime.timedelta(days=7)
+      timegroup = lambda a: datetime.date(a.start_time.year,a.start_time.month,a.start_time.day)
 
-  data = sum_by_buckets(acts, buckets, timegroup)
-  return render_to_response('report.html',
-      {'data' : data,
-       'tickformat' : tickformat,
-       'group_by' : group_by,
-       'user':  request.user}
+    buckets = [firstdate]
+    while buckets[-1] < lastdate:
+      if group_by in ['day','week']:
+        buckets.append(buckets[-1] + timedelta)
+      else:
+        pdate = buckets[-1]
+        buckets.append(next_month(buckets[-1]))
+
+    data = sum_by_buckets(acts, buckets, timegroup)
+    return render_to_response('report.html',
+        {'data' : data,
+         'tickformat' : tickformat,
+         'group_by' : group_by,
+         'user':  request.user}
   )

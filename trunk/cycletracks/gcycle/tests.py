@@ -4,6 +4,7 @@ import os
 
 from gcycle.models import *
 from gcycle import views
+from gcycle import activity
 from gcycle.lib import pytcx
 
 from google.appengine.api import datastore_errors
@@ -143,6 +144,14 @@ class UserTestCase(unittest.TestCase):
   def tearDown(self):
     for u in User.all():
       u.delete()
+
+class DataCleanTestCase(unittest.TestCase):
+  def setUp(self):
+    self.speed_data = [1,2,3,4,5,10,6,7,8,9,10,11]
+
+  def testRunningMean(self):
+    for i in activity.rm3gen(self.speed_data):
+      print i
 
 
 class ActivityTestCase(unittest.TestCase):

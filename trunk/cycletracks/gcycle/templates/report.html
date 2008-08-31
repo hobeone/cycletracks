@@ -22,6 +22,7 @@
 
 </div>
 <div id="report_right">
+  {% if data %}
   <div id="report_graph" style="width:830px;height:350px"></div>
 
   <br/>
@@ -88,5 +89,8 @@
 
 
       </script>
-</div>
+    </div>
+    {% else %}
+You have no activities uploaded.
+    {% endif %}
 {% endblock %}

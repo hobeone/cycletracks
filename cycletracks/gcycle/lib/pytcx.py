@@ -115,6 +115,7 @@ def parse_lap(start_time, lap_string):
   speed_list = []
   altitude_list = []
   timepoints = []
+  distance_list = []
   starttime = None
   prev_time = None
   endtime = starttime
@@ -139,10 +140,12 @@ def parse_lap(start_time, lap_string):
     if dist is None:
       # no distance delta == no speed
       speed_list.append(0)
+      distance_list.append(distance_list[-1])
       timepoints.append((point_time - starttime).seconds)
     else:
       dist = float(dist)
       dist_delta = dist - prev_distance
+      distance_list.append(dist)
       if dist_delta == 0:
         speed_list.append(0)
         timepoints.append((point_time - starttime).seconds)
@@ -220,6 +223,7 @@ def parse_lap(start_time, lap_string):
     'cadence_list' : joinArrayOrNone([str(c) for c in cadence_list]),
     'speed_list' : joinArrayOrNone([ '%.2f' % s for s in speed_list]),
     'altitude_list' : joinArrayOrNone(map(str,altitude_list)),
+    'distance_list' : joinArrayOrNone([ '%.2f' % s for s in distance_list]),
     'timepoints' : joinArrayOrNone([str(t) for t in timepoints]),
     'total_ascent' : total_ascent,
     'total_descent' : total_descent

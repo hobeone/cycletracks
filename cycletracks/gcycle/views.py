@@ -95,7 +95,7 @@ def upload(request):
   if request.method == 'POST':
     form = UploadFileForm(request.POST, request.FILES)
     if form.is_valid():
-      cache_key = dashboard_cache_key(request)
+      cache_key = dashboard_cache_key(request.user)
       if not memcache.delete(cache_key):
         logging.error("Memcache delete failed.")
       try:

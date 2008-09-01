@@ -46,6 +46,8 @@ def update(request):
       if getattr(update_user.get_profile(), user_attribute) != user_value:
         setattr(update_user.get_profile(), user_attribute, user_value)
         update_user.get_profile().save()
+      if not memcache.delete(views.dashboard_cache_key(request.user)):
+        logging.error("Memcache delete failed.")
       return HttpResponse(user_value)
   except Exception, e:
     return HttpResponse(e)

@@ -3,16 +3,32 @@
 
 {% block content %}
 
-Caveats about data representation in cycletracks:
+<p>
+Cycletracks is a webapp to store and view information from a Garmin cycle computer (I've developed it using my Garmin 705).  I put it together after getting fed up with the really really long load times of Motionbased and Connect.
+</p>
+
+<p>
+If you want to help develop the app please let me know.  You can grab the source from the link below and get hacking.
+</p>
+
+<strong>What you can do:</strong>
+<ul>
+  <li>Upload your TCX files (either one at a time or as a compressed archive).  This may mean that you need a 605 or 705 as older Garmins may not export in this format.</li>
+  <li>See the grand totals of all your activities.</li>
+  <li>See a detailed view of one activity with a Google map, and graphs for heart rate, cadence etc.</li>
+  <li>Download a kml file of an activity for viewing in Google Earth or Google Maps</li>
+  <li>Generate reports which group activities by week or month</li>
+</ul>
+
+<strong>Caveats about data representation in cycletracks:</strong>
 
 <ul>
   <li>Times are rounded to integers of seconds</li>
   <li>Graph datapoints are compressed down to 500 points</li>
   <li>Map data is encoded before rendering (to save space) but this may introduce some imprecision into the geo points.</li>
-  <li>It's kinda hacky
 </ul>
 
-Other Notes:
+<strong>Other Notes:</strong>
 <ul>
   <li>To change the name of an activity click on the name in the show screen, an edit box should appear.</li>
   <li>This should work with the public and comment fields too</li>

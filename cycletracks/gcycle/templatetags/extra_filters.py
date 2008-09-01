@@ -77,5 +77,5 @@ def format_date(date, formatstring):
 @register.filter
 def value_or_zero(value):
   if not value:
-    value = 0
+    value = 'null'
   return value

@@ -32,20 +32,21 @@
         var datasets = {
           "bpm": {
             label: "Heart Rate",
-            data: []
+            data: [],
+            bars: {show: true, barWidth: {{barwidth}}},
             },
           "speed": {
             label: "Speed",
-            data: []
+            data: [],
+            bars: {show: true, barWidth: {{barwidth}}},
           },
           "cadence": {
             label: "Cadence",
-            data: []
+            data: [],
+            bars: {show: true, barWidth: {{barwidth}}},
           },
         };
-        {% for d,activity in data.items %}datasets['bpm'].data.push([{{forloop.counter0}}, {{activity.average_bpm|value_or_zero}}]); datasets['speed'].data.push([{{forloop.counter0}}, {{activity.average_speed|value_or_zero}}]); datasets['cadence'].data.push([{{forloop.counter0}}, {{activity.average_cadence|value_or_zero}}]);{% endfor %}
-        var xticks = []
-        {% for d,activity in data.items %}xticks.push([{{forloop.counter0}}, "{{d|format_date:tickformat}}"]);{% endfor %}
+        {% for d,activity in data.items %}datasets['bpm'].data.push([{{d}},{{activity.average_bpm|value_or_zero}}]); datasets['speed'].data.push([{{d}},{{activity.average_speed|value_or_zero}}]); datasets['cadence'].data.push([{{d}},{{activity.average_cadence|value_or_zero}}]);{% endfor %}
 
         var i = 0;
         jQuery.each(datasets, function(key, val) {
@@ -79,8 +80,11 @@
 
           if (data.length > 0)
             jQuery.plot(jQuery("#report_graph"), data, {
-                yaxis: { min: 0 },
-                xaxis: { ticks: xticks}
+              yaxis: { min: 0 },
+              xaxis: { mode: 'time' ,
+                timeformat: '{{tickformat}}',
+                minTickSize: {{ticksize|safe}},
+                },
             });
          }
 

@@ -4,10 +4,10 @@
 {% block title %}CycleTracks: Activity {{ activity.name }}{% endblock %}
 
 {% block extra_head %}
-<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAoU2YDajIyJPdof6GDzJKshRpKIwH9gjHw5l4siVVB7mD23aSXhSHvrtQQCEPRhQENq4B3lk8joMYzQ"></script>
 <script type="text/javascript" src="/static/greversegeocoder.js"></script>
 
 <script type="text/javascript">
+  google.load("jquery", "1.2.6");
   google.load("maps", "2.x");
   function handle_point(point, map, element_id) {
     var reverse_gcode = new GReverseGeocoder(map);

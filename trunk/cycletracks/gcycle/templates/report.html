@@ -4,7 +4,10 @@
 {% block title %}CycleTracks Reports{% endblock %}
 
 {% block extra_head %}
-<script type="text/javascript" src="/static/jquery.js"></script>
+<script src="http://www.google.com/jsapi"></script>
+<script>
+  google.load("jquery", "1.2.6");
+</script>
 <script type="text/javascript" src="/static/jquery.flot.pack.js"></script>
 <script>jQuery.noConflict();</script>
 
@@ -33,20 +36,25 @@
           "bpm": {
             label: "Heart Rate",
             data: [],
-            bars: {show: true, barWidth: {{barwidth}}},
+            bars: {show: true, barWidth: {{gsettings.barwidth}}},
             },
           "speed": {
             label: "Speed",
             data: [],
-            bars: {show: true, barWidth: {{barwidth}}},
+            bars: {show: true, barWidth: {{gsettings.barwidth}}},
           },
           "cadence": {
             label: "Cadence",
             data: [],
-            bars: {show: true, barWidth: {{barwidth}}},
+            bars: {show: true, barWidth: {{gsettings.barwidth}}},
+          },
+          "calories": {
+            label: "Total Calories",
+            data: [],
+            bars: {show: true, barWidth: {{gsettings.barwidth}}},
           },
         };
-        {% for d,activity in data.items %}datasets['bpm'].data.push([{{d}},{{activity.average_bpm|value_or_zero}}]); datasets['speed'].data.push([{{d}},{{activity.average_speed|value_or_zero}}]); datasets['cadence'].data.push([{{d}},{{activity.average_cadence|value_or_zero}}]);{% endfor %}
+        {% for d,activity in data.items %}datasets['bpm'].data.push([{{d}},{{activity.average_bpm|value_or_zero}}]);datasets['speed'].data.push([{{d}},{{activity.average_speed|value_or_zero}}]);datasets['cadence'].data.push([{{d}},{{activity.average_cadence|value_or_zero}}]);datasets['calories'].data.push([{{d}},{{activity.total_calories|value_or_zero}}]);{% endfor %}
 
         var i = 0;
         jQuery.each(datasets, function(key, val) {
@@ -56,7 +64,7 @@
         // insert checkboxes
         var choiceContainer = jQuery("#choices");
         jQuery.each(datasets, function(key, val) {
-          if(key == 'bpm' || key == 'speed' || key == 'cadence') {
+          if(key == 'bpm') {
             choiceContainer.append('<br/><input type="checkbox" name="' + key +
               '" checked="checked" >' + val.label + '</input>');
           }
@@ -82,8 +90,8 @@
             jQuery.plot(jQuery("#report_graph"), data, {
               yaxis: { min: 0 },
               xaxis: { mode: 'time' ,
-                timeformat: '{{tickformat}}',
-                minTickSize: {{ticksize|safe}},
+                timeformat: '{{gsettings.tickformat}}',
+                minTickSize: {{gsettings.ticksize|safe}},
                 },
             });
          }

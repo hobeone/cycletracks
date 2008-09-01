@@ -4,6 +4,7 @@ import os
 
 from gcycle.models import *
 from gcycle import views
+from gcycle import reports
 from gcycle import activity
 from gcycle.lib import pytcx
 
@@ -17,6 +18,59 @@ from django.test.client import Client
 
 import pprint
 pp = pprint.PrettyPrinter(indent=2)
+
+class testReports(unittest.TestCase):
+  def setUp(self):
+    self.gaia_user = users.User('f@e.com')
+    self.app_user = User(user = self.gaia_user, username = 'bar')
+    self.app_user.put()
+    for a in Activity.all():
+      a.delete()
+
+  def testBuckets(self):
+    Activity(
+        user = self.app_user,
+        name = 'foo',
+        sport = 'bar',
+        total_meters = 4.0,
+        start_time = datetime.datetime(2008, 2, 22, 10),
+        end_time = datetime.datetime(2008, 2, 22, 12),
+        total_time = 7200,
+        rolling_time = 7200,
+        average_speed = 2.0,
+        maximum_speed = 2.0,
+    ).put()
+
+    Activity(
+        user = self.app_user,
+        name = 'foobar2',
+        sport = 'bar',
+        total_meters = 16.0,
+        start_time = datetime.datetime(2008, 4, 1, 10),
+        end_time = datetime.datetime(2008, 4, 1, 12),
+        total_time = 7200,
+        rolling_time = 7200,
+        average_speed = 4.0,
+        maximum_speed = 6.0,
+    ).put()
+
+    acts = Activity.all().fetch(2)
+
+    firstdate = datetime.date(
+        year=acts[0].start_time.year,
+        month=acts[0].start_time.month,
+        day=acts[0].start_time.day)
+
+    lastdate = datetime.date(
+        year=acts[-1].start_time.year,
+        month=acts[-1].start_time.month,
+        day=acts[-1].start_time.day)
+
+    b = reports.createBuckets(firstdate, lastdate, 'week')
+    timegroup = lambda a: datetime.date(a.start_time.year,a.start_time.month,a.start_time.day)
+    r = reports.sum_by_buckets(acts, b, timegroup)
+    pp.pprint(r)
+
 
 class testTcxParser(unittest.TestCase):
   multiline_tag = """<b>

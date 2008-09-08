@@ -44,6 +44,9 @@ handlers:
 - url: /activity/kml/.*
   script: main.py
 
+- url: /activity/public/.*
+  script: main.py
+
 - url: /admin/.*
   script: main.py
   login: admin

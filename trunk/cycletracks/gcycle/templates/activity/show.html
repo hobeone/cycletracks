@@ -170,16 +170,11 @@
       <div id="map" style="width: 400px; height: 400px"></div>
       <div>
         <a href="http://maps.google.com/maps?q={{kml_location}}&t=p">Bigger Map</a> -
-        <a href="{{kml_location}}">Download KML</a>
+        <a href="{{kml_location}}">Download KML</a> -
+        <a href="/activity/public/{{activity.str_key}}">Public Link</a>
       </div>
     </td>
     <td width="50%">
-      Heart Rate (BPM)<br><br>
-      <div id="bpm_graph" style="width:500px;height:200px"></div>
-
-      <br>Cadence (RPM)<br><br>
-      <div id="cadence_graph" style="width:500px;height:200px"></div>
-
       <br>Speed (kph)<br><br>
       <div id="speed_graph" style="width:500px;height:200px"></div>
 
@@ -188,6 +183,12 @@
 
       <br>Distance (Meters)<br><br>
       <div id="distance_graph" style="width:500px;height:200px"></div>
+
+      Heart Rate (BPM)<br><br>
+      <div id="bpm_graph" style="width:500px;height:200px"></div>
+
+      <br>Cadence (RPM)<br><br>
+      <div id="cadence_graph" style="width:500px;height:200px"></div>
 
 <script id="source" language="javascript" type="text/javascript">
   jQuery(function () {

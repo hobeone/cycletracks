@@ -68,8 +68,8 @@ class testReports(unittest.TestCase):
 
     b = reports.createBuckets(firstdate, lastdate, 'week')
     timegroup = lambda a: datetime.date(a.start_time.year,a.start_time.month,a.start_time.day)
-    r = reports.sum_by_buckets(acts, b, timegroup)
-    pp.pprint(r)
+    acts = reports.group_by_attr(acts, timegroup)
+    r = reports.sum_by_buckets(acts, b)
 
 
 class testTcxParser(unittest.TestCase):
@@ -201,11 +201,11 @@ class UserTestCase(unittest.TestCase):
 
 class DataCleanTestCase(unittest.TestCase):
   def setUp(self):
-    self.speed_data = [1,2,3,4,5,10,6,7,8,9,10,11]
+    self.speed_data = range(0,100)
 
   def testRunningMean(self):
-    for i in activity.rm3gen(self.speed_data):
-      print i
+    means = [m for m in activity.rm3gen(self.speed_data)]
+    self.assertEqual(len(means) + 2, len(self.speed_data))
 
 
 class ActivityTestCase(unittest.TestCase):

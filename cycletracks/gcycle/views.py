@@ -34,22 +34,13 @@ def handle_view_exception(request):
 
 @auth_decorators.login_required
 def main(request):
-  user = request.user
-  return HttpResponseRedirect('/mytracks/')
-
-
-@auth_decorators.login_required
-def clean_broken_acts(request):
-  q = models.Activity.all()
-  for a in q:
-    if db.get(a._user) is None:
-      a.delete()
   return HttpResponseRedirect('/mytracks/')
 
 
 @auth_decorators.login_required
 def about(request):
   return render_to_response('about.html', {'user' : request.user})
+
 
 def dashboard_cache_key(user):
   key = '%s-dashboard' % str(user.key())
@@ -87,8 +78,10 @@ def dashboard(request, sorting=None, user=None):
     logging.debug('Got cached version of dashboard')
     return HttpResponse(cached['response'])
 
+
 class UploadFileForm(forms.Form):
   file = forms.Field(widget=forms.FileInput())
+
 
 @auth_decorators.login_required
 def upload(request):
@@ -109,16 +102,32 @@ def upload(request):
 
 
 def ziperator(zfile):
+  """yields each file in a zipfile
+  Args:
+    zfile: ZipFile instance
+
+  Returns:
+    yields the contents of each file in a zipfile in succession
+  """
   files = zfile.namelist()
   for f in files:
     yield zfile.read(f)
 
 def tarerator(tfile):
+  """Same as ziperator() but for tarfiles"""
   files = tfile.getnames()
   for f in files:
     yield tfile.extractfile(f).read()
 
 def activity_save(user, activity_dict):
+  """Save an activity and laps
+  Args:
+  - user: User instance, user who will own the activity
+  - activity_dict: dict as returned from parse_tcx()
+
+  Returns:
+  - Activity object key
+  """
   activity = models.Activity(parent = user, user = user, **activity_dict)
   akey = activity.put()
   for lap_dict in activity_dict['laps']:
@@ -126,6 +135,7 @@ def activity_save(user, activity_dict):
     lap.put()
 
   return akey
+
 
 def handle_uploaded_file(user, filedata):
   files = []

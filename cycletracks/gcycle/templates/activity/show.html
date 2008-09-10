@@ -56,9 +56,9 @@
 
 </script>
 
-<script>google.load("jquery", "1.2.6");</script>
+<script type="text/javascript">google.load("jquery", "1.2.6");</script>
 <script type="text/javascript" src="/static/jquery.flot.pack.js"></script>
-<script>jQuery.noConflict();</script>
+<script type="text/javascript">jQuery.noConflict();</script>
 
 
 {% endblock %}
@@ -77,7 +77,7 @@
             <script type="text/javascript">
               new Ajax.InPlaceEditor('editable_name', '/activity/update/', {
                 callback: function(form, value) {
-                  return 'activity_id={{activity.key}}&attribute=name&value='+escape(value)
+                  return "activity_id={{activity.key}}&attribute=name&value="+escape(value)
                 }
               })
             </script>
@@ -165,8 +165,8 @@
           </td>
         </tr>
       </table>
-      <br>
-      <br>
+      <br/>
+      <br/>
       <div id="map" style="width: 400px; height: 400px"></div>
       <div>
         <a href="http://maps.google.com/maps?q={{kml_location}}&t=p">Bigger Map</a> -
@@ -175,19 +175,19 @@
       </div>
     </td>
     <td width="50%">
-      <br>Speed (kph)<br><br>
+      <br/>Speed (kph)<br/><br/>
       <div id="speed_graph" style="width:500px;height:200px"></div>
 
-      <br>Altitude (Meters)<br><br>
+      <br/>Altitude (Meters)<br/><br/>
       <div id="altitude_graph" style="width:500px;height:200px"></div>
 
-      <br>Distance (Meters)<br><br>
+      <br/>Distance (Meters)<br/><br/>
       <div id="distance_graph" style="width:500px;height:200px"></div>
 
-      Heart Rate (BPM)<br><br>
+      Heart Rate (BPM)<br/><br/>
       <div id="bpm_graph" style="width:500px;height:200px"></div>
 
-      <br>Cadence (RPM)<br><br>
+      <br/>Cadence (RPM)<br/><br/>
       <div id="cadence_graph" style="width:500px;height:200px"></div>
 
 <script id="source" language="javascript" type="text/javascript">

@@ -17,7 +17,6 @@ from gcycle.models import *
 
 # Super hacky reporting page.  Date handling is a bitch.
 
-
 def group_by_attr(activities, groupby):
   """Group the given activities into a dict using the groupby function to
   generate the key for the activity
@@ -87,6 +86,16 @@ def sum_by_buckets(activities, buckets):
   return data
 
 def getBucketEnd(start, bucketsize):
+  """Gives the datetime that coressponds to the end of a given time period.
+  Args:
+  - start: datetime or date of the start of the bucket
+  - bucketsize: string, one of day, week or month describing the size of the
+    time period.
+
+  Returns:
+  - datetime of the end of the period
+  """
+
   bucketend = None
   if bucketsize == 'day':
     bucketend = start + datetime.timedelta(days=1)
@@ -98,6 +107,17 @@ def getBucketEnd(start, bucketsize):
 
 
 def createBuckets(startdate, lastdate, bucketsize):
+  """Returns a list of start and end dates for the time buckets between
+  startdate and enddate.
+
+  Args:
+  - startdate: datetime or date for the start of the first bucket
+  - lastdate: datetime or date for the start of the last bucket
+  - bucketsize: size of each bucket to split the daterange into
+
+  Returns:
+  - list of buckets described by a start and end date: [ [date,date], ...]
+  """
   bucket_start = startdate
   bucket_end = getBucketEnd(startdate, bucketsize)
   buckets = [ [bucket_start, bucket_end] ]

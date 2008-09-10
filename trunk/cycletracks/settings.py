@@ -107,3 +107,5 @@ INSTALLED_APPS = (
 CACHE_BACKEND = 'memcached://'
 
 AUTH_PROFILE_MODULE = 'gcycle.UserProfile'
+
+USE_ETAGS = True

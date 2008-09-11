@@ -183,7 +183,7 @@ def update(request):
   try:
     activity_id = request.POST['activity_id']
     activity_attribute = request.POST['attribute']
-    activity_value = request.POST['value']
+    activity_value = request.POST['update_value']
 
     # LAME
     if activity_attribute == 'public':
@@ -207,26 +207,29 @@ def update(request):
           logging.error("Memcache delete failed.")
       return HttpResponse(activity_value)
   except Exception, e:
-    return HttpResponse(e)
+    return HttpResponse('Error: %s' % e)
+
 
 @auth_decorators.login_required
 def delete(request):
   if request.method == 'POST':
-      activity_id = request.POST['activity_id']
-      a = Activity.get(activity_id)
-      if a is None:
-        return HttpResponseNotFound(
-            "That activity doesn't exist")
-      if request.user != a.user:
-        return HttpResponseForbidden(
-            'You are not allowed to delete this activity')
+    if 'activity_id' not in request.POST:
+      return HttpResponseNotFound('No activity id given')
+    activity_id = request.POST['activity_id']
+    a = Activity.get(activity_id)
+    if a is None:
+      return HttpResponseNotFound(
+          "That activity doesn't exist")
+    if request.user != a.user:
+      return HttpResponseForbidden(
+          'You are not allowed to delete this activity')
 
-      a.safe_delete()
-      if not memcache.delete(str(a.key())):
-        logging.error("Memcache delete failed.")
-      if not memcache.delete(views.dashboard_cache_key(request.user)):
-        logging.error("Memcache delete failed.")
+    a.safe_delete()
+    if not memcache.delete(str(a.key())):
+      logging.error("Memcache delete failed.")
+    if not memcache.delete(views.dashboard_cache_key(request.user)):
+      logging.error("Memcache delete failed.")
 
-      return HttpResponse('')
+    return HttpResponse('')
   else:
     return HttpResponse('Must use POST')

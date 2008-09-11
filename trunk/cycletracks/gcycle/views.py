@@ -6,6 +6,7 @@ from django.template import loader, Context
 from django.template.loader import render_to_string
 from django.shortcuts import render_to_response
 from django import forms
+from django.conf import settings
 
 from django.contrib.auth import decorators as auth_decorators
 
@@ -58,6 +59,7 @@ def dashboard(request, sorting=None, user=None):
   key = dashboard_cache_key(user)
   cache_key = dashboard_cache_key(user)
   cached = memcache.get(cache_key)
+  if settings.DEBUG: cached = None
   if cached is None or cached['sorting'] != sorting:
     activity_query = models.Activity.all()
     activity_query.ancestor(user)

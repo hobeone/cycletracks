@@ -5,6 +5,8 @@
 
 {% block extra_head %}
 <script type="text/javascript" src="/static/greversegeocoder.js"></script>
+<script type="text/javascript" src="/static/jquery.inplace.pack.js"></script>
+<script type="text/javascript" src="/static/jquery.flot.pack.js"></script>
 
 <script type="text/javascript">
   google.load("maps", "2.x");
@@ -56,11 +58,6 @@
 
 </script>
 
-<script type="text/javascript">google.load("jquery", "1.2.6");</script>
-<script type="text/javascript" src="/static/jquery.flot.pack.js"></script>
-<script type="text/javascript">jQuery.noConflict();</script>
-
-
 {% endblock %}
 
 
@@ -75,11 +72,12 @@
           <td>
             <span id="editable_name">{{ activity.name }}</span>
             <script type="text/javascript">
-              new Ajax.InPlaceEditor('editable_name', '/activity/update/', {
-                callback: function(form, value) {
-                  return "activity_id={{activity.key}}&attribute=name&value="+escape(value)
-                }
-              })
+              $("#editable_name").editInPlace({
+                url: "/activity/update/",
+                params: "ajax=yes",
+                value_required: true,
+                params: "activity_id={{activity.key}}&attribute=name"
+              });
             </script>
           </td>
         </tr>
@@ -140,15 +138,14 @@
           <td>
             <span id="public_flag">{{ activity.public }}</span>
             <script type="text/javascript">
-              new Ajax.InPlaceCollectionEditor(
-                  'public_flag',
-                  '/activity/update/',
-                  {
-                    collection: ['True', 'False'],
-                    callback: function(form, value) {
-                        return 'activity_id={{activity.key}}&attribute=public&value='+escape(value)
-                      }
-                    });
+              $("#public_flag").editInPlace({
+                url: "/activity/update/",
+                params: "ajax=yes",
+                value_required: true,
+                field_type: "select",
+                select_options: "True, False",
+                params: "activity_id={{activity.key}}&attribute=public",
+              });
             </script>
 
           </td>
@@ -158,9 +155,12 @@
           <td>
             <span id="editable_comment">{{ activity.comment }}</span>
             <script type="text/javascript">
-              new Ajax.InPlaceEditor('editable_comment', '/activity/update/', {
-                callback: function(form, value) { return 'activity_id={{activity.key}}&attribute=comment&value='+escape(value) }
-              })
+              $("#editable_comment").editInPlace({
+                url: "/activity/update/",
+                params: "ajax=yes",
+                value_required: true,
+                params: "activity_id={{activity.key}}&attribute=comment"
+              });
             </script>
           </td>
         </tr>
@@ -191,7 +191,7 @@
       <div id="cadence_graph" style="width:500px;height:200px"></div>
 
 <script id="source" language="javascript" type="text/javascript">
-  jQuery(function () {
+  $(function () {
       var datasets = {
         "bpm": {
           label: "Heart Rate",
@@ -236,12 +236,12 @@
           min: 0,
         },
       };
-      jQuery.plot(jQuery("#bpm_graph"), [datasets['bpm']], shared_options);
-      jQuery.plot(jQuery("#cadence_graph"), [datasets['cadence']], shared_options);
-      jQuery.plot(jQuery("#speed_graph"), [datasets['speed']], shared_options);
-      jQuery.plot(jQuery("#distance_graph"), [datasets['distance']], shared_options);
+      $.plot($("#bpm_graph"), [datasets['bpm']], shared_options);
+      $.plot($("#cadence_graph"), [datasets['cadence']], shared_options);
+      $.plot($("#speed_graph"), [datasets['speed']], shared_options);
+      $.plot($("#distance_graph"), [datasets['distance']], shared_options);
       shared_options.yaxis.min = null;
-      jQuery.plot(jQuery("#altitude_graph"), [datasets['altitude']], shared_options);
+      $.plot($("#altitude_graph"), [datasets['altitude']], shared_options);
       });
 </script>
 

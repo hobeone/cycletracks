@@ -5,21 +5,21 @@
 
 {% block extra_head %}
 <script type="text/javascript">
-  function delete_activity(id,element_id) {
+  function delete_activity(id) {
     if (confirm('Are you sure?'))
     {
-    new Ajax.Request('/activity/delete/',
-                     {
-                       parameters: {activity_id: id},
-                       asynchronous:true,
-                       onSuccess: function(response) {
-                         new Effect.Fade('activity_'+id, {duration: 0.5})
-                       },
-                       onFailure: function(response) {
-                        alert('Error: ' + response.statusText)
-                       }
-                     }
-        );
+    $.ajax({
+        url: '/activity/delete/',
+        type: 'POST',
+        timeout: 4000,
+        data: {'activity_id':id},
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          alert('Error Deleting Activity ' + id +': ' + textStatus)
+        },
+        success: function(response){
+          $('#activity_'+id).fadeOut(500)
+        }
+    });
     }
   };
 </script>
@@ -120,7 +120,7 @@
       <td>{{ entry.average_speed|kph_to_prefered_speed:user.get_profile.use_imperial }} <br/> {{ entry.maximum_speed|kph_to_prefered_speed:user.get_profile.use_imperial }}</td>
       <td>{{ entry.total_ascent|format_meters:user.get_profile.use_imperial }} <br/> {{entry.total_descent|format_meters:user.get_profile.use_imperial}}</td>
       <td>{{ entry.total_calories|floatformat:"-2" }} Cal</td>
-      <td id="act_notice{{forloop.counter0}}" onclick="delete_activity('{{ entry.key }}', 'act_notice{{forloop.counter0}}')">delete</td>
+      <td onclick="delete_activity('{{ entry.key }}')">delete</td>
     </tr>
     {% endfor %}
   {% else %}

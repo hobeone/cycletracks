@@ -17,7 +17,7 @@ import logging
 @auth_decorators.login_required
 def settings(request):
   return render_to_response('user/settings.html',
-      {'user': request.user, 'offsets': range(-14,12)})
+      {'user': request.user, 'offsets': ','.join(map(str,range(-14,12)))})
 
 VALID_USER_ATTRIBUTES = ['use_imperial', 'tzoffset']
 
@@ -26,7 +26,7 @@ def update(request):
   try:
     update_user = User.get(request.POST['user_id'])
     user_attribute = request.POST['attribute']
-    user_value = request.POST['value']
+    user_value = request.POST['update_value']
 
     if update_user != request.user:
       return render_to_response('error.html',

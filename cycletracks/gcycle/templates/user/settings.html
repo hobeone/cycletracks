@@ -1,5 +1,8 @@
 {% extends "base.html" %}
 {% block title %}CycleTracks User Settings{% endblock %}
+{% block extra_head %}
+<script type="text/javascript" src="/static/jquery.inplace.pack.js"></script>
+{% endblock %}
 
 {% block content %}
 
@@ -7,29 +10,27 @@ Username: {{ user.username }}
 <p>
 Use Imperial Units?: <span id="edit_units">{{user.get_profile.use_imperial}}</span>
 <script type="text/javascript">
-  new Ajax.InPlaceCollectionEditor(
-      'edit_units',
-      '/user/update/',
-      {
-        collection: ['True', 'False'],
-        callback: function(form, value) {
-          return 'user_id={{user.key}}&attribute=use_imperial&value='+escape(value)
-          }
-        });
+  $("#edit_units").editInPlace({
+    url: "/user/update/",
+    params: "ajax=yes",
+    value_required: true,
+    field_type: "select",
+    select_options: "True, False",
+    params: "user_id={{user.key}}&attribute=use_imperial",
+  });
 </script>
 
 <p>
 Time Zone Offset: <span id="edit_tzoffset">{{user.get_profile.tzoffset}}</span>
 <script type="text/javascript">
-  new Ajax.InPlaceCollectionEditor(
-      'edit_tzoffset',
-      '/user/update/',
-      {
-        collection: {{offsets}},
-        callback: function(form, value) {
-          return 'user_id={{user.key}}&attribute=tzoffset&value='+escape(value)
-          }
-        });
+  $("#edit_tzoffset").editInPlace({
+    url: "/user/update/",
+    params: "ajax=yes",
+    value_required: true,
+    field_type: "select",
+    select_options: "{{offsets}}",
+    params: "user_id={{user.key}}&attribute=tzoffset",
+  });
 </script>
 
 <p>

@@ -38,7 +38,6 @@ def main(request):
   return HttpResponseRedirect('/mytracks/')
 
 
-@auth_decorators.login_required
 def about(request):
   return render_to_response('about.html', {'user' : request.user})
 

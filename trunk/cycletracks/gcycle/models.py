@@ -6,32 +6,57 @@ from gcycle.lib.average import *
 from django.core.exceptions import ImproperlyConfigured
 from django.db import models
 from gcycle.lib.memoized import *
+import bz2
 
+# Monkey patch appengine supplied User model.
 def new_getprofile(self):
-    """
-    Returns site-specific profile for this user. Raises
-    SiteProfileNotAvailable if this site does not allow profiles.
+  """
+  Returns site-specific profile for this user. Raises
+  SiteProfileNotAvailable if this site does not allow profiles.
 
-    When using the App Engine authentication framework, users are created
-    automatically.
-    """
-    from django.contrib.auth.models import SiteProfileNotAvailable
-    if not hasattr(self, '_profile_cache'):
-      from django.conf import settings
-      if not hasattr(settings, "AUTH_PROFILE_MODULE"):
-        raise SiteProfileNotAvailable
-      try:
-        app_label, model_name = settings.AUTH_PROFILE_MODULE.split('.')
-        model = models.get_model(app_label, model_name)
-        self._profile_cache = model.all().filter("user =", self).get()
-        if not self._profile_cache:
-          self._profile_cache = model(user = self)
-          self._profile_cache.put()
-      except (ImportError, ImproperlyConfigured):
-        raise SiteProfileNotAvailable
-    return self._profile_cache
+  When using the App Engine authentication framework, users are created
+  automatically.
+  """
+  from django.contrib.auth.models import SiteProfileNotAvailable
+  if not hasattr(self, '_profile_cache'):
+    from django.conf import settings
+    if not hasattr(settings, "AUTH_PROFILE_MODULE"):
+      raise SiteProfileNotAvailable
+    try:
+      app_label, model_name = settings.AUTH_PROFILE_MODULE.split('.')
+      model = models.get_model(app_label, model_name)
+      self._profile_cache = model.all().filter("user =", self).get()
+      if not self._profile_cache:
+        self._profile_cache = model(user = self)
+        self._profile_cache.put()
+    except (ImportError, ImproperlyConfigured):
+      raise SiteProfileNotAvailable
+  return self._profile_cache
 
 User.get_profile = new_getprofile
+
+
+class BzipBlobProperty(db.BlobProperty):
+  data_type = db.Blob
+  def get_value_for_datastore(self, model_instance):
+    value = super(BzipBlobProperty, self).get_value_for_datastore(
+        model_instance)
+    return db.Blob(bz2.compress(value))
+
+  def make_value_from_datastore(self, value):
+    return bz2.decompress(value)
+
+
+class CsvListProperty(db.ListProperty):
+  data_type = db.Text
+
+  def get_value_for_datastore(self, model_instance):
+    value = super(CsvListProperty, self).get_value_for_datastore(
+        model_instance)
+    return ','.join(value)
+
+  def make_value_from_datastore(self, value):
+    return map(self.item_type,value.split(','))
 
 
 class UserProfile(BaseModel):
@@ -88,7 +113,6 @@ class UserProfile(BaseModel):
     total_data['average_cadence'] = average(total_data['average_cadence'])
     total_data['average_bpm'] = average(total_data['average_bpm'])
     return total_data
-
 
 class Activity(BaseModel):
   user = db.ReferenceProperty(User, required=True)
@@ -233,6 +257,10 @@ class Activity(BaseModel):
     """Add averages weighted by rolling time"""
     return (getattr(self,prop) * self.rolling_time + getattr(other,prop) * other.rolling_time) / (self.rolling_time + other.rolling_time)
 
+
+class SourceDataFile(BaseModel):
+  activity = db.ReferenceProperty(Activity, required=True)
+  data = BzipBlobProperty(required=True)
 
 
 class Lap(BaseModel):

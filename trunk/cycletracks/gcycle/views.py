@@ -131,6 +131,10 @@ def activity_save(user, activity_dict):
   """
   activity = models.Activity(parent = user, user = user, **activity_dict)
   akey = activity.put()
+  d = models.SourceDataFile(parent = activity,
+      data = activity_dict['tcxdata'],
+      activity = activity)
+  d.put()
   for lap_dict in activity_dict['laps']:
     lap = models.Lap(parent = activity, activity = activity, **lap_dict)
     lap.put()
@@ -175,7 +179,7 @@ def handle_uploaded_file(user, filedata):
     filedata.seek(0)
     files = [filedata.read()]
 
-  for f in files:
-    activities = pytcx.parse_tcx(f)
+  for file in files:
+    activities = pytcx.parse_tcx(file)
     for act_dict in activities:
       db.run_in_transaction(activity_save, user, act_dict)

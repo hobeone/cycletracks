@@ -14,76 +14,10 @@ import urllib
 import django.utils.simplejson
 
 import logging
+import datetime
 from gcycle import views
 from gcycle.models import *
-
-def rm3gen(valuelist):
-  """Given a list return a list of mean values based on a sliding 3 value window
-  based on this which i knicked from the tubes:
-  http://mail.python.org/pipermail/python-list/2002-September/163580.html
-
-  Args:
-  - valuelist: list of integers or floats
-
-  Returns:
-  - yields() each mean as an integer
-  """
-  temp = zip(valuelist[:-2], valuelist[1:-1], valuelist[2:])
-  for x in temp:
-    yield (int(sorted(x)[1]))
-
-
-def downsample(items, timepoints, factor=10):
-  """Crappy downsample by averaging factor items at a time.
-
-  Args:
-  - items: list to downsample, items must be summable
-  - timepoints: list of times corresponding to each item
-  - factor: factor to reduce the items by
-
-  Returns:
-  - list of downsampled items, and downsampled times
-  """
-  if len(items) != len(timepoints):
-    logging.error("items and times are different lengths")
-
-  window_start = 0
-  samp = []
-  times = []
-  if factor < 1: factor = 1
-  while window_start < len(items):
-    samp.append(
-        int(
-          sum(items[window_start:window_start+factor])
-            /
-          float(factor)
-        )
-    )
-    times.append(timepoints[window_start])
-    window_start += factor
-
-  return samp, times
-
-def process_data_with_time(data, times):
-  """Prepares data from an activity to be shown by the javascript graphing libs.
-
-  Args:
-  - data: list of datapoints
-  - times: corresponding list of times
-
-  Returns:
-  - javascript 2d array as a string:  [time, datapoint], ...
-  """
-  index = 0
-  factor = int(len(data) / 500.0)
-  sampled_data, sampled_times = downsample(data,times,factor)
-  export_data = []
-  for i in rm3gen(sampled_data):
-    export_data.append('[%s,%s]' % (sampled_times[index], i))
-    index += 1
-
-  return ','.join(export_data)
-
+from gcycle.templatetags.extra_filters import *
 
 def activity_kml(request, activity_id):
   """Convert the activity in to a kml file
@@ -111,38 +45,18 @@ def kml_location(request, activity):
 
 
 def show_activity(request, a):
-  activity_stats = memcache.get(a.str_key)
-  if settings.DEBUG: activity_stats = None
-  if activity_stats is None:
-    activity_stats = {
-      'activity' : a,
-      'user' : a.user,
-      'bpm' : process_data_with_time(a.bpm_list, a.time_list),
-      'cadence' : process_data_with_time(a.cadence_list, a.time_list),
-      'speed' : process_data_with_time(a.speed_list, a.time_list),
-      'altitude' : process_data_with_time(a.altitude_list, a.time_list),
-      'distance' : process_data_with_time(a.distance_list, a.time_list),
-      'pts': simplejson.dumps(a.encoded_points),
-      'levs' : simplejson.dumps(a.encoded_levels),
-      'sw' : a.sw_point,
-      'ne' : a.ne_point,
-      'start_lat_lng' : a.start_point,
-      'mid_lat_lng' : a.mid_point,
-      'end_lat_lng' : a.end_point,
-      'kml_location' : kml_location(request, a),
-    }
-    tlist = a.time_list
-    times = [
-        (0, tlist[0]),
-        (tlist[-1] / 2, tlist[-1] / 2),
-        (activity_stats['speed'].split('],[')[-1].split(',')[0], tlist[-1]),
-        ]
-    activity_stats['times'] = times
-    if not memcache.set(a.str_key, activity_stats, 60 * 120):
-      logging.error("Memcache set failed for %s." % a.str_key)
-  else:
-    logging.debug('Got cached version of activity')
-
+  activity_stats = {
+    'activity' : a,
+    'user' : a.user,
+    'pts': simplejson.dumps(a.encoded_points),
+    'levs' : simplejson.dumps(a.encoded_levels),
+    'sw' : a.sw_point,
+    'ne' : a.ne_point,
+    'start_lat_lng' : a.start_point,
+    'mid_lat_lng' : a.mid_point,
+    'end_lat_lng' : a.end_point,
+    'kml_location' : kml_location(request, a),
+  }
   return render_to_response('activity/show.html', activity_stats)
 
 
@@ -153,12 +67,60 @@ def public(request, activity):
     return render_to_response('error.html',
         {'error': "That activity doesn't exist."})
 
-
   if(not a.public):
     return render_to_response('error.html',
-      {'error': "You are not allowed to see this activity.  The activity doesn't belong to you and the owner hasn't made it public."})
+      {'error': "You are not allowed to see this activity. The activity doesn't belong to you and the owner hasn't made it public."})
 
   return show_activity(request, a)
+
+
+def data(request, activity_id):
+  """Convert activity datasets into a text file usable by timeplot:
+  date,altitude,speed,cadence,distance,bpm
+
+  Requires a valid activity_id.
+  """
+  activity = Activity.get(activity_id)
+  if activity is None:
+    return render_to_response('error.html',
+        {'error': "That activity doesn't exist."})
+  if (activity.safeuser != request.user and not activity.public
+      and not request.user.is_superuser):
+    return render_to_response('error.html',
+        {'error': ("You are not allowed to see this activity. The activity doesn't belong to you and the owner hasn't made it public.")})
+
+  activity_data = memcache.get(activity.str_key + '_data')
+  if settings.DEBUG: activity_data = None
+
+  if activity_data is None:
+    use_imperial = activity.user.get_profile().use_imperial
+    data = []
+    data = zip(activity.time_list, activity.altitude_list,
+        activity.speed_list, activity.cadence_list,
+        activity.distance_list, activity.bpm_list)
+    activity_data = []
+    st = activity.start_time + datetime.timedelta(hours=activity.user.get_profile().tzoffset)
+
+    for t,a,s,c,d,b in data:
+      activity_data.append('%s,%s,%s,%s,%s,%s' % (
+        (st + datetime.timedelta(seconds=t)).isoformat(),
+        meters_or_feet(a,use_imperial),
+        kph_to_prefered_speed(s,use_imperial),
+        c,
+        meters_to_prefered_distance(d,use_imperial),
+        b
+        )
+      )
+
+  if not memcache.set(activity.str_key + '_data', activity_data, 60 * 60):
+    logging.error("Memcache set failed for %s_data." % activity.str_key)
+
+
+  return HttpResponse(
+      render_to_string('activity/data.html',
+        { 'data' : "\n".join(activity_data)}),
+      mimetype='text/plain'
+      )
 
 
 @auth_decorators.login_required

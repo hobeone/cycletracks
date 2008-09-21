@@ -25,32 +25,50 @@ def seconds_to_hours(seconds):
 @register.filter
 def meters_to_prefered_distance(meters, use_imperial):
   dist = meters / 1000
-  units = 'km'
   if use_imperial:
     dist = km_to_miles(dist)
-    units = 'mi'
-  dist = '%.2f %s' % (dist, units)
+  dist = '%.2f' % (dist)
   return dist
 
-@register.filter
-def format_meters(meters, use_imperial):
-  units = 'm'
+def meters_or_feet(meters, use_imperial):
   dist = meters
   if use_imperial:
     dist = meters_to_feet(dist)
-    units = 'ft'
-  dist = '%.2f %s' % (dist, units)
+  return dist
+
+@register.filter
+def meters_or_feet_units(use_imperial):
+  if use_imperial:
+    return 'ft'
+  return 'm'
+
+@register.filter
+def miles_or_km_units(use_imperial):
+  if use_imperial:
+    return 'mi'
+  return 'km'
+
+@register.filter
+def mph_or_kph_units(use_imperial):
+  if use_imperial:
+    return 'mph'
+  return 'kph'
+
+@register.filter
+def format_meters(meters, use_imperial):
+  dist = meters
+  if use_imperial:
+    dist = meters_to_feet(dist)
+  dist = '%.2f' % (dist)
   return dist
 
 
 @register.filter
 def kph_to_prefered_speed(kph, use_imperial):
   speed = kph
-  units = 'kph'
   if use_imperial:
     speed = km_to_miles(speed)
-    units = 'mph'
-  speed = '%.2f %s' % (speed, units)
+  speed = '%.2f' % (speed)
   return speed
 
 @register.filter

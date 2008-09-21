@@ -13,11 +13,25 @@ from google.appengine.ext import db
 from google.appengine.api import users
 
 from appengine_django.auth.models import User
+from appengine_django.models import BaseModel
 
 from django.test.client import Client
 
 import pprint
 pp = pprint.PrettyPrinter(indent=2)
+class testModel(BaseModel):
+  csv = CsvListProperty(str)
+
+class testCsvListPropery(unittest.TestCase):
+
+  def testModel(self):
+    list = range(1,1000)
+    list = map(str,list)
+    c = testModel( csv = list)
+    key = c.put()
+    c = testModel.get(key)
+    self.failUnlessEqual(c.csv, list)
+
 
 class testReports(unittest.TestCase):
   def setUp(self):
@@ -198,15 +212,6 @@ class UserTestCase(unittest.TestCase):
   def tearDown(self):
     for u in User.all():
       u.delete()
-
-class DataCleanTestCase(unittest.TestCase):
-  def setUp(self):
-    self.speed_data = range(0,100)
-
-  def testRunningMean(self):
-    means = [m for m in activity.rm3gen(self.speed_data)]
-    self.assertEqual(len(means) + 2, len(self.speed_data))
-
 
 class ActivityTestCase(unittest.TestCase):
   def setUp(self):

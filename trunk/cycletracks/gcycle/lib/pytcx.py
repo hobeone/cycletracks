@@ -2,6 +2,7 @@ import re
 import os
 import datetime
 import sys
+import bz2
 from gcycle.lib import glineenc
 from gcycle.lib.average import *
 from gcycle.lib.memoized import *
@@ -281,6 +282,7 @@ def parse_tcx(filedata):
         'total_ascent': sum([l['total_ascent'] for l in lap_records]),
         'total_descent': sum([l['total_descent'] for l in lap_records]),
         'laps': lap_records,
+        'tcxdata': filedata
     }
     activity_record.update(encoded_activity)
 

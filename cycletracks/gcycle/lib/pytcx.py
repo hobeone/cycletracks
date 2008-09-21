@@ -46,7 +46,7 @@ def getIntTagSubVal(string, tag, default=None):
 def encode_activity_points(laps_points):
   points = []
   for lap in laps_points:
-    points.extend(lap.split(':'))
+    points.extend(lap)
   newp = [ (float(p.split(',')[0]), float(p.split(',')[1])) for p in points]
   minlat, maxlat = 90,-90
   minlong, maxlong = 180,-180
@@ -219,13 +219,13 @@ def parse_lap(start_time, lap_string):
     'endtime': endtime,
     'average_cadence': int(average(cadence_list)),
     'maximum_cadence': max_cadence,
-    'bpm_list' : joinArrayOrNone(bpm_list),
-    'geo_points' : joinArrayOrNone(geo_points,':'),
-    'cadence_list' : joinArrayOrNone([str(c) for c in cadence_list]),
-    'speed_list' : joinArrayOrNone([ '%.2f' % s for s in speed_list]),
-    'altitude_list' : joinArrayOrNone(map(str,altitude_list)),
-    'distance_list' : joinArrayOrNone([ '%.2f' % s for s in distance_list]),
-    'timepoints' : joinArrayOrNone([str(t) for t in timepoints]),
+    'bpm_list' : bpm_list,
+    'geo_points' : geo_points,
+    'cadence_list' : cadence_list,
+    'speed_list' : [ '%.2f' % s for s in speed_list],
+    'altitude_list' : altitude_list,
+    'distance_list' : [ '%.2f' % s for s in distance_list],
+    'timepoints' : timepoints,
     'total_ascent' : total_ascent,
     'total_descent' : total_descent
     })

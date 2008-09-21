@@ -74,12 +74,6 @@ br.clear
   clear: both;
 }
 
-img
-{
-  padding: 3px;
-  border: solid 1px #e1e1e1;
-}
-
 img.floatTL
 {
   float: left;

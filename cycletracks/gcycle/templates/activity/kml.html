@@ -2,10 +2,18 @@
 {% load extra_filters %}
 <?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://earth.google.com/kml/2.2">
+<Document>
+  <Style id="lapstyle">
+    <LineStyle>
+      <color>ffffff00</color>
+      <width>4</width>
+      <colorMode>random</colorMode>
+    </LineStyle>
+  </Style>
 {% for lap in activity.lap_set %}
 <Placemark>
   <visibility>1</visibility>
-  <name>CycleTrack</name>
+  <name>CycleTrack Lap {{forloop.counter}}</name>
   <description>
     <![CDATA[
 <table><tr>
@@ -43,14 +51,14 @@
 <a href="http://cycletracks.appspot.com/activity/show/{{activity.str_key}}">View at CycleTracks</a>
 ]]>
 </description>
-  <Style>
-    <geomColor>ff2f2fc3</geomColor>
-    <geomScale>3</geomScale>
-  </Style>
+  <styleUrl>#lapstyle</styleUrl>
   <LineString>
-    <coordinates>{{ lap.to_kml }}</coordinates>
+      <coordinates>{{ lap.to_kml }}</coordinates>
+      <extrude>1</extrude>
+      <tessellate>1</tessellate>
   </LineString>
   </Placemark>
 {% endfor %}
+</Document>
 {% endspaceless %}
 </kml>

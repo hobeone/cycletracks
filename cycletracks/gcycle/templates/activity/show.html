@@ -6,7 +6,18 @@
 {% block extra_head %}
 <script type="text/javascript" src="/static/greversegeocoder.js"></script>
 <script type="text/javascript" src="/static/jquery.inplace.pack.js"></script>
-<script type="text/javascript" src="/static/jquery.flot.pack.js"></script>
+
+<script src="/static/timeplot_ajax/simile-ajax-api.js" type="text/javascript"></script>
+<script>
+  Timeline_urlPrefix='/static/timeplot_js/';
+  Timeline_parameters='bundle=true';
+  Timeplot_urlPrefix='/static/timeplot_js/';
+  Timeplot_parameters='bundle=true';
+  SimileAjax.History['enabled'] = false;
+</script>
+
+<script type="text/javascript" src="/static/timeplot_js/timeline-api.js"></script>
+<script type="text/javascript" src="/static/timeplot_js/timeplot-api.js"></script>
 
 <script type="text/javascript">
   google.load("maps", "2.x");
@@ -55,11 +66,14 @@
     handle_point(end_point, map, 'end_location')
   }
   google.setOnLoadCallback(initialize);
-
 </script>
 
 {% endblock %}
 
+
+{% block extra_body %}
+onload="onLoad();" onresize="onResize();"
+{% endblock %}
 
 {% block content %}
 <div id="activity_table">
@@ -88,14 +102,15 @@
           <td>End Time:</td><td>{{ activity.end_time|time_to_offset:user.get_profile.tzoffset }}</td>
         </tr>
         <tr>
-          <td>Distance:</td><td>{{ activity.total_meters|meters_to_prefered_distance:user.get_profile.use_imperial }}</td>
+          <td>Distance:</td><td>{{ activity.total_meters|meters_to_prefered_distance:user.get_profile.use_imperial }}
+            {{user.get_profile.use_imperial|miles_or_km_units}}</td>
         </tr>
         <tr>
-          <td>Ascent:</td><td>{{activity.total_ascent|format_meters:user.get_profile.use_imperial}}</td>
+          <td>Ascent:</td><td>{{activity.total_ascent|format_meters:user.get_profile.use_imperial}} {{user.get_profile.use_imperial|meters_or_feet_units}}</td>
         </tr>
         <tr>
           <td>Decent:</td>
-          <td>{{activity.total_descent|format_meters:user.get_profile.use_imperial}}</td>
+          <td>{{activity.total_descent|format_meters:user.get_profile.use_imperial}} {{user.get_profile.use_imperial|meters_or_feet_units}}</td>
         </tr>
 
         <tr>
@@ -107,15 +122,15 @@
         <tr>
           <td>Speed:</td>
           <td>
-            Avg: {{ activity.average_speed|kph_to_prefered_speed:user.get_profile.use_imperial }},
-            Max: {{ activity.maximum_speed|kph_to_prefered_speed:user.get_profile.use_imperial }}
+            Avg: {{ activity.average_speed|kph_to_prefered_speed:user.get_profile.use_imperial }} {{user.get_profile.use_imperial|mph_or_kph_units}},
+            Max: {{ activity.maximum_speed|kph_to_prefered_speed:user.get_profile.use_imperial }} {{user.get_profile.use_imperial|mph_or_kph_units}}
            </td>
         </tr>
         <tr>
-          <td>Heart Rate:</td><td>Avg: {{ activity.average_bpm }}, Max: {{ activity.maximum_bpm }} BPM</td>
+          <td>Heart Rate:</td><td>Avg: {{ activity.average_bpm }}, Max: {{ activity.maximum_bpm }} bpm</td>
         </tr>
         <tr>
-          <td>Cadence:</td><td>Avg: {{ activity.average_cadence }}, Max: {{ activity.maximum_cadence }} RPM</td>
+          <td>Cadence:</td><td>Avg: {{ activity.average_cadence }}, Max: {{ activity.maximum_cadence }} rpm</td>
         </tr>
         <tr>
           <td>Calories:</td><td>{{ activity.total_calories|floatformat:"-2" }}</td>
@@ -165,88 +180,149 @@
           </td>
         </tr>
       </table>
-      <br/>
-      <br/>
-      <div id="map" style="width: 400px; height: 400px"></div>
+    </td>
+    <td>
+      <div id="map" style="width: 430px; height: 400px"></div>
       <div>
         <a href="http://maps.google.com/maps?q={{kml_location}}&t=p">Bigger Map</a> -
         <a href="{{kml_location}}">Download KML</a> -
         <a href="/activity/public/{{activity.str_key}}">Public Link</a>
       </div>
     </td>
-    <td width="50%">
-      <br/>Speed (kph)<br/><br/>
-      <div id="speed_graph" style="width:500px;height:200px"></div>
+  </tr>
+  <tr>
+    <td valign="top">
+      Altitude ({{user.get_profile.use_imperial|meters_or_feet_units}}):
+      <div id="altitudechart" style="width: 430px; height: 200px"></div>
+      Speed ({{user.get_profile.use_imperial|mph_or_kph_units}}):
+<div id="speedchart" style="width: 430px; height: 200px"></div>
 
-      <br/>Altitude (Meters)<br/><br/>
-      <div id="altitude_graph" style="width:500px;height:200px"></div>
-
-      <br/>Distance (Meters)<br/><br/>
-      <div id="distance_graph" style="width:500px;height:200px"></div>
-
-      Heart Rate (BPM)<br/><br/>
-      <div id="bpm_graph" style="width:500px;height:200px"></div>
-
-      <br/>Cadence (RPM)<br/><br/>
-      <div id="cadence_graph" style="width:500px;height:200px"></div>
-
-<script id="source" language="javascript" type="text/javascript">
-  $(function () {
-      var datasets = {
-        "bpm": {
-          label: "Heart Rate",
-          data: [{{bpm}}],
-          color: 1
-        },
-        "speed": {
-          label: "Speed",
-          data: [{{speed}}],
-          color: 1
-        },
-        "cadence": {
-          label: "Cadence",
-          data: [{{cadence}}],
-          color: 1
-        },
-        "altitude": {
-          label: "Altitude",
-          data: [{{altitude}}],
-          color: 1
-        },
-        "distance": {
-          label: "Distance",
-          data: [{{distance}}],
-          color: 1
-        },
-      };
-
-      var xTicks = [];
-      {% for v in times %}
-        xTicks.push([{{v.0}},"{{v.1|seconds_to_human_readable}}"]);
-      {% endfor %}
-
-      shared_options = {
-        legend: { position: 'se' },
-        xaxis: {
-          tickDecimals: 0,
-          ticks: xTicks
-        },
-        yaxis: {
-          ticks: 10,
-          min: 0,
-        },
-      };
-      $.plot($("#bpm_graph"), [datasets['bpm']], shared_options);
-      $.plot($("#cadence_graph"), [datasets['cadence']], shared_options);
-      $.plot($("#speed_graph"), [datasets['speed']], shared_options);
-      $.plot($("#distance_graph"), [datasets['distance']], shared_options);
-      shared_options.yaxis.min = null;
-      $.plot($("#altitude_graph"), [datasets['altitude']], shared_options);
-      });
-</script>
-
+    </td>
+    <td>
+      Distance ({{user.get_profile.use_imperial|miles_or_km_units}}):
+      <div id="distancechart" style="width: 430px; height: 200px"></div>
+      Heart Rate (BPM):
+      <div id="bpmchart" style="width: 430px; height: 200px"></div>
+      Cadence (RPM):
+      <div id="cadencechart" style="width: 430px; height: 200px"></div>
     </td>
   </tr>
 </table>
 </div>
+
+<br/>
+
+
+<script id="source" language="javascript" type="text/javascript">
+  function onResize() {
+    var f = 1;
+  }
+  function onLoad() {
+    var eventSource = new Timeplot.DefaultEventSource();
+
+    var timeGeometry = new Timeplot.DefaultTimeGeometry({
+      gridColor: new Timeplot.Color("#000000"),
+      axisLabelsPlacement: "top"
+    });
+
+    var altitudeGeometry = new Timeplot.DefaultValueGeometry({
+      gridColor: "#000000",
+      axisLabelsPlacement: "left",
+    });
+    var speedGeometry = new Timeplot.DefaultValueGeometry({
+      gridColor: "#000000",
+      axisLabelsPlacement: "left",
+    });
+    var distanceGeometry = new Timeplot.DefaultValueGeometry({
+      gridColor: "#000000",
+      axisLabelsPlacement: "left",
+    });
+    var cadenceGeometry = new Timeplot.DefaultValueGeometry({
+      gridColor: "#000000",
+      axisLabelsPlacement: "left",
+    });
+    var bpmGeometry = new Timeplot.DefaultValueGeometry({
+      gridColor: "#000000",
+      axisLabelsPlacement: "left",
+    });
+
+    var altitudeInfo = [
+      Timeplot.createPlotInfo({
+        id: "plot1",
+        dataSource: new Timeplot.Processor(new Timeplot.ColumnSource(eventSource,1), Timeplot.Operator.average, { size: 5 }),
+        valueGeometry: altitudeGeometry,
+        timeGeometry: timeGeometry,
+        lineColor: "#ff0000",
+        fillColor: "#cc8080",
+        showValues: true
+      }),
+      ];
+    var speedInfo = [
+      Timeplot.createPlotInfo({
+        id: "plot2",
+        dataSource: new Timeplot.Processor(
+          new Timeplot.ColumnSource(eventSource,2),
+            Timeplot.Operator.average, { size: 15 }),
+        valueGeometry: speedGeometry,
+        timeGeometry: timeGeometry,
+        lineColor: "#D0A825",
+        fillColor: "#D0A825",
+        showValues: true
+      }),
+      ];
+    var cadenceInfo = [
+      Timeplot.createPlotInfo({
+        id: "plot3",
+        dataSource: new Timeplot.Processor(
+          new Timeplot.ColumnSource(eventSource,3),
+            Timeplot.Operator.average, { size: 30 }),
+        valueGeometry: cadenceGeometry,
+        timeGeometry: timeGeometry,
+        lineColor: "#ff0000",
+        fillColor: "#cc8080",
+        showValues: true
+      }),
+      ];
+    var distanceInfo = [
+      Timeplot.createPlotInfo({
+        id: "plot4",
+        dataSource: new Timeplot.ColumnSource(eventSource,4),
+        valueGeometry: distanceGeometry,
+        timeGeometry: timeGeometry,
+        lineColor: "#99B3CC",
+        fillColor: "#99B3CC",
+        showValues: true
+      }),
+      ];
+    var bpmInfo = [
+      Timeplot.createPlotInfo({
+        id: "plot5",
+        dataSource: new Timeplot.Processor(
+          new Timeplot.ColumnSource(eventSource,5),
+            Timeplot.Operator.average, { size: 15 }),
+        valueGeometry: bpmGeometry,
+        timeGeometry: timeGeometry,
+        lineColor: "#99B386",
+        fillColor: "#99B386",
+        showValues: true
+      }),
+    ];
+
+    altitudeplot = Timeplot.create(document.getElementById("altitudechart"),
+        altitudeInfo);
+    speedplot = Timeplot.create(document.getElementById("speedchart"),
+        speedInfo);
+    cadenceplot = Timeplot.create(document.getElementById("cadencechart"),
+        cadenceInfo);
+    distanceplot = Timeplot.create(document.getElementById("distancechart"),
+        distanceInfo);
+    bpmplot = Timeplot.create(document.getElementById("bpmchart"),
+        bpmInfo);
+
+
+    altitudeplot.loadText("/activity/data/{{activity.str_key}}", ",", eventSource);
+};
+</script>
+
+
 {% endblock %}

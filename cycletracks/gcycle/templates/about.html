@@ -3,6 +3,15 @@
 
 {% block content %}
 
+<h2>FAQ</h2>
+
+<ul>
+  <li><a href="#wtf_is_this">WTF is this?</a></li>
+  <li><a href="#device_support">What GPS devices does it support?</a></li>
+  <li><a href="#features">What can I do with Cycletracks?</a></li>
+</ul>
+
+<a name="wtf_is_this"></a><h3>WTF is this?</h3>
 <p>
 Cycletracks is a webapp to store and view information from a Garmin cycle computer (I've developed it using my Garmin 705).  I put it together after getting fed up with the really really long load times of Motionbased and Connect.
 </p>
@@ -11,20 +20,37 @@ Cycletracks is a webapp to store and view information from a Garmin cycle comput
 If you want to help develop the app please let me know.  You can grab the source from the link below and get hacking.
 </p>
 
-<strong>What you can do:</strong>
+
+<a name="device_support"></a><h3>What GPS devices does it support?</h3>
+<p>
+I only own the Garmin Edge 705 so that is the only device I know works with it.  The 605 <em>should</em> work as the are basically the same.  I don't know if the 2 or 305 will work.  If you have one you will need to extract the data into a TCX formatted data file.  If you figure out how to do this drop me a line in the discussion group.
+<p>
+
+<a name="features"></a><h3>What you can do:</h3>
+<p>
 <ul>
   <li>Upload your TCX files (either one at a time or as a compressed archive).  This may mean that you need a 605 or 705 as older Garmins may not export in this format.</li>
   <li>See the grand totals of all your activities.</li>
   <li>See a detailed view of one activity with a Google map, and graphs for heart rate, cadence etc.</li>
   <li>Download a kml file of an activity for viewing in Google Earth or Google Maps</li>
   <li>Generate reports which group activities by week or month</li>
+  <li>Send a link to an activity to your firends.</li>
+</ul>
+</p>
+
+
+<a name="sharing"></a><h3>How do I share an activity with my friends?</h3>
+<ul>
+  <li>Go to the detailed view of the activity.</li>
+  <li>Click on the 'False' text next to the 'Public' text in the top left summary table</li>
+  <li>It should turn into a drop down selection box.  Change 'False' to 'True' and click somewhere else on the page.</li>
+  <li>Once that change has been saved you can send a link to the activity to others and they will be able to see it.  If you use the public link (right below the Google map) they wont need to be logged in to Google to see the activity</li>
 </ul>
 
 <strong>Caveats about data representation in cycletracks:</strong>
 
 <ul>
   <li>Times are rounded to integers of seconds</li>
-  <li>Graph datapoints are compressed down to 500 points</li>
   <li>Map data is encoded before rendering (to save space) but this may introduce some imprecision into the geo points.</li>
 </ul>
 

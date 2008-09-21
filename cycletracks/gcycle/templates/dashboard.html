@@ -35,13 +35,13 @@
   <tr>
     <td>
       Total Distance:</td>
-    <td> {{ user_totals.total_meters|meters_to_prefered_distance:user.get_profile.use_imperial }}
+    <td> {{ user_totals.total_meters|meters_to_prefered_distance:user.get_profile.use_imperial }} {{user.get_profile.use_imperial|miles_or_km_units}}
     </td>
   </tr>
   <tr>
     <td>
       Total Climbing:</td>
-    <td> {{ user_totals.total_ascent|meters_to_prefered_distance:user.get_profile.use_imperial }}
+    <td> {{ user_totals.total_ascent|meters_to_prefered_distance:user.get_profile.use_imperial }} {{user.get_profile.use_imperial|miles_or_km_units}}
     </td>
   </tr>
   <tr>
@@ -71,13 +71,13 @@
   <tr>
     <td>
       Average Speed:</td>
-    <td> {{ user_totals.average_speed|kph_to_prefered_speed:user.get_profile.use_imperial }}
+    <td> {{ user_totals.average_speed|kph_to_prefered_speed:user.get_profile.use_imperial }} {{user.get_profile.use_imperial|mph_or_kph_units}}
     </td>
   </tr>
   <tr>
     <td>
       Max Speed:</td>
-    <td> {{ user_totals.maximum_speed|kph_to_prefered_speed:user.get_profile.use_imperial }}
+    <td> {{ user_totals.maximum_speed|kph_to_prefered_speed:user.get_profile.use_imperial }} {{user.get_profile.use_imperial|mph_or_kph_units}}
     </td>
   </tr>
   <tr>

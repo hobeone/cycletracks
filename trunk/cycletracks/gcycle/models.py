@@ -1,11 +1,16 @@
 from appengine_django.models import BaseModel
 from appengine_django.auth.models import User
+
 from google.appengine.ext import db
+from google.appengine.api import datastore_types
+
 from gcycle.lib import pytcx
+from gcycle.lib.memoized import *
 from gcycle.lib.average import *
+
 from django.core.exceptions import ImproperlyConfigured
 from django.db import models
-from gcycle.lib.memoized import *
+
 import bz2
 
 # Monkey patch appengine supplied User model.
@@ -47,16 +52,36 @@ class BzipBlobProperty(db.BlobProperty):
     return bz2.decompress(value)
 
 
-class CsvListProperty(db.ListProperty):
-  data_type = db.Text
+class CsvListProperty(db.Property):
+  data_type = datastore_types.Text
+
+  def __init__(self, verbose_name=None, name=None, default=None,
+               required=False, validator=None, choices=None, split_on=',',
+               cast_type=str):
+    super(CsvListProperty, self).__init__(verbose_name=None, name=None,
+        default=None, required=False, validator=None, choices=None)
+    self.cast_type = cast_type
+    self.split_on = split_on
+
+  def validate(self, value):
+    if value is not None and not isinstance(value, list):
+      try:
+        value = list(value)
+      except TypeError, err:
+        raise BadValueError('Property %s must be convertible '
+                            'to a list instance (%s)' % (self.name, err))
+    value = super(CsvListProperty, self).validate(value)
+    if value is not None and not isinstance(value, list):
+      raise BadValueError('Property %s must be a Text instance' % self.name)
+    return value
 
   def get_value_for_datastore(self, model_instance):
     value = super(CsvListProperty, self).get_value_for_datastore(
         model_instance)
-    return ','.join(value)
+    return  datastore_types.Text(self.split_on.join(map(str,value)))
 
   def make_value_from_datastore(self, value):
-    return map(self.item_type,value.split(','))
+    return map(self.cast_type,value.split(self.split_on))
 
 
 class UserProfile(BaseModel):
@@ -146,6 +171,7 @@ class Activity(BaseModel):
   def safe_delete(self):
     to_del = [self]
     to_del.extend(self.lap_set)
+    to_del.extend(self.sourcedatafile_set)
     return db.delete(to_del)
 
   @property
@@ -153,15 +179,11 @@ class Activity(BaseModel):
     return db.get(self._user)
 
   @property
-  def str_key(self):
-    return str(self.key())
-
-  @property
   @memoized
   def bpm_list(self):
     bpm_list = []
     for l in self.lap_set:
-      bpm_list.extend(l.bpms)
+      bpm_list.extend(l.bpm_list)
     return bpm_list
 
   @property
@@ -169,7 +191,7 @@ class Activity(BaseModel):
   def cadence_list(self):
     cadence_list = []
     for l in self.lap_set:
-      cadence_list.extend(l.cadences)
+      cadence_list.extend(l.cadence_list)
     return cadence_list
 
   @property
@@ -177,7 +199,7 @@ class Activity(BaseModel):
   def speed_list(self):
     speed_list = []
     for l in self.lap_set:
-      speed_list.extend(l.speeds)
+      speed_list.extend(l.speed_list)
     return speed_list
 
   @property
@@ -185,7 +207,7 @@ class Activity(BaseModel):
   def altitude_list(self):
     altitude_list = []
     for l in self.lap_set:
-      altitude_list.extend(l.altitudes)
+      altitude_list.extend(l.altitude_list)
     return altitude_list
 
   @property
@@ -194,7 +216,7 @@ class Activity(BaseModel):
     time_list = []
     max_time = 0
     for lap in self.lap_set:
-      time_list.extend([t + max_time for t in lap.times])
+      time_list.extend([t + max_time for t in lap.timepoints])
       max_time = time_list[-1]
     return time_list
 
@@ -203,26 +225,14 @@ class Activity(BaseModel):
   def distance_list(self):
     dl = []
     for d in self.lap_set:
-      dl.extend(d.distances)
+      dl.extend(d.distance_list)
     return dl
-
-  def encode_activity_points(self):
-    pts, levs, ne, sw, start_point, mid_point, end_point = \
-        pytcx.encode_activity_points([l.geo_points for l in self.lap_set()])
-    self.encoded_points = pts
-    self.encoded_levels = levs
-    self.start_point = start_point
-    self.mid_point = mid_point
-    self.end_point = end_point
-    self.ne_point = ne
-    self.sw_point = sw
-    self.put()
 
   @property
   def to_kml(self):
     points = []
     for l in self.lap_set:
-      points.extend(l.points_list)
+      points.extend(l.geo_points)
 
     points =  ['%s,%s,0' % (l[1],l[0]) for l in [l.split(',') for l in points]]
     return ' '.join(points)
@@ -277,53 +287,19 @@ class Lap(BaseModel):
   calories = db.FloatProperty(required=True)
   starttime = db.DateTimeProperty(required=True)
   endtime = db.DateTimeProperty(required=True)
-  bpm_list = db.TextProperty(required=True)
-  altitude_list = db.TextProperty(required=True)
-  speed_list = db.TextProperty(required=True)
-  distance_list = db.TextProperty(required=True)
-  cadence_list = db.TextProperty(required=True)
-  geo_points = db.TextProperty()
-  timepoints = db.TextProperty(required=True)
+  bpm_list = CsvListProperty(required=True, cast_type=int)
+  altitude_list = CsvListProperty(required=True, cast_type=float)
+  speed_list = CsvListProperty(required=True, cast_type=float)
+  distance_list = CsvListProperty(required=True, cast_type=float)
+  cadence_list = CsvListProperty(required=True, cast_type=int)
+  geo_points = CsvListProperty(split_on=':')
+  timepoints = CsvListProperty(required=True, cast_type=int)
   total_ascent = db.FloatProperty(default=0.0)
   total_descent = db.FloatProperty(default=0.0)
 
   @property
   @memoized
-  def speeds(self):
-    return [float(b) for b in self.speed_list.split(',')]
-
-  @property
-  @memoized
-  def altitudes(self):
-    return [float(b) for b in self.altitude_list.split(',')]
-
-  @property
-  @memoized
-  def cadences(self):
-    return [int(b) for b in self.cadence_list.split(',')]
-
-  @property
-  @memoized
-  def bpms(self):
-    return [int(b) for b in self.bpm_list.split(',')]
-
-  @property
-  @memoized
-  def times(self):
-    return [int(b) for b in self.timepoints.split(',')]
-
-  @property
-  @memoized
-  def points_list(self):
-    return self.geo_points.split(':')
-
-  @property
-  @memoized
-  def distances(self):
-    return [float(b) for b in self.distance_list.split(',')]
-
-  @property
-  @memoized
   def to_kml(self):
-    points = ['%s,%s,0' % (l[1],l[0]) for l in [l.split(',') for l in self.points_list]]
+    pts = (l.split(',') for l in self.geo_points)
+    points = ['%s,%s,0' % (l[1],l[0]) for l in pts]
     return ' '.join(points)

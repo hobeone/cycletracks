@@ -11,6 +11,7 @@ from gcycle.lib import pytcx
 from google.appengine.api import datastore_errors
 from google.appengine.ext import db
 from google.appengine.api import users
+from google.appengine.api import apiproxy_stub_map
 
 from appengine_django.auth.models import User
 from appengine_django.models import BaseModel
@@ -32,14 +33,18 @@ class testCsvListPropery(unittest.TestCase):
     c = testModel.get(key)
     self.failUnlessEqual(c.csv, list)
 
+    c.csv.append('testing')
+    c.put()
+    c = testModel.get(key)
+    self.failUnlessEqual(c.csv[-1], 'testing')
+
 
 class testReports(unittest.TestCase):
   def setUp(self):
+    apiproxy_stub_map.apiproxy.GetStub('datastore_v3').Clear()
     self.gaia_user = users.User('f@e.com')
     self.app_user = User(user = self.gaia_user, username = 'bar')
     self.app_user.put()
-    for a in Activity.all():
-      a.delete()
 
   def testBuckets(self):
     Activity(
@@ -151,11 +156,11 @@ asd
       lap = Lap(activity = a, **l)
       lap.put()
 
-      self.assertEqual(len(lap.speeds), len(lap.altitudes))
-      self.assertEqual(len(lap.speeds), len(lap.cadences))
-      self.assertEqual(len(lap.speeds), len(lap.bpms))
-      self.assertEqual(len(lap.speeds), len(lap.times))
-      self.assertEqual(len(lap.speeds), len(lap.points_list))
+      self.assertEqual(len(lap.speed_list), len(lap.altitude_list))
+      self.assertEqual(len(lap.speed_list), len(lap.cadence_list))
+      self.assertEqual(len(lap.speed_list), len(lap.bpm_list))
+      self.assertEqual(len(lap.speed_list), len(lap.timepoints))
+      self.assertEqual(len(lap.speed_list), len(lap.geo_points))
 
       self.assertEqual(lap.total_ascent, 0)
       self.assertAlmostEqual(lap.total_descent, 9.1319, 2)
@@ -215,6 +220,7 @@ class UserTestCase(unittest.TestCase):
 
 class ActivityTestCase(unittest.TestCase):
   def setUp(self):
+    apiproxy_stub_map.apiproxy.GetStub('datastore_v3').Clear()
     self.gaia_user = users.User('f@e.com')
     self.app_user = User(user = self.gaia_user, username = 'bar')
     self.app_user.put()

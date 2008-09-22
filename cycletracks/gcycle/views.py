@@ -13,6 +13,7 @@ from django.contrib.auth import decorators as auth_decorators
 from google.appengine.ext import db
 from google.appengine.api import memcache
 from google.appengine.api import users
+from google.appengine.runtime import DeadlineExceededError
 
 from gcycle import models
 from gcycle.lib import pytcx
@@ -23,6 +24,7 @@ import bz2
 import gzip
 import sys
 import logging
+import md5
 
 def handle_view_exception(request):
   exception = sys.exc_info()
@@ -97,6 +99,12 @@ def upload(request):
         return HttpResponseRedirect('/mytracks/')
       except pytcx.TCXExpception, e:
         return render_to_response('error.html', {'error': e})
+      except db.NotSavedError, e:
+        return render_to_response('error.html', {'error': e})
+
+    else:
+      return HttpResponse('Error: Upload errors:\n%s' % repr(form.errors),
+          content_type='text/plain')
   else:
     form = UploadFileForm()
   return render_to_response('upload.html', {'form': form, 'user': request.user})
@@ -180,6 +188,11 @@ def handle_uploaded_file(user, filedata):
     files = [filedata.read()]
 
   for file in files:
+    # fast fail:
+    if models.Activity.hash_exists(md5.new(file).hexdigest(), user):
+      return HttpResponse('Error: Upload error:\n"An activity with the same source hash already exists"',
+        content_type='text/plain')
+
     activities = pytcx.parse_tcx(file)
     for act_dict in activities:
       db.run_in_transaction(activity_save, user, act_dict)

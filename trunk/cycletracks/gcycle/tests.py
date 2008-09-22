@@ -58,6 +58,7 @@ class testReports(unittest.TestCase):
         rolling_time = 7200,
         average_speed = 2.0,
         maximum_speed = 2.0,
+        source_hash = 'foobar'
     ).put()
 
     Activity(
@@ -71,6 +72,7 @@ class testReports(unittest.TestCase):
         rolling_time = 7200,
         average_speed = 4.0,
         maximum_speed = 6.0,
+        source_hash = 'foobaz'
     ).put()
 
     acts = Activity.all().fetch(2)
@@ -238,6 +240,7 @@ class ActivityTestCase(unittest.TestCase):
         rolling_time = 2,
         average_speed = 2.0,
         maximum_speed = 2.0,
+        source_hash = 'foobaz',
     )
 
     b = Activity(
@@ -251,6 +254,7 @@ class ActivityTestCase(unittest.TestCase):
         rolling_time = 4,
         average_speed = 4.0,
         maximum_speed = 6.0,
+        source_hash = 'foobaz',
     )
 
     added = (a + b)
@@ -272,6 +276,7 @@ class ActivityTestCase(unittest.TestCase):
         rolling_time = 0,
         average_speed = 0.0,
         maximum_speed = 0.0,
+        source_hash = 'foobaz',
     )
     a.put()
     self.app_user.delete()

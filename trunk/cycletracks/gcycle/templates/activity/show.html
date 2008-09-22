@@ -186,7 +186,7 @@ onload="onLoad();" onresize="onResize();"
       <div>
         <a href="http://maps.google.com/maps?q={{kml_location}}&t=p">Bigger Map</a> -
         <a href="{{kml_location}}">Download KML</a> -
-        <a href="/activity/public/{{activity.str_key}}">Public Link</a>
+        <a href="/activity/public/{{activity.key}}">Public Link</a>
       </div>
     </td>
   </tr>
@@ -320,7 +320,7 @@ onload="onLoad();" onresize="onResize();"
         bpmInfo);
 
 
-    altitudeplot.loadText("/activity/data/{{activity.str_key}}", ",", eventSource);
+    altitudeplot.loadText("/activity/data/{{activity.key}}", ",", eventSource);
 };
 </script>
 

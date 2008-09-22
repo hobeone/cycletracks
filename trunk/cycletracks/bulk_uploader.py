@@ -12,6 +12,8 @@ from cStringIO import StringIO
 import getpass
 from optparse import OptionParser
 import glob
+import time
+import socket
 
 class Callable:
     def __init__(self, anycallable):
@@ -152,30 +154,32 @@ class CtUploader(object):
     opener.open(upload_uri, params).read()
 
 
-  def upload_dir(self, directory):
-    for filename in sorted(glob.glob(os.path.join(directory, '*.tcx'))):
+  def upload_files(self, files):
+    for filename in files:
       print "Uploading %s" % filename
-      self.upload_file(filename)
+      try:
+        self.upload_file(filename)
+      except socket.error, e:
+        print "Error uploading %s" % filename
+
+      print "Sleeping 30 seconds..."
+      time.sleep(30)
 
 
 if __name__=="__main__":
-
   parser = OptionParser()
   parser.add_option("-u", "--user", dest="username",
                   help="USER to login as", metavar="USER")
-  parser.add_option("-d", "--directory", dest="directory",
-                  help="DIRECTORY containing files to upload", metavar="DIRECTORY")
 
   (options, args) = parser.parse_args()
-  if options.username is None or options.directory is None:
+  if options.username is None:
     print "Missing required argument"
     parser.print_help()
     sys.exit(1)
 
   password = getpass.getpass('Enter your password: ')
 
-  directory = '/home/hobe/garmin'
   u = CtUploader(options.username, password)
   u.google_login()
   print "Got a google cookie to use..."
-  u.upload_dir(options.directory)
+  u.upload_files(args)

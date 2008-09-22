@@ -10,66 +10,6 @@ indexes:
 # automatically uploaded to the admin console when you next deploy
 # your application using appcfg.py.
 
-# Unused in query history -- copied from input.
-- kind: Activity
-  properties:
-  - name: average_bpm
-    direction: desc
-
-# Unused in query history -- copied from input.
-- kind: Activity
-  properties:
-  - name: average_cadence
-    direction: desc
-
-# Unused in query history -- copied from input.
-- kind: Activity
-  properties:
-  - name: average_speed
-    direction: desc
-
-# Unused in query history -- copied from input.
-- kind: Activity
-  properties:
-  - name: maximum_bpm
-    direction: desc
-
-# Unused in query history -- copied from input.
-- kind: Activity
-  properties:
-  - name: maximum_speed
-    direction: desc
-
-# Unused in query history -- copied from input.
-- kind: Activity
-  properties:
-  - name: name
-    direction: desc
-
-# Unused in query history -- copied from input.
-- kind: Activity
-  properties:
-  - name: rolling_time
-    direction: desc
-
-# Unused in query history -- copied from input.
-- kind: Activity
-  properties:
-  - name: start_time
-    direction: desc
-
-# Unused in query history -- copied from input.
-- kind: Activity
-  properties:
-  - name: total_calories
-    direction: desc
-
-# Unused in query history -- copied from input.
-- kind: Activity
-  properties:
-  - name: total_meters
-    direction: desc
-
 # Used 2 times in query history.
 - kind: Activity
   ancestor: yes
@@ -99,13 +39,6 @@ indexes:
 - kind: Activity
   ancestor: yes
   properties:
-  - name: maximum_speed
-    direction: desc
-
-# Unused in query history -- copied from input.
-- kind: Activity
-  ancestor: yes
-  properties:
   - name: name
     direction: desc
 
@@ -116,13 +49,13 @@ indexes:
   - name: rolling_time
     direction: desc
 
-# Used 4 times in query history.
+# Used 2 times in query history.
 - kind: Activity
   ancestor: yes
   properties:
   - name: start_time
 
-# Used 6 times in query history.
+# Used 5 times in query history.
 - kind: Activity
   ancestor: yes
   properties:

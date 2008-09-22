@@ -167,8 +167,25 @@ class Activity(BaseModel):
   end_point = db.GeoPtProperty()
   total_ascent = db.FloatProperty(default=0.0)
   total_descent = db.FloatProperty(default=0.0)
+  source_hash = db.StringProperty(required=True)
 
-  def safe_delete(self):
+  @classmethod
+  def hash_exists(cls, source_hash, user):
+    q = Activity.all()
+    q.filter('source_hash =', source_hash)
+    q.ancestor(user)
+    activity_count = q.count(1)
+    return activity_count > 0
+
+
+  def put(self):
+    if Activity.hash_exists(self.source_hash, self.user):
+      raise db.NotSavedError(
+          "An activity with the same source hash already exists")
+    super(Activity, self).put()
+
+
+  def delete(self):
     to_del = [self]
     to_del.extend(self.lap_set)
     to_del.extend(self.sourcedatafile_set)
@@ -253,6 +270,7 @@ class Activity(BaseModel):
     added['sport'] = self.sport
     added['name'] = self.name
     added['user'] = self.user
+    added['source_hash'] = 'temp'
 
     for p in ['maximum_bpm', 'maximum_speed', 'maximum_cadence']:
       added[p] = max([getattr(self,p), getattr(other,p)])

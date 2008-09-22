@@ -41,7 +41,7 @@ def activity_kml(request, activity_id):
 
 def kml_location(request, activity):
   """Helper function to generate the link to an Activities kml url"""
-  return ("http://%s/activity/kml/%s" % (request.META['HTTP_HOST'], activity.str_key))
+  return ("http://%s/activity/kml/%s" % (request.META['HTTP_HOST'], activity.key()))
 
 
 def show_activity(request, a):
@@ -89,7 +89,7 @@ def data(request, activity_id):
     return render_to_response('error.html',
         {'error': ("You are not allowed to see this activity. The activity doesn't belong to you and the owner hasn't made it public.")})
 
-  activity_data = memcache.get(activity.str_key + '_data')
+  activity_data = memcache.get('%s_data' % activity.key())
   if settings.DEBUG: activity_data = None
 
   if activity_data is None:
@@ -112,8 +112,8 @@ def data(request, activity_id):
         )
       )
 
-  if not memcache.set(activity.str_key + '_data', activity_data, 60 * 60):
-    logging.error("Memcache set failed for %s_data." % activity.str_key)
+  if not memcache.set('%s_data' % activity.key(), activity_data, 60 * 60):
+    logging.error("Memcache set failed for %s_data." % activity.key())
 
 
   return HttpResponse(
@@ -186,7 +186,7 @@ def delete(request):
       return HttpResponseForbidden(
           'You are not allowed to delete this activity')
 
-    a.safe_delete()
+    a.delete()
     if not memcache.delete(str(a.key())):
       logging.error("Memcache delete failed.")
     if not memcache.delete(views.dashboard_cache_key(request.user)):

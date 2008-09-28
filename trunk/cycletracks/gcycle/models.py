@@ -179,7 +179,7 @@ class Activity(BaseModel):
 
 
   def put(self):
-    if Activity.hash_exists(self.source_hash, self.user):
+    if Activity.hash_exists(self.source_hash, self.user) and not self.is_saved():
       raise db.NotSavedError(
           "An activity with the same source hash already exists")
     super(Activity, self).put()

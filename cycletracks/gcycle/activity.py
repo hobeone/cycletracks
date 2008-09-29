@@ -122,6 +122,21 @@ def data(request, activity_id):
       mimetype='text/plain'
       )
 
+def source(request, activity_id):
+  activity = Activity.get(activity_id)
+  if activity is None:
+    return render_to_response('error.html',
+        {'error': "That activity doesn't exist."})
+  if (activity.safeuser != request.user and not activity.public
+      and not request.user.is_superuser):
+    return render_to_response('error.html',
+        {'error': ("You are not allowed to see this activity. The activity doesn't belong to you and the owner hasn't made it public.")})
+
+  return HttpResponse(
+      activity.sourcedatafile_set[0].data,
+      mimetype='text/plain',
+  )
+
 
 @auth_decorators.login_required
 def show(request, activity):

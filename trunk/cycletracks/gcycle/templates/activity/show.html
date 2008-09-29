@@ -186,7 +186,8 @@ onload="onLoad();" onresize="onResize();"
       <div>
         <a href="http://maps.google.com/maps?q={{kml_location}}&t=p">Bigger Map</a> -
         <a href="{{kml_location}}">Download KML</a> -
-        <a href="/activity/public/{{activity.key}}">Public Link</a>
+        <a href="/activity/public/{{activity.key}}">Public Link</a> -
+        <a href="/activity/source/{{activity.key}}">Source TCX File</a>
       </div>
     </td>
   </tr>
@@ -232,18 +233,22 @@ onload="onLoad();" onresize="onResize();"
     var speedGeometry = new Timeplot.DefaultValueGeometry({
       gridColor: "#000000",
       axisLabelsPlacement: "left",
+      min: 0,
     });
     var distanceGeometry = new Timeplot.DefaultValueGeometry({
       gridColor: "#000000",
       axisLabelsPlacement: "left",
+      min: 0,
     });
     var cadenceGeometry = new Timeplot.DefaultValueGeometry({
       gridColor: "#000000",
       axisLabelsPlacement: "left",
+      min: 0,
     });
     var bpmGeometry = new Timeplot.DefaultValueGeometry({
       gridColor: "#000000",
       axisLabelsPlacement: "left",
+      min: 0,
     });
 
     var altitudeInfo = [

@@ -924,7 +924,9 @@ B<D;
 B++){var E=G[B];
 if(E<C){C=E;
 }if(E>A){A=E;
-}}return{min:C,max:A};
+}}
+if (A == Number.MIN_VALUE) A = 0;
+return{min:C,max:A};
 },movingAverage:function(H,C){var E=H.length;
 var D=new Array(E);
 for(var I=0;

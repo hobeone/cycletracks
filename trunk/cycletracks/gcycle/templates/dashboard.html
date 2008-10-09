@@ -27,64 +27,89 @@
 
 {% block content %}
 <div id="activity_table">
-<table cellspacing="2" width="100%">
-  <tr>
-    <td width="200"><h2>{{user.username}}'s Stats:</h2></td>
-    <td></td>
-  </tr>
-  <tr>
-    <td>
-      Total Distance:</td>
-    <td> {{ user_totals.total_meters|meters_to_prefered_distance:user.get_profile.use_imperial }} {{user.get_profile.use_imperial|miles_or_km_units}}
-    </td>
-  </tr>
-  <tr>
-    <td>
-      Total Climbing:</td>
-    <td> {{ user_totals.total_ascent|meters_to_prefered_distance:user.get_profile.use_imperial }} {{user.get_profile.use_imperial|miles_or_km_units}}
-    </td>
-  </tr>
-  <tr>
-    <td>Total Time:</td>
-    <td>
-      {{ user_totals.total_time|seconds_to_human_readable }}
-    </td>
-  </tr>
-  <tr>
-    <td>Rolling Time:</td>
-    <td>
-      {{ user_totals.rolling_time|seconds_to_human_readable }}
-    </td>
-  </tr>
-  <tr>
-    <td>
-      Cadence (avg/max):</td>
-    <td> {{ user_totals.average_cadence|floatformat:"-2" }} / {{ user_totals.maximum_cadence|floatformat:"-2" }} rpm
-    </td>
-  </tr>
-  <tr>
-    <td>
-      Heart Rate (avg/max):</td>
-    <td> {{ user_totals.average_bpm|floatformat:"-2" }} / {{ user_totals.maximum_bpm|floatformat:"-2" }} bpm
-    </td>
-  </tr>
-  <tr>
-    <td>
-      Average Speed:</td>
-    <td> {{ user_totals.average_speed|kph_to_prefered_speed:user.get_profile.use_imperial }} {{user.get_profile.use_imperial|mph_or_kph_units}}
-    </td>
-  </tr>
-  <tr>
-    <td>
-      Max Speed:</td>
-    <td> {{ user_totals.maximum_speed|kph_to_prefered_speed:user.get_profile.use_imperial }} {{user.get_profile.use_imperial|mph_or_kph_units}}
-    </td>
-  </tr>
-  <tr>
-    <td>Calories:</td>
-    <td> {{ user_totals.total_calories|floatformat:"-2" }} Cal</td>
-  </tr>
-</table>
+  <div id="userSummaryDataComponent" class="activityComponent">
+    <div id="summaryTitle">Summary for {{user.username}}:</div>
+    <div id="userSummaryContent">
+      <div id="summaryTotalDistance">
+        <span class="summaryLabel">
+          Total Distance:
+        </span>
+        <span class="summaryField">
+          {{ user_totals.total_meters|meters_to_prefered_distance:user.get_profile.use_imperial }} {{user.get_profile.use_imperial|miles_or_km_units}}
+        </span>
+      </div>
+      <div id="summaryTotalClimbing">
+        <span class="summaryLabel">
+          Total Climbing:
+        </span>
+        <span class="summaryField">
+          {{ user_totals.total_ascent|meters_to_prefered_distance:user.get_profile.use_imperial }} {{user.get_profile.use_imperial|miles_or_km_units}}
+        </span>
+      </div>
+      <div id="summaryTotalTime">
+        <span class="summaryLabel">
+          Total Time:
+        </span>
+        <span class="summaryField">
+          {{ user_totals.total_time|seconds_to_human_readable }}
+        </span>
+      </div>
+      <div id="summaryRollingTime">
+        <span class="summaryLabel">
+          Rolling Time:
+        </span>
+        <span class="summaryField">
+          {{ user_totals.rolling_time|seconds_to_human_readable }}
+        </span>
+      </div>
+      <div id="summaryCadence">
+        <span class="summaryLabel">
+          Cadence:
+        </span>
+        <span class="summaryField">
+          {{ user_totals.average_cadence|floatformat:"-2" }} / {{ user_totals.maximum_cadence|floatformat:"-2" }} rpm
+        </span>
+      </div>
+      <div id="summaryHeartRate">
+        <span class="summaryLabel">
+          Heart Rate:
+        </span>
+        <span class="summaryField">
+          {{ user_totals.average_bpm|floatformat:"-2" }} / {{ user_totals.maximum_bpm|floatformat:"-2" }} bpm
+        </span>
+      </div>
+
+      <div id="summaryAverageSpeed">
+        <span class="summaryLabel">
+          Average Speed:
+        </span>
+        <span class="summaryField">
+          {{ user_totals.average_speed|kph_to_prefered_speed:user.get_profile.use_imperial }} {{user.get_profile.use_imperial|mph_or_kph_units}}
+        </span>
+      </div>
+
+      <div id="summaryMaxSpeed">
+        <span class="summaryLabel">
+          Max Speed:
+        </span>
+        <span class="summaryField">
+{{ user_totals.maximum_speed|kph_to_prefered_speed:user.get_profile.use_imperial }} {{user.get_profile.use_imperial|mph_or_kph_units}}
+
+        </span>
+      </div>
+      <div id="summaryCalories">
+        <span class="summaryLabel">
+          Calories:
+        </span>
+        <span class="summaryField">
+          {{ user_totals.total_calories|floatformat:"-2" }} Cal
+        </span>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 </div>
 <br/><br/>
 <h2>{{user.username}}'s tracks:</h2>

@@ -434,3 +434,69 @@ input.text
   background: #FFD800
   color: #FFFFFF;
 }
+
+#summaryTitle {
+  border-bottom:1px solid #D4D4D4;
+  color:#129DD7;
+  font-size:14px;
+  font-weight:bold;
+  left:20px;
+  padding:15px 0 7px;
+  position:relative;
+  top:0;
+  width:310px;
+}
+span.summaryLabel {
+  display:inline-block;
+  margin-left:23px;
+  width:140px;
+}
+#userSummaryDataComponent {
+  background-image:url(/static/images/summary-box-bg.png);
+  height:320px;
+  left:0;
+  position:relative;
+  top:0;
+  width:350px;
+}
+#userSummaryContent div {
+  font-size:12px;
+  height:5px;
+  left:10px;
+  margin-top:15px;
+  position:relative;
+  width:310px;
+}
+
+#activitySummaryTitle {
+  border-bottom:1px solid #D4D4D4;
+  color:#129DD7;
+  font-size:14px;
+  font-weight:bold;
+  left:4px;
+  padding:5px 0 7px;
+  position:relative;
+  top:0;
+  width:450px;
+}
+span.summaryLabel {
+  display:inline-block;
+  margin-left:5px;
+  width:120px;
+}
+#activitySummaryDataComponent {
+  background-image:url(/static/images/act-summary-box-bg.png);
+  height:410px;
+  left:0;
+  position:relative;
+  top:0;
+  width:460px;
+}
+#activitySummaryContent div {
+  font-size:12px;
+  height:13px;
+  left:10px;
+  margin-top:5px;
+  position:relative;
+  width:450px;
+}

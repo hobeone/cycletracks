@@ -84,6 +84,18 @@ class CsvListProperty(db.Property):
     return map(self.cast_type,value.split(self.split_on))
 
 
+class AutoStringListProperty(db.StringListProperty):
+  """Auto converts a csv value to a list before saving"""
+  def validate(self, value):
+    if value is not None and not isinstance(value, list):
+      if isinstance(value, str) or isinstance(value, unicode):
+        value = value.split(',')
+        value = map(unicode, value)
+        value = map(unicode.strip, value)
+    value = super(AutoStringListProperty, self).validate(value)
+    return value
+
+
 class UserProfile(BaseModel):
   user = db.ReferenceProperty(User, required=True)
   use_imperial = db.BooleanProperty(default=False)
@@ -147,7 +159,7 @@ class Activity(BaseModel):
   start_time = db.DateTimeProperty(required=True)
   end_time = db.DateTimeProperty(required=True)
   total_time = db.IntegerProperty(required=True)
-  # verify rolling time > 0
+  # verify rolling time > 0 and < total_time
   rolling_time = db.IntegerProperty(required=True)
   average_speed = db.FloatProperty(required=True)
   maximum_speed = db.FloatProperty(required=True)
@@ -168,6 +180,7 @@ class Activity(BaseModel):
   total_ascent = db.FloatProperty(default=0.0)
   total_descent = db.FloatProperty(default=0.0)
   source_hash = db.StringProperty(required=True)
+  tags = AutoStringListProperty()
 
   @classmethod
   def hash_exists(cls, source_hash, user):
@@ -179,7 +192,8 @@ class Activity(BaseModel):
 
 
   def put(self):
-    if Activity.hash_exists(self.source_hash, self.user) and not self.is_saved():
+    if(Activity.hash_exists(self.source_hash, self.user)
+        and not self.is_saved()):
       raise db.NotSavedError(
           "An activity with the same source hash already exists")
     super(Activity, self).put()

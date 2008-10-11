@@ -10,7 +10,7 @@ indexes:
 # automatically uploaded to the admin console when you next deploy
 # your application using appcfg.py.
 
-# Used once in query history.
+# Used 8 times in query history.
 - kind: Activity
   ancestor: yes
 
@@ -49,13 +49,13 @@ indexes:
   - name: rolling_time
     direction: desc
 
-# Unused in query history -- copied from input.
+# Used 4 times in query history.
 - kind: Activity
   ancestor: yes
   properties:
   - name: start_time
 
-# Used 2 times in query history.
+# Used 17 times in query history.
 - kind: Activity
   ancestor: yes
   properties:

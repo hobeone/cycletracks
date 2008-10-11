@@ -14,7 +14,8 @@ Valid Archive formats (filename doesn't matter):
 </ul>
 
 <form action="/upload/" method="post" enctype="multipart/form-data">
-    {{ form }}
+    {{ form.as_p }}
     <input type="submit" value="Upload" />
   </form>
+  <p>Tags will be applied to all files in an archive</p>
 {% endblock %}

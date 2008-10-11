@@ -8,7 +8,7 @@
 <script type="text/javascript" src="/static/jquery.inplace.pack.js"></script>
 
 <script src="/static/timeplot_ajax/simile-ajax-api.js" type="text/javascript"></script>
-<script>
+<script type="text/javascript">
   Timeline_urlPrefix='/static/timeplot_js/';
   Timeline_parameters='bundle=true';
   Timeplot_urlPrefix='/static/timeplot_js/';
@@ -79,195 +79,132 @@ onload="onLoad();" onresize="onResize();"
 <table width="100%">
   <tr>
     <td align="left" valign="top" width="50%">
-<div id="activity_table">
-  <div id="activity_table">
-    <div id="activitySummaryDataComponent" class="activityComponent">
-      <div id="activitySummaryTitle">Summary for {{activity.name}}:</div>
-      <div id="activitySummaryContent">
-        <div id="startTime">
-          <span class="summaryLabel">
-            Start Time:
-          </span>
-          <span class="summaryField">
-            {{ activity.start_time|time_to_offset:user.get_profile.tzoffset }}
-          </span>
+        <div id="activity_table">
+          <div id="activitySummaryDataComponent" class="activityComponent">
+            <div id="activitySummaryTitle">Summary for {{activity.name}}:</div>
+            <div id="activitySummaryContent">
+              <div id="startTime">
+                <span class="summaryLabel">Start Time:</span>
+                <span class="summaryField">{{ activity.start_time|time_to_offset:user.get_profile.tzoffset }}</span>
+              </div>
+
+              <div id="endTime">
+                <span class="summaryLabel">End Time:</span>
+                <span class="summaryField">{{ activity.end_time|time_to_offset:user.get_profile.tzoffset }}</span>
+              </div>
+
+
+              <div id="distance">
+                <span class="summaryLabel">Distance</span>
+                <span class="summaryField">{{ activity.total_meters|meters_to_prefered_distance:user.get_profile.use_imperial }} {{user.get_profile.use_imperial|miles_or_km_units}}</span>
+              </div>
+
+
+              <div id="ascent">
+                <span class="summaryLabel">Ascent:</span>
+                <span class="summaryField">{{activity.total_ascent|format_meters:user.get_profile.use_imperial}} {{user.get_profile.use_imperial|meters_or_feet_units}}</span>
+              </div>
+
+
+              <div id="descent">
+                <span class="summaryLabel">Descent:</span>
+                <span class="summaryField">{{activity.total_descent|format_meters:user.get_profile.use_imperial}} {{user.get_profile.use_imperial|meters_or_feet_units}}</span>
+              </div>
+
+              <div id="rollingTime">
+                <span class="summaryLabel">Rolling Time:</span>
+                <span class="summaryField">{{ activity.rolling_time|seconds_to_human_readable }}</span>
+              </div>
+
+
+              <div id="totalTime">
+                <span class="summaryLabel">Total Time:</span>
+                <span class="summaryField">{{ activity.total_time|seconds_to_human_readable }}</span>
+              </div>
+
+
+              <div id="speed">
+                <span class="summaryLabel">Speed:</span>
+                <span class="summaryField">Avg: {{ activity.average_speed|kph_to_prefered_speed:user.get_profile.use_imperial }} {{user.get_profile.use_imperial|mph_or_kph_units}}, Max: {{ activity.maximum_speed|kph_to_prefered_speed:user.get_profile.use_imperial }} {{user.get_profile.use_imperial|mph_or_kph_units}}</span>
+              </div>
+
+
+              <div id="heartRate">
+                <span class="summaryLabel">Heart Rate:</span>
+                <span class="summaryField">Avg: {{ activity.average_bpm }}, Max: {{ activity.maximum_bpm }} bpm</span>
+              </div>
+
+
+              <div id="cadence">
+                <span class="summaryLabel">Cadence:</span>
+                <span class="summaryField">Avg: {{ activity.average_cadence }}, Max: {{ activity.maximum_cadence }} rpm</span>
+              </div>
+
+
+              <div id="calories">
+                <span class="summaryLabel">Calories:</span>
+                <span class="summaryField">{{ activity.total_calories|floatformat:"-2" }}</span>
+              </div>
+              <div id="startLocation">
+                <span class="summaryLabel">Start Location:</span>
+                <span class="summaryField" id="start_location"></span>
+              </div>
+              <div id="middleLocation">
+                <span class="summaryLabel">Middle Location:</span>
+                <span class="summaryField" id="mid_location"></span>
+              </div>
+              <div id="endLocation">
+                <span class="summaryLabel">End Location:</span>
+                <span class="summaryField" id="end_location"></span>
+              </div>
+              <div id="uploadedBy">
+                <span class="summaryLabel">Uploaded By:</span>
+                <span class="summaryField">{{ activity.parent.user }}</span>
+              </div>
+              <div id="public">
+                <span class="summaryLabel">Public:</span>
+                <span class="summaryField" id="public_flag">{{ activity.public }}</span>
+                <script type="text/javascript">
+                  $("#public_flag").editInPlace({
+                  url: "/activity/update/",
+                  params: "ajax=yes",
+                  value_required: true,
+                  field_type: "select",
+                  select_options: "True, False",
+                  params: "activity_id={{activity.key}}&attribute=public",
+                  });
+                </script>
+              </div>
+
+
+              <div id="comments">
+                <span class="summaryLabel">Comment:</span>
+                <span class="summaryField" id="editable_comment">{{ activity.comment }}</span>
+                <script type="text/javascript">
+                  $("#editable_comment").editInPlace({
+                  url: "/activity/update/",
+                  params: "ajax=yes",
+                  value_required: true,
+                  params: "activity_id={{activity.key}}&attribute=comment"
+                  });
+                </script>
+              </div>
+
+              <div id="tags">
+                <span class="summaryLabel">Tags:</span>
+                <span class="summaryField" id="editable_tags">{{ activity.tags|join:", "}}</span>
+                <script type="text/javascript">
+                  $("#editable_tags").editInPlace({
+                  url: "/activity/update/",
+                  params: "ajax=yes",
+                  value_required: true,
+                  params: "activity_id={{activity.key}}&attribute=tags"
+                  });
+                </script>
+              </div>
+            </div>
+          </div>
         </div>
-
-        <div id="endTime">
-          <span class="summaryLabel">
-            End Time:
-          </span>
-          <span class="summaryField">
-            {{ activity.end_time|time_to_offset:user.get_profile.tzoffset }}
-          </span>
-        </div>
-
-
-        <div id="distance">
-          <span class="summaryLabel">
-            Distance
-          </span>
-          <span class="summaryField">
-            {{ activity.total_meters|meters_to_prefered_distance:user.get_profile.use_imperial }} {{user.get_profile.use_imperial|miles_or_km_units}}
-          </span>
-        </div>
-
-
-        <div id="ascent">
-          <span class="summaryLabel">
-            Ascent:
-          </span>
-          <span class="summaryField">
-            {{activity.total_ascent|format_meters:user.get_profile.use_imperial}} {{user.get_profile.use_imperial|meters_or_feet_units}}
-          </span>
-        </div>
-
-
-        <div id="descent">
-          <span class="summaryLabel">
-            Descent:
-          </span>
-          <span class="summaryField">
-            {{activity.total_descent|format_meters:user.get_profile.use_imperial}} {{user.get_profile.use_imperial|meters_or_feet_units}}
-          </span>
-        </div>
-
-        <div id="rollingTime">
-          <span class="summaryLabel">
-            Rolling Time:
-          </span>
-          <span class="summaryField">
-            {{ activity.rolling_time|seconds_to_human_readable }}
-          </span>
-        </div>
-
-
-        <div id="totalTime">
-          <span class="summaryLabel">
-            Total Time:
-          </span>
-          <span class="summaryField">
-            {{ activity.total_time|seconds_to_human_readable }}
-          </span>
-        </div>
-
-
-        <div id="speed">
-          <span class="summaryLabel">
-            Speed:
-          </span>
-          <span class="summaryField">
-            Avg: {{ activity.average_speed|kph_to_prefered_speed:user.get_profile.use_imperial }} {{user.get_profile.use_imperial|mph_or_kph_units}},
-            Max: {{ activity.maximum_speed|kph_to_prefered_speed:user.get_profile.use_imperial }} {{user.get_profile.use_imperial|mph_or_kph_units}}
-          </span>
-        </div>
-
-
-        <div id="heartRate">
-          <span class="summaryLabel">
-            Heart Rate:
-          </span>
-          <span class="summaryField">
-            Avg: {{ activity.average_bpm }}, Max: {{ activity.maximum_bpm }} bpm
-          </span>
-        </div>
-
-
-        <div id="cadence">
-          <span class="summaryLabel">
-            Cadence:
-          </span>
-          <span class="summaryField">
-            Avg: {{ activity.average_cadence }}, Max: {{ activity.maximum_cadence }} rpm
-          </span>
-        </div>
-
-
-        <div id="calories">
-          <span class="summaryLabel">
-            Calories:
-          </span>
-          <span class="summaryField">
-            {{ activity.total_calories|floatformat:"-2" }}
-          </span>
-        </div>
-
-
-        <div id="startLocation">
-          <span class="summaryLabel">
-            Start Location:
-          </span>
-          <span class="summaryField" id="start_location">
-          </span>
-        </div>
-
-
-        <div id="middleLocation">
-          <span class="summaryLabel">
-            Middle Location:
-          </span>
-          <span class="summaryField" id="mid_location">
-          </span>
-        </div>
-
-
-        <div id="endLocation">
-          <span class="summaryLabel">
-            End Location:
-          </span>
-          <span class="summaryField" id="end_location">
-
-          </span>
-        </div>
-
-
-        <div id="uploadedBy">
-          <span class="summaryLabel">
-            Uploaded By:
-          </span>
-          <span class="summaryField">
-            {{ activity.parent.user }}
-          </span>
-        </div>
-
-
-        <div id="public">
-          <span class="summaryLabel">
-            Public:
-          </span>
-          <span class="summaryField" id="public_flag">{{ activity.public }}</span>
-            <script type="text/javascript">
-              $("#public_flag").editInPlace({
-                url: "/activity/update/",
-                params: "ajax=yes",
-                value_required: true,
-                field_type: "select",
-                select_options: "True, False",
-                params: "activity_id={{activity.key}}&attribute=public",
-              });
-            </script>
-        </div>
-
-
-        <div id="comments">
-          <span class="summaryLabel">
-            Comment:
-          </span>
-          <span class="summaryField" id="editable_comment">{{ activity.comment }}</span>
-            <script type="text/javascript">
-              $("#editable_comment").editInPlace({
-                url: "/activity/update/",
-                params: "ajax=yes",
-                value_required: true,
-                params: "activity_id={{activity.key}}&attribute=comment"
-              });
-            </script>
-        </div>
-
-      </div>
-    </div>
-  </div>
-
     </td>
     <td>
       <div id="map" style="width: 460px; height: 400px"></div>

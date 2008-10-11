@@ -84,7 +84,7 @@ def dashboard(request, sorting=None, user=None):
 
 class UploadFileForm(forms.Form):
   file = forms.Field(widget=forms.FileInput())
-
+  tags = forms.CharField(max_length=100, required=False)
 
 @auth_decorators.login_required
 def upload(request):
@@ -95,10 +95,17 @@ def upload(request):
       if not memcache.delete(cache_key):
         logging.error("Memcache delete failed.")
       try:
-        handle_uploaded_file(request.user, request.FILES['file'])
+        tags = form.cleaned_data['tags']
+        if tags:
+          tags = tags.split(',')
+          tags = map(unicode, tags)
+          tags = map(unicode.strip, tags)
+        handle_uploaded_file(request.user, request.FILES['file'], tags=tags)
         return HttpResponseRedirect('/mytracks/')
+
       except pytcx.TCXExpception, e:
         return render_to_response('error.html', {'error': e})
+
       except db.NotSavedError, e:
         return render_to_response('error.html', {'error': e})
 
@@ -150,7 +157,7 @@ def activity_save(user, activity_dict):
   return akey
 
 
-def handle_uploaded_file(user, filedata):
+def handle_uploaded_file(user, filedata, tags=[]):
   files = []
   # .zip
   try:
@@ -195,4 +202,5 @@ def handle_uploaded_file(user, filedata):
 
     activities = pytcx.parse_tcx(file)
     for act_dict in activities:
+      act_dict['tags'] = tags
       db.run_in_transaction(activity_save, user, act_dict)

@@ -153,7 +153,7 @@ def show(request, activity):
   return show_activity(request, a)
 
 
-VALID_ACTIVITY_ATTRIBUTES = ['comment', 'name', 'public']
+VALID_ACTIVITY_ATTRIBUTES = ['comment', 'name', 'public', 'tags']
 
 @auth_decorators.login_required
 def update(request):

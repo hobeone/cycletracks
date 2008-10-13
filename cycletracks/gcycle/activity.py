@@ -210,3 +210,16 @@ def delete(request):
     return HttpResponse('')
   else:
     return HttpResponse('Must use POST')
+
+@auth_decorators.login_required
+def tag(request, tag):
+  acts = Activity.all()
+  acts.ancestor(request.user)
+  acts.filter('tags =', tag)
+  acts.order('-start_time')
+
+  user_activities = acts
+  return render_to_response('activity/tag.html',
+      { 'user_activities': user_activities,
+        'tag': tag,
+        'user': request.user})

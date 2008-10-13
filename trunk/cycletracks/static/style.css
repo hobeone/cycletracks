@@ -441,31 +441,36 @@ input.text
   font-size:14px;
   font-weight:bold;
   left:20px;
-  padding:15px 0 7px;
+  padding:2px 0 1px;
   position:relative;
   top:0;
-  width:310px;
+  width:930px;
 }
 span.summaryLabel {
   display:inline-block;
   margin-left:23px;
   width:140px;
 }
-#userSummaryDataComponent {
+#userSummary {
   background-image:url(/static/images/summary-box-bg.png);
-  height:320px;
+  height:140px;
   left:0;
   position:relative;
   top:0;
-  width:350px;
+  width:950px;
 }
-#userSummaryContent div {
+
+div.userSummaryItem {
   font-size:12px;
   height:5px;
   left:10px;
   margin-top:15px;
   position:relative;
   width:310px;
+}
+
+div.summaryGroup {
+  float: left;
 }
 
 #activitySummaryTitle {

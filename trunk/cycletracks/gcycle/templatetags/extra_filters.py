@@ -97,3 +97,12 @@ def value_or_zero(value):
   if not value:
     value = 'null'
   return value
+
+@register.filter
+def link_tags(tags):
+  html = []
+  for t in tags:
+    t = t.strip()
+    html.append('<a href="/activity/tag/%s">%s</a>' % (t,t))
+
+  return ', '.join(html)

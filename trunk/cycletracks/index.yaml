@@ -10,7 +10,7 @@ indexes:
 # automatically uploaded to the admin console when you next deploy
 # your application using appcfg.py.
 
-# Used 8 times in query history.
+# Used 58 times in query history.
 - kind: Activity
   ancestor: yes
 
@@ -55,10 +55,26 @@ indexes:
   properties:
   - name: start_time
 
-# Used 17 times in query history.
+# Used 119 times in query history.
 - kind: Activity
   ancestor: yes
   properties:
+  - name: start_time
+    direction: desc
+
+# Used once in query history.
+- kind: Activity
+  ancestor: yes
+  properties:
+  - name: tag
+  - name: start_time
+    direction: desc
+
+# Used 16 times in query history.
+- kind: Activity
+  ancestor: yes
+  properties:
+  - name: tags
   - name: start_time
     direction: desc
 
@@ -76,7 +92,7 @@ indexes:
   - name: total_calories
     direction: desc
 
-# Unused in query history -- copied from input.
+# Used 2 times in query history.
 - kind: Activity
   ancestor: yes
   properties:

@@ -1,5 +1,7 @@
 import datetime
 from django import template
+from django.template import defaultfilters
+
 register = template.Library()
 
 @register.filter
@@ -102,7 +104,7 @@ def value_or_zero(value):
 def link_tags(tags):
   html = []
   for t in tags:
-    t = t.strip()
+    t = defaultfilters.force_escape(t.strip())
     html.append('<a href="/activity/tag/%s">%s</a>' % (t,t))
 
   return ', '.join(html)

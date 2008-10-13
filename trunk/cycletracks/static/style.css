@@ -453,7 +453,7 @@ span.summaryLabel {
 }
 #userSummary {
   background-image:url(/static/images/summary-box-bg.png);
-  height:140px;
+  height:100px;
   left:0;
   position:relative;
   top:0;
@@ -466,10 +466,11 @@ div.userSummaryItem {
   left:10px;
   margin-top:15px;
   position:relative;
-  width:310px;
+  width:315px;
 }
 
 div.summaryGroup {
+  height:75px;
   float: left;
 }
 

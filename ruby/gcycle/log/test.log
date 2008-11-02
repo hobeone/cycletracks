@@ -1,0 +1,53 @@
+  [4;36;1mSQL (0.000168)[0m   [0;1mSET NAMES 'utf8'[0m
+  [4;35;1mSQL (0.000135)[0m   [0mSET SQL_AUTO_IS_NULL=0[0m
+  [4;36;1mSQL (0.000110)[0m   [0;1mBEGIN[0m
+  [4;35;1mSQL (0.000119)[0m   [0mROLLBACK[0m
+  [4;36;1mSQL (0.000126)[0m   [0;1mSET NAMES 'utf8'[0m
+  [4;35;1mSQL (0.000095)[0m   [0mSET SQL_AUTO_IS_NULL=0[0m
+  [4;36;1mSQL (0.000092)[0m   [0;1mROLLBACK[0m
+  [4;35;1mSQL (0.000094)[0m   [0mSET NAMES 'utf8'[0m
+  [4;36;1mSQL (0.000089)[0m   [0;1mSET SQL_AUTO_IS_NULL=0[0m
+  [4;35;1mSQL (0.000080)[0m   [0mBEGIN[0m
+
+
+Processing ActivitiesController#index (for 0.0.0.0 at 2008-11-01 15:49:50) [GET]
+  Session ID: 
+  Parameters: {"action"=>"index", "controller"=>"activities"}
+  [4;36;1mActivity Load (0.001647)[0m   [0;1mSELECT * FROM `activities` [0m
+Rendering template within layouts/activities
+Rendering activities/index
+Completed in 0.07775 (12 reqs/sec) | Rendering: 0.07381 (94%) | DB: 0.01400 (18%) | 200 OK [http://test.host/activities]
+  [4;35;1mSQL (0.000235)[0m   [0mROLLBACK[0m
+  [4;36;1mSQL (0.000124)[0m   [0;1mBEGIN[0m
+
+
+Processing ActivitiesController#new (for 0.0.0.0 at 2008-11-01 15:49:50) [GET]
+  Session ID: 
+  Parameters: {"action"=>"new", "controller"=>"activities"}
+Rendering template within layouts/activities
+Rendering activities/new
+Completed in 0.02366 (42 reqs/sec) | Rendering: 0.02296 (97%) | DB: 0.00036 (1%) | 200 OK [http://test.host/activities/new]
+  [4;35;1mSQL (0.000208)[0m   [0mROLLBACK[0m
+  [4;36;1mSQL (0.000121)[0m   [0;1mBEGIN[0m
+  [4;35;1mActivity Load (0.025537)[0m   [0mSELECT * FROM `activities` WHERE (`activities`.`id` = 953125641) [0m
+
+
+Processing ActivitiesController#show (for 0.0.0.0 at 2008-11-01 15:49:50) [GET]
+  Session ID: 
+  Parameters: {"action"=>"show", "id"=>"953125641", "controller"=>"activities"}
+  [4;36;1mActivity Load (0.002383)[0m   [0;1mSELECT * FROM `activities` WHERE (`activities`.`id` = 953125641) [0m
+Rendering template within layouts/activities
+Rendering activities/show
+Completed in 0.00683 (146 reqs/sec) | Rendering: 0.00341 (49%) | DB: 0.02825 (413%) | 200 OK [http://test.host/activities/953125641]
+  [4;35;1mSQL (0.000203)[0m   [0mROLLBACK[0m
+  [4;36;1mSQL (0.000131)[0m   [0;1mBEGIN[0m
+  [4;35;1mActivity Load (0.001954)[0m   [0mSELECT * FROM `activities` WHERE (`activities`.`id` = 953125641) [0m
+
+
+Processing ActivitiesController#update (for 0.0.0.0 at 2008-11-01 15:49:50) [PUT]
+  Session ID: 
+  Parameters: {"activity"=>{}, "action"=>"update", "id"=>"953125641", "controller"=>"activities"}
+  [4;36;1mActivity Load (0.002363)[0m   [0;1mSELECT * FROM `activities` WHERE (`activities`.`id` = 953125641) [0m
+Redirected to http://test.host/activities/953125641
+Completed in 0.00426 (234 reqs/sec) | DB: 0.00465 (109%) | 302 Found [http://test.host/activities/953125641?]
+  [4;35;1mSQL (0.000516)[0m   [0mROLLBACK[0m

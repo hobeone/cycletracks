@@ -1,0 +1,108 @@
+<p>
+  <b>Name:</b>
+  <%=h @activity.name %>
+</p>
+
+<p>
+  <b>Sport:</b>
+  <%=h @activity.sport %>
+</p>
+
+<p>
+  <b>Total meters:</b>
+  <%=h @activity.total_meters %>
+</p>
+
+<p>
+  <b>Start time:</b>
+  <%=h @activity.start_time %>
+</p>
+
+<p>
+  <b>End time:</b>
+  <%=h @activity.end_time %>
+</p>
+
+<p>
+  <b>Total time:</b>
+  <%=h @activity.total_time %>
+</p>
+
+<p>
+  <b>Rolling time:</b>
+  <%=h @activity.rolling_time %>
+</p>
+
+<p>
+  <b>Average speed:</b>
+  <%=h @activity.average_speed %>
+</p>
+
+<p>
+  <b>Maximum speed:</b>
+  <%=h @activity.maximum_speed %>
+</p>
+
+<p>
+  <b>Average cadence:</b>
+  <%=h @activity.average_cadence %>
+</p>
+
+<p>
+  <b>Maximum cadence:</b>
+  <%=h @activity.maximum_cadence %>
+</p>
+
+<p>
+  <b>Average bpm:</b>
+  <%=h @activity.average_bpm %>
+</p>
+
+<p>
+  <b>Maximum bpm:</b>
+  <%=h @activity.maximum_bpm %>
+</p>
+
+<p>
+  <b>Total calories:</b>
+  <%=h @activity.total_calories %>
+</p>
+
+<p>
+  <b>Comment:</b>
+  <%=h @activity.comment %>
+</p>
+
+<p>
+  <b>Public:</b>
+  <%=h @activity.public %>
+</p>
+
+<p>
+  <b>Encoded points:</b>
+  <%=h @activity.encoded_points %>
+</p>
+
+<p>
+  <b>Encoded levels:</b>
+  <%=h @activity.encoded_levels %>
+</p>
+
+<p>
+  <b>Total ascent:</b>
+  <%=h @activity.total_ascent %>
+</p>
+
+<p>
+  <b>Total descent:</b>
+  <%=h @activity.total_descent %>
+</p>
+
+<p>
+  <b>Source hash:</b>
+  <%=h @activity.source_hash %>
+</p>
+
+
+<%= link_to 'Edit', edit_activity_path(@activity) %> |
+<%= link_to 'Back', activities_path %>

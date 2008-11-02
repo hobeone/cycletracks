@@ -1,0 +1,95 @@
+<h1>New activity</h1>
+
+<% form_for(@activity) do |f| %>
+  <%= f.error_messages %>
+
+  <p>
+    <%= f.label :name %><br />
+    <%= f.text_field :name %>
+  </p>
+  <p>
+    <%= f.label :sport %><br />
+    <%= f.text_field :sport %>
+  </p>
+  <p>
+    <%= f.label :total_meters %><br />
+    <%= f.text_field :total_meters %>
+  </p>
+  <p>
+    <%= f.label :start_time %><br />
+    <%= f.datetime_select :start_time %>
+  </p>
+  <p>
+    <%= f.label :end_time %><br />
+    <%= f.datetime_select :end_time %>
+  </p>
+  <p>
+    <%= f.label :total_time %><br />
+    <%= f.text_field :total_time %>
+  </p>
+  <p>
+    <%= f.label :rolling_time %><br />
+    <%= f.text_field :rolling_time %>
+  </p>
+  <p>
+    <%= f.label :average_speed %><br />
+    <%= f.text_field :average_speed %>
+  </p>
+  <p>
+    <%= f.label :maximum_speed %><br />
+    <%= f.text_field :maximum_speed %>
+  </p>
+  <p>
+    <%= f.label :average_cadence %><br />
+    <%= f.text_field :average_cadence %>
+  </p>
+  <p>
+    <%= f.label :maximum_cadence %><br />
+    <%= f.text_field :maximum_cadence %>
+  </p>
+  <p>
+    <%= f.label :average_bpm %><br />
+    <%= f.text_field :average_bpm %>
+  </p>
+  <p>
+    <%= f.label :maximum_bpm %><br />
+    <%= f.text_field :maximum_bpm %>
+  </p>
+  <p>
+    <%= f.label :total_calories %><br />
+    <%= f.text_field :total_calories %>
+  </p>
+  <p>
+    <%= f.label :comment %><br />
+    <%= f.text_field :comment %>
+  </p>
+  <p>
+    <%= f.label :public %><br />
+    <%= f.check_box :public %>
+  </p>
+  <p>
+    <%= f.label :encoded_points %><br />
+    <%= f.text_area :encoded_points %>
+  </p>
+  <p>
+    <%= f.label :encoded_levels %><br />
+    <%= f.text_area :encoded_levels %>
+  </p>
+  <p>
+    <%= f.label :total_ascent %><br />
+    <%= f.text_field :total_ascent %>
+  </p>
+  <p>
+    <%= f.label :total_descent %><br />
+    <%= f.text_field :total_descent %>
+  </p>
+  <p>
+    <%= f.label :source_hash %><br />
+    <%= f.text_field :source_hash %>
+  </p>
+  <p>
+    <%= f.submit "Create" %>
+  </p>
+<% end %>
+
+<%= link_to 'Back', activities_path %>

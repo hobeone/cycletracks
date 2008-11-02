@@ -1,0 +1,13 @@
+defaults: &defaults
+  adapter: mysql
+  encoding: utf8
+  username: root
+  socket: /var/run/mysqld/mysqld.sock
+
+development:
+  database: gcycle_development
+  <<: *defaults
+
+test:
+  database: gcycle_test
+  <<: *defaults

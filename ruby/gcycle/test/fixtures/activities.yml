@@ -1,0 +1,47 @@
+# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
+
+one:
+  name: MyString
+  sport: MyString
+  total_meters: 9.99
+  start_time: 2008-11-01 15:44:21
+  end_time: 2008-11-01 15:44:21
+  total_time: 1
+  rolling_time: 1
+  average_speed: 9.99
+  maximum_speed: 9.99
+  average_cadance: 1
+  maximum_cadence: 1
+  average_bpm: 1
+  maximum_bpm: 1
+  total_calories: 1
+  comment: MyString
+  public: false
+  encoded_points: MyText
+  encoded_levels: MyText
+  total_ascent: 9.99
+  total_decent: 9.99
+  source_hash: MyString
+
+two:
+  name: MyString
+  sport: MyString
+  total_meters: 9.99
+  start_time: 2008-11-01 15:44:21
+  end_time: 2008-11-01 15:44:21
+  total_time: 1
+  rolling_time: 1
+  average_speed: 9.99
+  maximum_speed: 9.99
+  average_cadance: 1
+  maximum_cadence: 1
+  average_bpm: 1
+  maximum_bpm: 1
+  total_calories: 1
+  comment: MyString
+  public: false
+  encoded_points: MyText
+  encoded_levels: MyText
+  total_ascent: 9.99
+  total_decent: 9.99
+  source_hash: MyString

@@ -1,0 +1,60 @@
+<h1>Listing activities</h1>
+
+<table>
+  <tr>
+    <th>Name</th>
+    <th>Sport</th>
+    <th>Total meters</th>
+    <th>Start time</th>
+    <th>End time</th>
+    <th>Total time</th>
+    <th>Rolling time</th>
+    <th>Average speed</th>
+    <th>Maximum speed</th>
+    <th>Average cadence</th>
+    <th>Maximum cadence</th>
+    <th>Average bpm</th>
+    <th>Maximum bpm</th>
+    <th>Total calories</th>
+    <th>Comment</th>
+    <th>Public</th>
+    <th>Encoded points</th>
+    <th>Encoded levels</th>
+    <th>Total ascent</th>
+    <th>Total descent</th>
+    <th>Source hash</th>
+  </tr>
+
+<% for activity in @activities %>
+  <tr>
+    <td><%=h activity.name %></td>
+    <td><%=h activity.sport %></td>
+    <td><%=h activity.total_meters %></td>
+    <td><%=h activity.start_time %></td>
+    <td><%=h activity.end_time %></td>
+    <td><%=h activity.total_time %></td>
+    <td><%=h activity.rolling_time %></td>
+    <td><%=h activity.average_speed %></td>
+    <td><%=h activity.maximum_speed %></td>
+    <td><%=h activity.average_cadence %></td>
+    <td><%=h activity.maximum_cadence %></td>
+    <td><%=h activity.average_bpm %></td>
+    <td><%=h activity.maximum_bpm %></td>
+    <td><%=h activity.total_calories %></td>
+    <td><%=h activity.comment %></td>
+    <td><%=h activity.public %></td>
+    <td><%=h activity.encoded_points %></td>
+    <td><%=h activity.encoded_levels %></td>
+    <td><%=h activity.total_ascent %></td>
+    <td><%=h activity.total_descent %></td>
+    <td><%=h activity.source_hash %></td>
+    <td><%= link_to 'Show', activity %></td>
+    <td><%= link_to 'Edit', edit_activity_path(activity) %></td>
+    <td><%= link_to 'Destroy', activity, :confirm => 'Are you sure?', :method => :delete %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= link_to 'New activity', new_activity_path %>

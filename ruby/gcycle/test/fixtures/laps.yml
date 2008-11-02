@@ -1,0 +1,35 @@
+# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
+
+one:
+  activity: 
+  total_meters: 1.5
+  total_time_seconds: 1
+  total_rolling_time_seconds: 1
+  average_cadence: 1
+  maximum_cadence: 1
+  average_bpm: 1
+  maximum_bpm: 1
+  average_speed: 1.5
+  maximum_speed: 1.5
+  calories: 1
+  starttime: 2008-11-01 15:55:03
+  endtime: 2008-11-01 15:55:03
+  total_ascent: 1.5
+  total_descent: 1.5
+
+two:
+  activity: 
+  total_meters: 1.5
+  total_time_seconds: 1
+  total_rolling_time_seconds: 1
+  average_cadence: 1
+  maximum_cadence: 1
+  average_bpm: 1
+  maximum_bpm: 1
+  average_speed: 1.5
+  maximum_speed: 1.5
+  calories: 1
+  starttime: 2008-11-01 15:55:03
+  endtime: 2008-11-01 15:55:03
+  total_ascent: 1.5
+  total_descent: 1.5

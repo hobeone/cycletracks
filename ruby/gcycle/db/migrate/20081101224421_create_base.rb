@@ -18,6 +18,7 @@ class CreateBase < ActiveRecord::Migration
     add_index :users, :login, :unique => true
 
     create_table :activities do |t|
+      t.references :user
       t.string :name
       t.string :sport
       t.float :total_meters, :default => 0
@@ -38,7 +39,7 @@ class CreateBase < ActiveRecord::Migration
       t.text :encoded_levels
       t.float :total_ascent, :default => 0.0
       t.float :total_descent, :default => 0.0
-      t.string :source_hash
+      t.string :source_hash, :limit => 40
 
       t.timestamps
     end

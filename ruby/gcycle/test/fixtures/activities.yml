@@ -1,8 +1,9 @@
 # Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
 
-one:
-  name: MyString
-  sport: MyString
+activity_one:
+  user_id: hobe
+  name: ActivityOne
+  sport: Biking
   total_meters: 9.99
   start_time: 2008-11-01 15:44:21
   end_time: 2008-11-01 15:44:21
@@ -10,7 +11,7 @@ one:
   rolling_time: 1
   average_speed: 9.99
   maximum_speed: 9.99
-  average_cadance: 1
+  average_cadence: 1
   maximum_cadence: 1
   average_bpm: 1
   maximum_bpm: 1
@@ -20,12 +21,13 @@ one:
   encoded_points: MyText
   encoded_levels: MyText
   total_ascent: 9.99
-  total_decent: 9.99
+  total_descent: 9.99
   source_hash: MyString
 
-two:
-  name: MyString
-  sport: MyString
+activity_two:
+  user_id: hobe
+  name: ActivityTwo
+  sport: Biking
   total_meters: 9.99
   start_time: 2008-11-01 15:44:21
   end_time: 2008-11-01 15:44:21
@@ -33,7 +35,7 @@ two:
   rolling_time: 1
   average_speed: 9.99
   maximum_speed: 9.99
-  average_cadance: 1
+  average_cadence: 1
   maximum_cadence: 1
   average_bpm: 1
   maximum_bpm: 1
@@ -43,5 +45,5 @@ two:
   encoded_points: MyText
   encoded_levels: MyText
   total_ascent: 9.99
-  total_decent: 9.99
+  total_descent: 9.99
   source_hash: MyString

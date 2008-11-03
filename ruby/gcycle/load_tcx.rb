@@ -6,6 +6,7 @@ require 'pp'
 require 'openssl'
 
 tcx_dir = File.dirname(__FILE__) + '/../garmin'
+user = User.first
 
 Dir.open(tcx_dir) do |dir|
   dir.each do |file|
@@ -16,6 +17,7 @@ Dir.open(tcx_dir) do |dir|
       tcx = TCXParser.new(filedata).parse
       puts "#{Time.now.to_f - t}"
       tcx.each do |a|
+        a.user = user
         a.name = file
         a.source_hash = OpenSSL::Digest::MD5.hexdigest(filedata)
         a.save!

@@ -12,27 +12,28 @@
 ActiveRecord::Schema.define(:version => 20081101235805) do
 
   create_table "activities", :force => true do |t|
+    t.integer  "user_id"
     t.string   "name"
     t.string   "sport"
-    t.float    "total_meters",    :default => 0.0
+    t.float    "total_meters",                  :default => 0.0
     t.datetime "start_time"
     t.datetime "end_time"
-    t.integer  "total_time",      :default => 0
-    t.integer  "rolling_time",    :default => 0
-    t.float    "average_speed",   :default => 0.0
-    t.float    "maximum_speed",   :default => 0.0
-    t.integer  "average_cadence", :default => 0
-    t.integer  "maximum_cadence", :default => 0
-    t.integer  "average_bpm",     :default => 0
-    t.integer  "maximum_bpm",     :default => 0
-    t.integer  "total_calories",  :default => 0
+    t.integer  "total_time",                    :default => 0
+    t.integer  "rolling_time",                  :default => 0
+    t.float    "average_speed",                 :default => 0.0
+    t.float    "maximum_speed",                 :default => 0.0
+    t.integer  "average_cadence",               :default => 0
+    t.integer  "maximum_cadence",               :default => 0
+    t.integer  "average_bpm",                   :default => 0
+    t.integer  "maximum_bpm",                   :default => 0
+    t.integer  "total_calories",                :default => 0
     t.string   "comment"
-    t.boolean  "public",          :default => false
+    t.boolean  "public",                        :default => false
     t.text     "encoded_points"
     t.text     "encoded_levels"
-    t.float    "total_ascent",    :default => 0.0
-    t.float    "total_descent",   :default => 0.0
-    t.string   "source_hash"
+    t.float    "total_ascent",                  :default => 0.0
+    t.float    "total_descent",                 :default => 0.0
+    t.string   "source_hash",     :limit => 40
     t.datetime "created_at"
     t.datetime "updated_at"
   end

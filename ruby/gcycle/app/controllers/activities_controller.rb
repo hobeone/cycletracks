@@ -1,6 +1,5 @@
 class ActivitiesController < ApplicationController
-  include AuthenticatedSystem
-#  before_filter :login_required
+  before_filter :login_required
 
   # GET /activities
   # GET /activities.xml

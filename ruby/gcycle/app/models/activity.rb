@@ -1,8 +1,9 @@
 class Activity < ActiveRecord::Base
+  belongs_to :user
   has_many :laps, :dependent => :delete_all
-  validates_associated :laps
+  validates_associated :laps, :user
 
-  validates_presence_of :name, :start_time, :end_time
+  validates_presence_of :name, :start_time, :end_time, :laps, :user
 
   # ints
   validates_numericality_of(:total_time, :rolling_time,

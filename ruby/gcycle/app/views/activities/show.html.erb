@@ -1,108 +1,327 @@
-<p>
-  <b>Name:</b>
-  <%=h @activity.name %>
-</p>
 
-<p>
-  <b>Sport:</b>
-  <%=h @activity.sport %>
-</p>
+<% content_for :head do %>
+<%= javascript_include_tag "greversegeocoder" %>
 
-<p>
-  <b>Total meters:</b>
-  <%=h @activity.total_meters %>
-</p>
+<%= javascript_include_tag "timeplot_ajax/simile-ajax-api" %>
+<script type="text/javascript">
+  Timeline_urlPrefix='/javascripts/timeplot_js/';
+  Timeline_parameters='bundle=true';
+  Timeplot_urlPrefix='/javascripts/timeplot_js/';
+  Timeplot_parameters='bundle=true';
+  SimileAjax.History['enabled'] = false;
+</script>
 
-<p>
-  <b>Start time:</b>
-  <%=h @activity.start_time %>
-</p>
+<%= javascript_include_tag "timeplot_js/timeline-api" %>
+<%= javascript_include_tag "timeplot_js/timeplot-api" %>
 
-<p>
-  <b>End time:</b>
-  <%=h @activity.end_time %>
-</p>
+<script type="text/javascript">
+  google.load("maps", "2.x");
+  function handle_point(point, map, element_id) {
+    var reverse_gcode = new GReverseGeocoder(map);
+    GEvent.addListener(reverse_gcode, "error",
+      function() {
+        document.getElementById(element_id).innerHTML = "Unable to reverse GeoCode";
+      }
+    );
+    GEvent.addListener(reverse_gcode, "load",
+      function(placemark) {
+        document.getElementById(element_id).innerHTML = placemark.address;
+      }
+    );
+    reverse_gcode.reverseGeocode(point);
+  }
 
-<p>
-  <b>Total time:</b>
-  <%=h @activity.total_time %>
-</p>
+  function initialize() {
+    var map = new google.maps.Map2(document.getElementById("map"));
+    map.setMapType(G_PHYSICAL_MAP);
+    map.setCenter(new google.maps.LatLng(0,0),0);
+    var sw = new google.maps.LatLng(<%= @activity.sw_point.join(',') %>);
+    var ne = new google.maps.LatLng(<%= @activity.ne_point.join(',') %>);
+    var bounds = new google.maps.LatLngBounds(sw, ne);
+    var mapZoomLevel = map.getBoundsZoomLevel(bounds);
+    var mapCenter = bounds.getCenter();
+    map.setCenter(mapCenter, mapZoomLevel);
 
-<p>
-  <b>Rolling time:</b>
-  <%=h @activity.rolling_time %>
-</p>
+    var polyline1_1 = new google.maps.Polyline.fromEncoded({
+      weight: 4,
+      opacity: 0.6,
+      points: <%= @activity.encoded_points.to_json %>,
+      levels: <%= @activity.encoded_levels.to_json %>,
+      zoomFactor: 2,
+      numLevels: 18
+    });
+    map.addOverlay(polyline1_1);
+    map.addControl(new google.maps.SmallMapControl());
 
-<p>
-  <b>Average speed:</b>
-  <%=h @activity.average_speed %>
-</p>
+    var start_point = new GLatLng(<%= @activity.start_point.join(',') %> );
+    var mid_point = new GLatLng(<%= @activity.mid_point.join(',') %>);
+    var end_point = new GLatLng(<%= @activity.end_point.join(',') %>);
+    handle_point(start_point, map, 'start_location')
+    handle_point(mid_point, map, 'mid_location')
+    handle_point(end_point, map, 'end_location')
+  }
+  google.setOnLoadCallback(initialize);
+</script>
+<% end %>
 
-<p>
-  <b>Maximum speed:</b>
-  <%=h @activity.maximum_speed %>
-</p>
+<% content_for :body_extra do %>
+  onload="onLoad();" onresize="onResize();"
+<% end %>
 
-<p>
-  <b>Average cadence:</b>
-  <%=h @activity.average_cadence %>
-</p>
-
-<p>
-  <b>Maximum cadence:</b>
-  <%=h @activity.maximum_cadence %>
-</p>
-
-<p>
-  <b>Average bpm:</b>
-  <%=h @activity.average_bpm %>
-</p>
-
-<p>
-  <b>Maximum bpm:</b>
-  <%=h @activity.maximum_bpm %>
-</p>
-
-<p>
-  <b>Total calories:</b>
-  <%=h @activity.total_calories %>
-</p>
-
-<p>
-  <b>Comment:</b>
-  <%=h @activity.comment %>
-</p>
-
-<p>
-  <b>Public:</b>
-  <%=h @activity.public %>
-</p>
-
-<p>
-  <b>Encoded points:</b>
-  <%=h @activity.encoded_points %>
-</p>
-
-<p>
-  <b>Encoded levels:</b>
-  <%=h @activity.encoded_levels %>
-</p>
-
-<p>
-  <b>Total ascent:</b>
-  <%=h @activity.total_ascent %>
-</p>
-
-<p>
-  <b>Total descent:</b>
-  <%=h @activity.total_descent %>
-</p>
-
-<p>
-  <b>Source hash:</b>
-  <%=h @activity.source_hash %>
-</p>
+<table width="100%">
+  <tr>
+    <td align="left" valign="top" width="50%">
+        <div id="activity_table">
+          <div id="activitySummaryDataComponent" class="activityComponent">
+            <div id="activitySummaryTitle">Summary for <%=@activity.name%>:</div>
+            <div id="activitySummaryContent">
+              <div id="startTime">
+                <span class="summaryLabel">Start Time:</span>
+                <span class="summaryField"><%= @activity.start_time.to_formatted_s(:db)  %></span>
+              </div>
+              <div id="endTime">
+                <span class="summaryLabel">End Time:</span>
+                <span class="summaryField"><%= @activity.end_time.to_formatted_s(:db) %></span>
+              </div>
+              <div id="rollingTime">
+                <span class="summaryLabel">Rolling Time:</span>
+                <span class="summaryField"><%= seconds_to_human_readable(@activity.rolling_time) %></span>
+              </div>
+              <div id="totalTime">
+                <span class="summaryLabel">Total Time:</span>
+                <span class="summaryField"><%= seconds_to_human_readable(@activity.total_time) %></span>
+              </div>
+              <div id="distance">
+                <span class="summaryLabel">Distance</span>
+                <span class="summaryField"><%= prefered_distance_with_units(@activity.total_meters) %></span>
+              </div>
+              <div id="ascent">
+                <span class="summaryLabel">Ascent:</span>
+                <span class="summaryField"><%=prefered_distance_with_units(@activity.total_ascent)%></span>
+              </div>
 
 
-<%= link_to 'Edit', edit_activity_path(@activity) %> |
-<%= link_to 'Back', activities_path %>
+              <div id="descent">
+                <span class="summaryLabel">Descent:</span>
+                <span class="summaryField"><%=prefered_distance_with_units(@activity.total_descent)%></span>
+              </div>
+
+
+
+              <div id="speed">
+                <span class="summaryLabel">Speed:</span>
+                <span class="summaryField">Avg: <%= kph_to_prefered_speed_with_units(@activity.average_speed) %>, Max: <%= kph_to_prefered_speed_with_units @activity.maximum_speed %></span>
+              </div>
+
+
+              <div id="heartRate">
+                <span class="summaryLabel">Heart Rate:</span>
+                <span class="summaryField">Avg: <%= @activity.average_bpm %>, Max: <%= @activity.maximum_bpm %> bpm</span>
+              </div>
+
+
+              <div id="cadence">
+                <span class="summaryLabel">Cadence:</span>
+                <span class="summaryField">Avg: <%= @activity.average_cadence %>, Max: <%= @activity.maximum_cadence %> rpm</span>
+              </div>
+
+
+              <div id="calories">
+                <span class="summaryLabel">Calories:</span>
+                <span class="summaryField"><%= @activity.total_calories %> Cal</span>
+              </div>
+              <div id="startLocation">
+                <span class="summaryLabel">Start Location:</span>
+                <span class="summaryField" id="start_location"></span>
+              </div>
+              <div id="middleLocation">
+                <span class="summaryLabel">Middle Location:</span>
+                <span class="summaryField" id="mid_location"></span>
+              </div>
+              <div id="endLocation">
+                <span class="summaryLabel">End Location:</span>
+                <span class="summaryField" id="end_location"></span>
+              </div>
+              <div id="uploadedBy">
+                <span class="summaryLabel">Uploaded By:</span>
+                <span class="summaryField"><%= @activity.user.login %></span>
+              </div>
+              <div id="public">
+                <table>
+                  <tr>
+                    <td>
+                      <span class="summaryLabel">Public:</span>
+                    </td>
+                    <td>
+                      <%= editable_collection_tag(:span, @activity, 'public', ['true', 'false'], {:class => 'summaryField'}, {:okText => 'save'}) %>
+
+                      </td>
+                    </tr>
+                  </table>
+              </div>
+
+
+              <div id="comments">
+                <table>
+                  <tr><td>
+                      <span class="summaryLabel">Comment:</span>
+                    </td>
+                    <td>
+                <%= editable_content_tag(:span, @activity, 'comment', true, nil, 'click to add a comment', {:class => 'summaryField'}, {:okText => 'save'}) %>
+          </td></tr></table>
+              </div>
+
+              <div id="tags">
+                <span class="summaryLabel">Tags:</span>
+              </div>
+            </div>
+          </div>
+        </div>
+    </td>
+    <td>
+      <div id="map" style="width: 460px; height: 400px"></div>
+      <div>
+        <%= activity_google_map_link(@activity) %> -
+        <%= link_to 'Public Link', activity_url(@activity) %> -
+        <%= link_to 'KML File', activity_url(@activity)+'.kml' %> -
+        <%= link_to 'Source File', activity_url(@activity)+'.tcx' %>
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td valign="top">
+      Altitude:
+      <div id="altitudechart" style="width: 430px; height: 200px"></div>
+      Speed:
+<div id="speedchart" style="width: 430px; height: 200px"></div>
+
+    </td>
+    <td>
+      Distance:
+      <div id="distancechart" style="width: 430px; height: 200px"></div>
+      Heart Rate (BPM):
+      <div id="bpmchart" style="width: 430px; height: 200px"></div>
+      Cadence (RPM):
+      <div id="cadencechart" style="width: 430px; height: 200px"></div>
+    </td>
+  </tr>
+</table>
+</div>
+
+<br/>
+
+
+<script id="source" language="javascript" type="text/javascript">
+  function onResize() {
+    var f = 1;
+  }
+  function onLoad() {
+    var eventSource = new Timeplot.DefaultEventSource();
+
+    var timeGeometry = new Timeplot.DefaultTimeGeometry({
+      gridColor: new Timeplot.Color("#000000"),
+      axisLabelsPlacement: "top"
+    });
+
+    var altitudeGeometry = new Timeplot.DefaultValueGeometry({
+      gridColor: "#000000",
+      axisLabelsPlacement: "left",
+    });
+    var speedGeometry = new Timeplot.DefaultValueGeometry({
+      gridColor: "#000000",
+      axisLabelsPlacement: "left",
+      min: 0,
+    });
+    var distanceGeometry = new Timeplot.DefaultValueGeometry({
+      gridColor: "#000000",
+      axisLabelsPlacement: "left",
+      min: 0,
+    });
+    var cadenceGeometry = new Timeplot.DefaultValueGeometry({
+      gridColor: "#000000",
+      axisLabelsPlacement: "left",
+      min: 0,
+    });
+    var bpmGeometry = new Timeplot.DefaultValueGeometry({
+      gridColor: "#000000",
+      axisLabelsPlacement: "left",
+      min: 0,
+    });
+
+    var altitudeInfo = [
+      Timeplot.createPlotInfo({
+        id: "plot1",
+        dataSource: new Timeplot.Processor(new Timeplot.ColumnSource(eventSource,1), Timeplot.Operator.average, { size: 5 }),
+        valueGeometry: altitudeGeometry,
+        timeGeometry: timeGeometry,
+        lineColor: "#ff0000",
+        fillColor: "#cc8080",
+        showValues: true
+      }),
+      ];
+    var speedInfo = [
+      Timeplot.createPlotInfo({
+        id: "plot2",
+        dataSource: new Timeplot.Processor(
+          new Timeplot.ColumnSource(eventSource,2),
+            Timeplot.Operator.average, { size: 15 }),
+        valueGeometry: speedGeometry,
+        timeGeometry: timeGeometry,
+        lineColor: "#D0A825",
+        fillColor: "#D0A825",
+        showValues: true
+      }),
+      ];
+    var cadenceInfo = [
+      Timeplot.createPlotInfo({
+        id: "plot3",
+        dataSource: new Timeplot.Processor(
+          new Timeplot.ColumnSource(eventSource,3),
+            Timeplot.Operator.average, { size: 30 }),
+        valueGeometry: cadenceGeometry,
+        timeGeometry: timeGeometry,
+        lineColor: "#ff0000",
+        fillColor: "#cc8080",
+        showValues: true
+      }),
+      ];
+    var distanceInfo = [
+      Timeplot.createPlotInfo({
+        id: "plot4",
+        dataSource: new Timeplot.ColumnSource(eventSource,4),
+        valueGeometry: distanceGeometry,
+        timeGeometry: timeGeometry,
+        lineColor: "#99B3CC",
+        fillColor: "#99B3CC",
+        showValues: true
+      }),
+      ];
+    var bpmInfo = [
+      Timeplot.createPlotInfo({
+        id: "plot5",
+        dataSource: new Timeplot.Processor(
+          new Timeplot.ColumnSource(eventSource,5),
+            Timeplot.Operator.average, { size: 15 }),
+        valueGeometry: bpmGeometry,
+        timeGeometry: timeGeometry,
+        lineColor: "#99B386",
+        fillColor: "#99B386",
+        showValues: true
+      }),
+    ];
+
+    altitudeplot = Timeplot.create(document.getElementById("altitudechart"),
+        altitudeInfo);
+    speedplot = Timeplot.create(document.getElementById("speedchart"),
+        speedInfo);
+    cadenceplot = Timeplot.create(document.getElementById("cadencechart"),
+        cadenceInfo);
+    distanceplot = Timeplot.create(document.getElementById("distancechart"),
+        distanceInfo);
+    bpmplot = Timeplot.create(document.getElementById("bpmchart"),
+        bpmInfo);
+
+
+    altitudeplot.loadText("/activities/<%=@activity.id%>/data", ",", eventSource);
+};
+</script>

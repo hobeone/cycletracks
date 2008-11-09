@@ -26,4 +26,7 @@ class Lap < ActiveRecord::Base
     end
   end
 
+  def geopoints_to_kml_order
+    return geopt_list.map{|pt| [pt[1],pt[0]]}
+  end
 end

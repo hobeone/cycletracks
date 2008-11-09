@@ -1,0 +1,35 @@
+<table cellspacing="2" width="100%">
+  <thead>
+  <tr>
+    <th><a href='/mytracks/name'>Activity Name</a></th>
+    <th><a href='/mytracks/start_time'>Start Time<br/>(End Time)</a></th>
+    <th><a href='/mytracks/total_meters'>Distance</a></th>
+    <th><a href='/mytracks/rolling_time'>Time<br/>(Rolling)</a></th>
+    <th><a href='/mytracks/average_cadence'>Avg/Max Cadence</a></th>
+    <th><a href='/mytracks/average_bpm'>Avg/Max BPM</a></th>
+    <th><a href='/mytracks/average_speed'>Avg/Max Speed</a></th>
+    <th><a href='/mytracks/total_ascent'>Ascent<br/>Decent</a></th>
+    <th><a href='/mytracks/total_calories'>Calories</a></th>
+    <th>Delete</th>
+  </tr>
+</thead>
+<tbody>
+  <% @activities.each do |activity| %>
+    <tr id="<%= dom_id(activity)%>">
+      <td><a href="/activities/<%= activity.id %>"><%=activity.name%></a><br/></td>
+      <td><%= activity.start_time.to_formatted_s(:db) %><br/><%= activity.end_time.to_formatted_s(:db) %></td>
+      <td><%= prefered_distance_with_units(activity.total_meters) %></td>
+      <td><%= seconds_to_human_readable(activity.total_time) %>
+        <br/>
+        (<%= seconds_to_human_readable(activity.rolling_time) %>)
+      </td>
+      <td><%= activity.average_cadence %> rpm<br/> <%= activity.maximum_cadence %> rpm</td>
+      <td><%= activity.average_bpm %> bpm<br/> <%= activity.maximum_bpm %> bpm</td>
+      <td><%= kph_to_prefered_speed_with_units(activity.average_speed) %><br/> <%= kph_to_prefered_speed_with_units(activity.maximum_speed) %></td>
+      <td><%= prefered_distance_with_units(activity.total_ascent)%><br/> <%= prefered_distance_with_units(activity.total_descent)%></td>
+      <td><%= activity.total_calories %> Cal</td>
+      <td onclick="delete_activity('<%= dom_id(activity) %>')">delete</td>
+    </tr>
+  <% end %>
+  </tbody>
+</table>

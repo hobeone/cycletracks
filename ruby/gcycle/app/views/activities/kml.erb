@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://earth.google.com/kml/2.2">
+<Document>
+  <Style id="lapstyle">
+    <LineStyle>
+      <color>ffffff00</color>
+      <width>4</width>
+      <colorMode>random</colorMode>
+    </LineStyle>
+  </Style>
+  <% @activity.laps.each_with_index do |lap,index| %>
+<Placemark>
+  <visibility>1</visibility>
+  <name>CycleTrack Lap <%= index + 1 %></name>
+  <description>
+    <![CDATA[
+<table><tr>
+    <td>Name: <%= @activity.name %></td><td></td>
+</tr>
+<tr>
+  <td>Start Time:</td><td><%= lap.start_time %></td>
+</tr>
+<tr>
+  <td>End Time:</td><td><%= lap.end_time %></td>
+</tr>
+<tr>
+  <td>Distance:</td><td><%= lap.total_meters %></td>
+</tr>
+<tr>
+  <td>Rolling Time:</td><td><%= lap.total_rolling_time_seconds %></td>
+</tr>
+<tr>
+  <td>Total Time:</td><td><%= lap.total_time_seconds %></td>
+</tr>
+<tr>
+  <td>Speed:</td>
+  <td>Avg: <%= lap.average_speed %>,Max: <%= lap.maximum_speed %></td>
+</tr>
+<tr>
+  <td>Heart Rate:</td><td>Avg: <%= lap.average_bpm %>, Max: <%= lap.maximum_bpm %> BPM</td>
+</tr>
+<tr>
+  <td>Cadence:</td><td>Avg: <%= lap.average_cadence %>, Max: <%= lap.maximum_cadence %> RPM</td>
+</tr>
+<tr>
+  <td>Calories:</td><td><%= lap.calories %></td>
+</tr>
+</table>
+<%= link_to 'View at Gcycle', activity_url(@activity) %>
+]]>
+</description>
+  <styleUrl>#lapstyle</styleUrl>
+  <LineString>
+      <coordinates><%= lap.geopoints_to_kml_order %></coordinates>
+      <extrude>1</extrude>
+      <tessellate>1</tessellate>
+  </LineString>
+  </Placemark>
+<% end %>
+</Document>
+</kml>

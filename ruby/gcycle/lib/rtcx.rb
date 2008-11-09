@@ -1,4 +1,11 @@
 require 'libxml_helper'
+class Float
+  def precision(pre)
+    mult = 10 ** pre
+    (self * mult).truncate.to_f / mult
+  end
+end
+
 
 class TCXParser
   @@lap_tags = {
@@ -48,9 +55,14 @@ class TCXParser
       latitude = trackpoint.at('tcd:Position/tcd:LatitudeDegrees')
       longitude = trackpoint.at('tcd:Position/tcd:LongitudeDegrees')
       if latitude.nil? or longitude.nil?
-        track_data[:geopt_list] << track_data[:geopt_list][-1]
+        if not track_data[:geopt_list].empty?
+          track_data[:geopt_list] << track_data[:geopt_list][-1]
+        end
       else
-        track_data[:geopt_list] << latitude.content+','+longitude.content
+        track_data[:geopt_list] << [
+          latitude.content.to_f,
+          longitude.content.to_f
+        ]
       end
 
       altitude = trackpoint.at('tcd:AltitudeMeters')
@@ -89,7 +101,11 @@ class TCXParser
         time_delta = track_data[:time_list][-1] - track_data[:time_list][-2]
         dist_delta = track_data[:distance_list][-1] -
           track_data[:distance_list][-2]
-        track_data[:speed_list] << dist_delta / time_delta
+        if time_delta == 0
+          track_data[:speed_list] << 0.0
+        else
+          track_data[:speed_list] << (dist_delta / time_delta).precision(3)
+        end
       else
         track_data[:speed_list] << 0.0
       end

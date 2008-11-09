@@ -1,0 +1,4 @@
+source_file_one:
+  activity: activity_one
+  filename: foobar
+  filedata: bazbazbaz

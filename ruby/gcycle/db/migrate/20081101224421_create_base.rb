@@ -1,19 +1,18 @@
 class CreateBase < ActiveRecord::Migration
   def self.up
     create_table "users", :force => true do |t|
-      t.column :login,                     :string, :limit => 40
-      t.column :name,                      :string, :limit => 100, :default => '', :null => true
-      t.column :email,                     :string, :limit => 100
-      t.column :crypted_password,          :string, :limit => 40
-      t.column :salt,                      :string, :limit => 40
-      t.column :created_at,                :datetime
-      t.column :updated_at,                :datetime
-      t.column :remember_token,            :string, :limit => 40
+      t.string :login,                     :limit => 40
+      t.string :name,                      :limit => 100, :default => '', :null => true
+      t.string :email,                     :limit => 100
+      t.string :crypted_password,          :limit => 40
+      t.string :salt,                      :limit => 40
+      t.string :remember_token,            :limit => 40
       t.column :remember_token_expires_at, :datetime
-      t.column :activation_code,           :string, :limit => 40
-      t.column :activated_at,              :datetime
-      t.column :state,                     :string, :null => :no, :default => 'passive'
-      t.column :deleted_at,                :datetime
+      t.timestamps
+
+      # custom for gcycle
+      t.boolean :metric
+      t.string :timezone, :limit => 40
     end
     add_index :users, :login, :unique => true
 
@@ -37,6 +36,11 @@ class CreateBase < ActiveRecord::Migration
       t.boolean :public, :default => false
       t.text :encoded_points
       t.text :encoded_levels
+      t.string :sw_point
+      t.string :ne_point
+      t.string :start_point
+      t.string :mid_point
+      t.string :end_point
       t.float :total_ascent, :default => 0.0
       t.float :total_descent, :default => 0.0
       t.string :source_hash, :limit => 40
@@ -60,13 +64,13 @@ class CreateBase < ActiveRecord::Migration
       t.datetime :end_time
       t.float :total_ascent, :default => 0.0
       t.float :total_descent, :default => 0.0
-      t.text :bpm_list
-      t.text :altitude_list
-      t.text :speed_list
-      t.text :distance_list
-      t.text :cadence_list
-      t.text :geopt_list
-      t.text :time_list
+      t.text :bpm_list, :limit => 16777215
+      t.text :altitude_list, :limit => 16777215
+      t.text :speed_list, :limit => 16777215
+      t.text :distance_list, :limit => 16777215
+      t.text :cadence_list, :limit => 16777215
+      t.text :geopt_list, :limit => 16777215
+      t.text :time_list, :limit => 16777215
       t.timestamps
     end
   end
@@ -74,6 +78,6 @@ class CreateBase < ActiveRecord::Migration
   def self.down
     drop_table :laps
     drop_table :activities
-    drop_table "users"
+    drop_table :users
   end
 end

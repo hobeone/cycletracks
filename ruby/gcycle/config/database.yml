@@ -11,3 +11,7 @@ development:
 test:
   database: gcycle_test
   <<: *defaults
+
+production:
+  database: gcycle_production
+  <<: *defaults

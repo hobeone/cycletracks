@@ -24,17 +24,17 @@ class User < ActiveRecord::Base
 
   def totals
     totals = {
-      :total_meters => activities.sum(:total_meters),
-      :total_time => activities.sum(:total_time),
-      :total_ascent => activities.sum(:total_ascent),
-      :rolling_time => activities.sum(:rolling_time),
-      :average_cadence => activities.average(:average_cadence),
-      :maximum_cadence => activities.maximum(:maximum_cadence),
-      :average_bpm => activities.average(:average_bpm),
-      :maximum_bpm => activities.maximum(:maximum_bpm),
-      :average_speed => activities.average(:average_speed),
-      :maximum_speed => activities.maximum(:maximum_speed),
-      :total_calories => activities.sum(:total_calories),
+      :total_meters => activities.sum(:total_meters) || 0.0,
+      :total_time => activities.sum(:total_time) || 0.0 ,
+      :total_ascent => activities.sum(:total_ascent) || 0.0,
+      :rolling_time => activities.sum(:rolling_time) || 0,
+      :average_cadence => activities.average(:average_cadence) || 0,
+      :maximum_cadence => activities.maximum(:maximum_cadence) || 0,
+      :average_bpm => activities.average(:average_bpm) || 0,
+      :maximum_bpm => activities.maximum(:maximum_bpm) || 0,
+      :average_speed => activities.average(:average_speed) || 0.0,
+      :maximum_speed => activities.maximum(:maximum_speed) || 0.0,
+      :total_calories => activities.sum(:total_calories) || 0,
     }
     return totals
   end
@@ -42,8 +42,7 @@ class User < ActiveRecord::Base
   # HACK HACK HACK -- how to do attr_accessible from here?
   # prevents a user from submitting a crafted form that bypasses activation
   # anything else you want your user to change should be added here.
-  attr_accessible :login, :email, :name, :password, :password_confirmation
-
+  attr_accessible :login, :email, :name, :password, :password_confirmation, :metric, :timezone
 
 
   # Authenticates a user by their login name and unencrypted password.  Returns the user or nil.
@@ -67,7 +66,4 @@ class User < ActiveRecord::Base
   end
 
   protected
-    
-
-
 end

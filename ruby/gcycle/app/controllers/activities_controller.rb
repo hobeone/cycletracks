@@ -45,7 +45,7 @@ class ActivitiesController < ApplicationController
     end
   end
 
-  caches_action :show
+  caches_action :data
 
   def data
     @activity = Activity.find(params[:id])
@@ -113,7 +113,7 @@ class ActivitiesController < ApplicationController
         format.xml  { head :ok }
       else
         format.html { render :action => "edit" }
-        format.json { render :json => @artist, :status => 500}
+        format.json { render :json => @activity, :status => 500}
         format.xml  { render :xml => @activity.errors, :status => :unprocessable_entity }
       end
     end

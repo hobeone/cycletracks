@@ -89,8 +89,8 @@ ActiveRecord::Schema.define(:version => 20081109050908) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.boolean  "metric"
+    t.boolean  "admin"
     t.string   "timezone",                  :limit => 40
-    t.string   "time_zone"
   end
 
   add_index "users", ["login"], :name => "index_users_on_login", :unique => true

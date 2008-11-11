@@ -12,6 +12,7 @@ class CreateBase < ActiveRecord::Migration
 
       # custom for gcycle
       t.boolean :metric
+      t.boolean :admin
       t.string :timezone, :limit => 40
     end
     add_index :users, :login, :unique => true

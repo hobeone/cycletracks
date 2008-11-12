@@ -1,11 +1,11 @@
 ActionController::Routing::Routes.draw do |map|
-  map.home '', :controller => 'dashboard', :action => 'dashboard'
+  map.home '', :controller => 'activities', :action => 'index'
 
   map.logout   '/logout',   :controller => 'sessions', :action => 'destroy'
   map.login    '/login',    :controller => 'sessions', :action => 'new'
   map.register '/register', :controller => 'users', :action => 'create'
   map.signup   '/signup',   :controller => 'users', :action => 'new'
-  map.resources :users
+  map.resources :users, :has_many => :activities
 
   map.resource :session
 
@@ -13,8 +13,8 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :activities,
     :member => {
       :data => :get,
-      :kml => :get,
-      :tcx => :get},
+      :public => :get,
+    },
     :has_many => :laps
 
 #  map.connect ':controller/:action/:id'

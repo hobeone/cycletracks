@@ -3,7 +3,6 @@ class UsersController < ApplicationController
   before_filter :authorize_update, :only => [ :update, :show ]
   layout "base"
 
-
   def authorize_update
     return true if @current_user.admin?
     return true if params[:id] == @current_user.id

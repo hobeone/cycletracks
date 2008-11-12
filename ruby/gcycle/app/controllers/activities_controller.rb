@@ -2,12 +2,31 @@ require 'lib/rtcx'
 
 class ActivitiesController < ApplicationController
   before_filter :login_required
+  before_filter :authorize_index_view, :only => [ :index ]
+  before_filter :authorize_views_and_mods, :only => [:show, :data, :update, :destroy]
   layout "base"
 
-  # GET /activities
-  # GET /activities.xml
+  def authorize_index_view
+    return true if @current_user.admin?
+    return true if params[:user_id] == @current_user.id.to_s
+    return true if params[:user_id].nil?
+    flash[:error] = 'Access to that resource denied'
+    redirect_to '/'
+  end
+
+  def authorize_views_and_mods
+    return true if @current_user.admin?
+    @activity = Activity.find(params[:id])
+    return true if @activity.user = @current_user
+    flash[:error] = 'Access to that resource denied'
+    redirect_to '/'
+  end
+
   def index
-    @activities = Activity.find(:all, :order => 'start_time DESC')
+    Activity.send(:with_scope, :find => { :conditions => ['user_id = ?', @current_user.id]}) do
+      @activities = Activity.find(:all,
+                                  :order => 'start_time DESC')
+    end
 
     respond_to do |format|
       format.html # index.html.erb
@@ -15,11 +34,7 @@ class ActivitiesController < ApplicationController
     end
   end
 
-  # GET /activities/1
-  # GET /activities/1.xml
   def show
-    @activity = Activity.find(params[:id])
-
     respond_to do |format|
       format.kml do
         render :template => 'activities/kml', :layout => false
@@ -34,22 +49,9 @@ class ActivitiesController < ApplicationController
     end
   end
 
-  # GET /activities/new
-  # GET /activities/new.xml
-  def new
-    @activity = Activity.new
-
-    respond_to do |format|
-      format.html # new.html.erb
-      format.xml  { render :xml => @activity }
-    end
-  end
-
   caches_action :data
 
   def data
-    @activity = Activity.find(params[:id])
-
     data = @activity.time_list.zip(
       @activity.altitude_list,
       @activity.speed_list,
@@ -60,19 +62,29 @@ class ActivitiesController < ApplicationController
     activity_data = []
     st = @activity.start_time
 
-    data.each do |t,a,s,c,d,b|
+    data.each do |time,alt,speed,cad,dist,bpm|
       activity_data << [
-        (st + t).strftime('%FT%T'),
-        a,
-        s,
-        c,
-        d,
-        b
+        (st + time).strftime('%FT%T'),
+        alt,
+        speed,
+        cad,
+        dist,
+        bpm
       ].join(',')
     end
     headers["Content-Type"] = "text/plain; charset=utf-8"
     render :text => activity_data.join("\n")
   end
+
+  def new
+    @activity = Activity.new
+
+    respond_to do |format|
+      format.html # new.html.erb
+      format.xml  { render :xml => @activity }
+    end
+  end
+
 
   # POST /activities
   # POST /activities.xml
@@ -103,8 +115,6 @@ class ActivitiesController < ApplicationController
   # PUT /activities/1
   # PUT /activities/1.xml
   def update
-    @activity = Activity.find(params[:id])
-
     respond_to do |format|
       if @activity.update_attributes(params[:activity])
         flash[:notice] = 'Activity was successfully updated.'
@@ -122,7 +132,6 @@ class ActivitiesController < ApplicationController
   # DELETE /activities/1
   # DELETE /activities/1.xml
   def destroy
-    @activity = Activity.find(params[:id])
     @activity.destroy
 
     respond_to do |format|

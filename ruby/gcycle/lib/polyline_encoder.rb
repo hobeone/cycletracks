@@ -27,7 +27,11 @@
 # visible at all zoom levels.  force_endpoints is 
 # optional with a default value of true.  Probably 
 # should stay true regardless.
-# 
+#
+# MODIFIED BY HOBE:
+# take a 2d array rather than array of Point()
+#
+#
 # Main methods:
 # PolylineEncoder.dp_encode(points)
 # Accepts an array of objects (see below)
@@ -40,21 +44,14 @@
 # You will probably want to use something different
 # Remember dp_encode accepts an array of objects
 #
-# class Point
-#   attr_accessor :lat, :lng
-#   def initialize(lat, lng)
-#     @lat, @lng = lat, lng
-#   end
-# end
 #
 # points = Array.new
-# points << Point.new(36.97005, -93.29783)
-# points << Point.new(36.97005,  -93.29410000000001)
-# points << Point.new(36.96998, -93.28758)
+# points << [36.97005, -93.29783]
+# points << [36.97005,  -93.29410000000001]
 #
 # polyline_encoder = PolylineEncoder.new
 # polyline_encoder.dp_encode(points)
-# 
+#
 # polyline_encoder.encoded_points
 # polyline_encoder.encoded_levels
 #
@@ -65,7 +62,7 @@
 
 class PolylineEncoder
   attr_reader :encoded_points, :encoded_levels, :encoded_points_literal
-   
+
   def initialize(options = {})
     @num_levels = options[:num_levels] || 18
     @zoom_factor = options[:zoom_factor] || 2
@@ -76,7 +73,7 @@ class PolylineEncoder
       @zoom_level_breaks[i] = @very_small * (@zoom_factor ** (@num_levels-i-1))
     end
   end
-    
+
   # The main function.  Essentially the Douglas-Peucker
   # algorithm, adapted for encoding. Rather than simply
   # eliminating points, we record their distance from the
@@ -87,17 +84,17 @@ class PolylineEncoder
     stack = Array.new
     dists = Array.new
     max_dist, max_loc, temp, first, last, current = 0
-   
+
     if points.length > 2
       stack.push([0, points.length-1])
       while stack.length > 0 
         current = stack.pop
         max_dist = 0
-          
+
         i = current[0]+1
         while i < current[1]
           temp = distance(points[i], 
-            points[current[0]], points[current[1]])
+                          points[current[0]], points[current[1]])
           if temp > max_dist
             max_dist = temp
             max_loc = i
@@ -107,7 +104,7 @@ class PolylineEncoder
           end
           i += 1
         end
-          
+
         if max_dist > @very_small
           dists[max_loc] = max_dist
           stack.push([current[0], max_loc])
@@ -119,32 +116,32 @@ class PolylineEncoder
     @encoded_levels = encode_levels(points, dists, abs_max_dist)
     @encoded_points_literal = @encoded_points.gsub("\\", "\\\\\\\\")
   end
-  
+
   private
-   
+
   # distance(p0, p1, p2) computes the distance between the point p0
   # and the segment [p1,p2].  This could probably be replaced with
   # something that is a bit more numerically stable.
   def distance(p0,p1,p2)
-    if p1.lat == p2.lat and p1.lng == p2.lng
-      out = Math.sqrt(((p2.lat - p0.lat)**2) + ((p2.lng - p0.lng)**2))
+    if p1[0] == p2[0] and p1[1] == p2[1]
+      out = Math.sqrt(((p2[0] - p0[0])**2) + ((p2[1] - p0[1])**2))
     else
-      u = ((p0.lat - p1.lat)*(p2.lat - p1.lat)+(p0.lng - p1.lng)*(p2.lng - p1.lng))/
-        (((p2.lat - p1.lat)**2) + ((p2.lng - p1.lng)**2))
+      u = ((p0[0] - p1[0])*(p2[0] - p1[0])+(p0[1] - p1[1])*(p2[1] - p1[1]))/
+        (((p2[0] - p1[0])**2) + ((p2[1] - p1[1])**2))
       if u <= 0
-        out = Math.sqrt( ((p0.lat - p1.lat)**2 ) + ((p0.lng - p1.lng)**2) )
+        out = Math.sqrt( ((p0[0] - p1[0])**2 ) + ((p0[1] - p1[1])**2) )
       end
       if u >= 1
-        out = Math.sqrt(((p0.lat - p2.lat)**2) + ((p0.lng - p2.lng)**2))
+        out = Math.sqrt(((p0[0] - p2[0])**2) + ((p0[1] - p2[1])**2))
       end
       if 0 < u and u < 1
-        out = Math.sqrt( ((p0.lat-p1.lat-u*(p2.lat-p1.lat))**2) +
-          ((p0.lng-p1.lng-u*(p2.lng-p1.lng))**2) )
+        out = Math.sqrt( ((p0[0]-p1[0]-u*(p2[0]-p1[0]))**2) +
+          ((p0[1]-p1[1]-u*(p2[1]-p1[1]))**2) )
       end
     end
     return out
   end
-    
+
   # The createEncodings function is very similar to Google's
   # http://www.google.com/apis/maps/documentation/polyline.js
   # The key difference is that not all points are encoded, 
@@ -156,8 +153,8 @@ class PolylineEncoder
      for i in 0 .. points.length do
       if !dists[i].nil? || i == 0 || i == points.length-1 
         point = points[i]
-        lat = point.lat
-        lng = point.lng
+        lat = point[0]
+        lng = point[1]
         late5 = (lat * 1e5).floor
         lnge5 = (lng * 1e5).floor
         dlat = late5 - plat
@@ -170,7 +167,7 @@ class PolylineEncoder
     end
     return encoded_points
   end
-    
+
   # This computes the appropriate zoom level of a point in terms of it's 
   # distance from the relevant segment in the DP algorithm.  Could be done
   # in terms of a logarithm, but this approach makes it a bit easier to
@@ -184,7 +181,7 @@ class PolylineEncoder
       return lev
     end
   end
-    
+
   # Now we can use the previous function to march down the list
   # of points and encode the levels.  Like create_encodings, we
   # ignore points whose distance (in dists) is undefined.
@@ -207,7 +204,7 @@ class PolylineEncoder
     end
     return encoded_levels
   end
-    
+
   # This function is very similar to Google's, but I added
   #some stuff to deal with the double slash issue.
   def encode_number(num)
@@ -221,7 +218,7 @@ class PolylineEncoder
     encode_string << final_value.chr
     return encode_string
   end
-    
+
   # This one is Google's verbatim.
   def encode_signed_number(num)
     sgn_num = num << 1

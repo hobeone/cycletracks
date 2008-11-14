@@ -5,8 +5,8 @@ class UsersController < ApplicationController
 
   def authorize_update
     return true if @current_user.admin?
-    return true if params[:id] == @current_user.id
-    return false
+    return true if params[:id] == @current_user.id.to_s
+    redirect_to user_url(@current_user)
   end
 
   def show

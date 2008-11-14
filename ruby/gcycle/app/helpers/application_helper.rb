@@ -1,7 +1,6 @@
-# Methods added to this helper will be available to all templates in the application.
 module ApplicationHelper
   def seconds_to_human_readable(seconds)
-    return Duration.new(seconds).format('%h:%m:%s')
+    return Duration.new(seconds).format('%H:%M:%S')
   end
 
   def km_to_miles(km)

@@ -190,14 +190,14 @@
   </tr>
   <tr>
     <td valign="top">
-      Altitude:
+      Altitude (<%=prefered_small_distance_units%>):
       <div id="altitudechart" style="width: 430px; height: 200px"></div>
-      Speed:
+      Speed (<%= prefered_speed_units %>):
 <div id="speedchart" style="width: 430px; height: 200px"></div>
 
     </td>
     <td>
-      Distance:
+      Distance (<%= prefered_distance_units %>):
       <div id="distancechart" style="width: 430px; height: 200px"></div>
       Heart Rate (BPM):
       <div id="bpmchart" style="width: 430px; height: 200px"></div>
@@ -251,7 +251,7 @@
     var altitudeInfo = [
       Timeplot.createPlotInfo({
         id: "plot1",
-        dataSource: new Timeplot.Processor(new Timeplot.ColumnSource(eventSource,1), Timeplot.Operator.average, { size: 5 }),
+        dataSource: new Timeplot.Processor(new Timeplot.ColumnSource(eventSource,1), Timeplot.Operator.average, { size: 3 }),
         valueGeometry: altitudeGeometry,
         timeGeometry: timeGeometry,
         lineColor: "#ff0000",

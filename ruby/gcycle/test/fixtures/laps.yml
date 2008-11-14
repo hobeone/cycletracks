@@ -16,6 +16,13 @@ one:
   end_time: 2008-11-01 15:55:03
   total_ascent: 1.5
   total_descent: 1.5
+  cadence_list: <%= [100, 150] %>
+  time_list: <%= [1, 2] %>
+  speed_list: <%= [1, 10] %>
+  geopt_list: <%= [[1, 10],[2,10]] %>
+  distance_list: <%= [1, 10] %>
+  altitude_list: <%= [1, 10] %>
+  bpm_list: <%= [1, 10] %>
 
 two:
   activity: activity_two

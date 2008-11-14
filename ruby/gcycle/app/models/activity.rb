@@ -1,11 +1,4 @@
 require 'polyline_encoder'
-require 'pp'
- class Point
-   attr_accessor :lat, :lng
-   def initialize(lat, lng)
-     @lat, @lng = lat, lng
-   end
- end
 
 class Activity < ActiveRecord::Base
   serialize :sw_point
@@ -19,7 +12,8 @@ class Activity < ActiveRecord::Base
   has_many :laps, :order => 'start_time', :dependent => :delete_all
   validates_associated :laps, :user, :source_file
 
-  validates_presence_of :name, :start_time, :end_time, :laps, :user, :source_file
+  validates_presence_of :name, :start_time, :end_time, :laps, :user,
+    :source_file
 
   # ints
   validates_numericality_of(:total_time, :rolling_time,
@@ -30,11 +24,14 @@ class Activity < ActiveRecord::Base
   validates_numericality_of(:total_meters, :average_speed, :maximum_speed,
                             :total_ascent, :total_descent)
 
-  validates_uniqueness_of(:source_hash)
+  validates_uniqueness_of(:source_hash, :scope => :user_id)
 
   def validate
     if self.rolling_time > self.total_time
       errors.add("rolling_time", "is greater than total_time")
+    end
+    if self.start_time > self.end_time
+      errors.add('start_time', 'is later than end_time')
     end
   end
 
@@ -77,15 +74,13 @@ class Activity < ActiveRecord::Base
     self.average_bpm = laps.map{|l| l.average_bpm}.mean
     self.maximum_bpm = laps.map{|l| l.maximum_bpm}.max
     points = []
-    point_objs = []
     laps.each do |l|
       l.geopt_list.each do |pt|
         points << pt
-        point_objs << Point.new(pt[0], pt[1])
       end
     end
     encoder = PolylineEncoder.new()
-    encoder.dp_encode(point_objs)
+    encoder.dp_encode(points)
     self.encoded_points = encoder.encoded_points
     self.encoded_levels = encoder.encoded_levels
     minlat, maxlat = 90,-90

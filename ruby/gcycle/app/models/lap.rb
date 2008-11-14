@@ -24,6 +24,9 @@ class Lap < ActiveRecord::Base
       errors.add('total_rolling_time_seconds',
         'is greater than total_time_seconds')
     end
+    if self.start_time > self.end_time
+      errors.add('start_time', 'is later than end_time')
+    end
   end
 
   def geopoints_to_kml_order

@@ -1,8 +1,8 @@
 require 'test_helper'
 
 class LapTest < ActiveSupport::TestCase
-  # Replace this with your real tests.
-  def test_truth
-    assert true
+  def test_validation
+    l = laps(:one)
+    assert_valid(l)
   end
 end

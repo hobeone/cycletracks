@@ -1,6 +1,8 @@
 require 'lib/rtcx'
 
 class ActivitiesController < ApplicationController
+  include ApplicationHelper
+
   before_filter :login_required
   before_filter :authorize_index_view, :only => [ :index ]
   before_filter :authorize_views_and_mods, :only => [:show, :data, :update, :destroy]
@@ -49,8 +51,13 @@ class ActivitiesController < ApplicationController
     end
   end
 
-  caches_action :data
+  def mps_to_prefered_speed(mps)
+    dist = mps * 3.6
+    dist = km_to_miles(dist) unless use_metric
+    return dist
+  end
 
+  caches_action :data
   def data
     data = @activity.time_list.zip(
       @activity.altitude_list,
@@ -65,10 +72,10 @@ class ActivitiesController < ApplicationController
     data.each do |time,alt,speed,cad,dist,bpm|
       activity_data << [
         (st + time).strftime('%FT%T'),
-        alt,
-        speed,
+        meters_to_prefered_distance(alt),
+        mps_to_prefered_speed(speed),
         cad,
-        dist,
+        meters_to_prefered_distance(dist),
         bpm
       ].join(',')
     end

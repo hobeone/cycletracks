@@ -22,7 +22,9 @@
           <ul>
             <li><%= link_to 'My Tracks', activities_url %></li>
             <li><%= link_to 'Upload', new_activity_url %></li>
-            <li><%=link_to 'Settings', user_url(current_user)%></li>
+            <% if !current_user.nil? %>
+              <li><%= link_to 'Settings', user_url(current_user)%></li>
+            <% end %>
             <li><%= link_to 'Logout', logout_url %></li>
           </ul>
         </div>

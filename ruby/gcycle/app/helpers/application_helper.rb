@@ -44,6 +44,12 @@ module ApplicationHelper
     return sprintf('%.2f', dist)
   end
 
+  def meters_to_prefered_small_distance(meters)
+    dist = meters
+    dist = meters_to_feet(dist) unless use_metric
+    return sprintf('%.2f', dist)
+  end
+
   def prefered_distance_units
     return 'km' if use_metric
     return 'mi'

@@ -13,6 +13,7 @@
   </tr>
 </thead>
 <tbody>
+  <% paginated_section @activities do %>
   <% @activities.each do |activity| %>
     <tr id="<%= dom_id(activity)%>">
       <td>
@@ -36,3 +37,5 @@
   <% end %>
   </tbody>
 </table>
+<% end %>
+<%= page_entries_info @activities %>

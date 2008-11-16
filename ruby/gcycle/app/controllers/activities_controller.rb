@@ -29,29 +29,33 @@ class ActivitiesController < ApplicationController
     redirect_to '/'
   end
 
+  caches_action :index, :cache_path => Proc.new { |controller|
+    controller.send(:activities_url) + '/' +
+    controller.send(:current_user).login +
+    controller.send(:current_user).metric.to_s +
+    '_activities_index_page_' + controller.params[:page].to_s
+  }
   def index
-    Activity.send(:with_scope,
-                  :find => {
+    params[:page] ||= 1
+    Activity.send(:with_scope, :find => {
       :conditions => ['user_id = ?', @current_user.id]}) do
       if Activity.count > 0
         if stale?(:last_modified => Activity.maximum(:updated_at).utc,
                   :etag => [@current_user]
                  )
-          @activities = Activity.find(:all,
-                                      :order => 'start_time DESC',
-                                      :include => :tags)
+          @activities = Activity.paginate :all, :page => params[:page], :order => 'start_time DESC', :include => :tags, :per_page => 15
           respond_to do |format|
             format.html # index.html.erb
             format.xml  { render :xml => @activities }
           end
         end
       else
-        @activities = []
+        @activities = Activity.paginate :all, :page => params[:page],
+          :order => 'start_time DESC'
       end
     end
   end
 
-  caches_action :tags
   def tags
     Activity.send(:with_scope,
                   :find => {
@@ -62,7 +66,11 @@ class ActivitiesController < ApplicationController
     render :action => "index"
   end
 
-  caches_action :show
+  caches_action :show, :cache_path => Proc.new { |controller|
+    controller.send(:activity_url) + '/' +
+    controller.send(:current_user).metric.to_s +
+    '_activity_show_page_' + controller.params[:id].to_s
+  }
   def show
     response.last_modified = @activity.updated_at.utc
     response.etag = [@activity, @current_user]
@@ -89,7 +97,11 @@ class ActivitiesController < ApplicationController
     return dist
   end
 
-  caches_action :data
+  caches_action :data, :cache_path => Proc.new { |controller|
+    controller.send(:activity_url) + '/' +
+    controller.send(:current_user).metric.to_s +
+    '_activity_data_page_' + controller.params[:id].to_s
+  }
   def data
     data = @activity.time_list.zip(
       @activity.altitude_list,
@@ -104,7 +116,7 @@ class ActivitiesController < ApplicationController
     data.each do |time,alt,speed,cad,dist,bpm|
       activity_data << [
         (st + time).strftime('%FT%T'),
-        meters_to_prefered_distance(alt),
+        meters_to_prefered_small_distance(alt),
         mps_to_prefered_speed(speed),
         cad,
         meters_to_prefered_distance(dist),
@@ -123,7 +135,6 @@ class ActivitiesController < ApplicationController
       format.xml  { render :xml => @activity }
     end
   end
-
 
   def create
     tcx_data = params[:tcx_file].read()
@@ -155,7 +166,7 @@ class ActivitiesController < ApplicationController
     respond_to do |format|
       if @activity.update_attributes(params[:activity])
         expire_action :action => :show
-        expire_action :action => :tags
+        expire_action :action => :index
 
         format.html {
           flash[:notice] = 'Activity was successfully updated.'

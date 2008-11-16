@@ -8,6 +8,7 @@ class ActivitiesController < ApplicationController
   before_filter :authorize_views_and_mods, :only => [:show, :data,
     :update, :destroy]
   layout "base"
+  cache_sweeper :activity_sweeper, :only => [ :destroy ]
 
   def authorize_index_view
     return true if @current_user.admin?
@@ -43,7 +44,13 @@ class ActivitiesController < ApplicationController
         if stale?(:last_modified => Activity.maximum(:updated_at).utc,
                   :etag => [@current_user]
                  )
-          @activities = Activity.paginate :all, :page => params[:page], :order => 'start_time DESC', :include => :tags, :per_page => 15
+          @activities = Activity.paginate(
+            :all,
+            :page => params[:page],
+            :order => 'start_time DESC',
+            :include => :tags,
+            :per_page => 15
+          )
           respond_to do |format|
             format.html # index.html.erb
             format.xml  { render :xml => @activities }
@@ -57,11 +64,18 @@ class ActivitiesController < ApplicationController
   end
 
   def tags
+    params[:page] ||= 1
+
     Activity.send(:with_scope,
                   :find => {
       :conditions => ['user_id = ? or public = ?', @current_user.id, true]}) do
       tags = params[:tags]
-      @activities = Activity.find_tagged_with(tags, :match_all => true)
+      opts = Activity.find_options_for_find_tagged_with(tags).merge(
+        :page => params[:page],
+        :per_page => 15,
+        :order => 'start_time DESC'
+      )
+      @activities = Activity.paginate(opts)
     end
     render :action => "index"
   end

@@ -21,6 +21,7 @@ class ActivitiesControllerTest < ActionController::TestCase
     login_as(:hobe)
     get :index
     hobe_cache_path = 'views/' + @controller.action_cache_path.path
+    pp hobe_cache_path
     hobe_results_cache = Rails.cache.read(hobe_cache_path)
     assert_not_nil hobe_results_cache
     assert_response :success
@@ -31,7 +32,6 @@ class ActivitiesControllerTest < ActionController::TestCase
     login_as(:hobe)
     get :show, :id => activities(:activity_one).id
     hobe_cache_path = 'views/' + @controller.action_cache_path.path
-    pp hobe_cache_path
     hobe_results_cache = Rails.cache.read(hobe_cache_path)
     assert_not_nil hobe_results_cache
     assert_response :success

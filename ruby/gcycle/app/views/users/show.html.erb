@@ -1,14 +1,36 @@
-Name:
-<%= editable_content_tag(:span, @user, 'name', true, nil, 'click to change your name', {}, {:okText => 'save'}) %>
-
-<br/>
-Login:
-<%= editable_content_tag(:span, @user, 'login', true, nil, '', {}, {:okText => 'save'}) %>
-<br/>
-Use Metric Units?:
-<%= editable_collection_tag(:span, @user, 'metric', ['true', 'false'], {:class => 'summaryField'}, {:okText => 'save'}) %>
-<br/>
-Timezone:
-<%= editable_collection_tag(:span, @user, 'timezone', ActiveSupport::TimeZone.all().sort.map{|t| t.to_s}, {:class => 'summaryField'}, {:okText => 'save'}) %>
+<table>
+  <tr>
+    <td width="150">
+      Name:
+    </td>
+    <td>
+      <%= editable_content_tag(:span, @user, 'name', true, nil, 'click to change your name', {}, {:okText => 'save'}) %>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Login:
+    </td>
+    <td>
+      <%= editable_content_tag(:span, @user, 'login', true, nil, '', {}, {:okText => 'save'}) %>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Use Metric Units?
+    </td>
+    <td>
+      <%= editable_collection_tag(:span, @user, 'metric', ['true', 'false'], {:class => 'summaryField'}, {:okText => 'save'}) %>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Timezone:
+    </td>
+    <td>
+      <%= editable_collection_tag(:span, @user, 'timezone', ActiveSupport::TimeZone.all().sort.map{|t| t.to_s}, {:class => 'summaryField'}, {:okText => 'save'}) %>
+    </td>
+  </tr>
+</table>
 
 

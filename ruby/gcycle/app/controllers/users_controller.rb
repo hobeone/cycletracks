@@ -40,8 +40,10 @@ class UsersController < ApplicationController
 
     respond_to do |format|
       if @user.update_attributes(params[:user])
-        flash[:notice] = 'User was successfully updated.'
-        format.html { redirect_to('/') }
+        format.html {
+          flash[:notice] = 'User was successfully updated.'
+          redirect_to('/')
+        }
         format.json { render :json => @user }
         format.xml  { head :ok }
       else

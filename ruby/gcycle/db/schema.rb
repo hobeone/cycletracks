@@ -9,24 +9,24 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20081109050908) do
+ActiveRecord::Schema.define(:version => 20081115033050) do
 
   create_table "activities", :force => true do |t|
     t.integer  "user_id"
     t.string   "name"
     t.string   "sport"
-    t.float    "total_meters",                  :default => 0.0
+    t.float    "total_meters"
     t.datetime "start_time"
     t.datetime "end_time"
-    t.integer  "total_time",                    :default => 0
-    t.integer  "rolling_time",                  :default => 0
-    t.float    "average_speed",                 :default => 0.0
-    t.float    "maximum_speed",                 :default => 0.0
-    t.integer  "average_cadence",               :default => 0
-    t.integer  "maximum_cadence",               :default => 0
-    t.integer  "average_bpm",                   :default => 0
-    t.integer  "maximum_bpm",                   :default => 0
-    t.integer  "total_calories",                :default => 0
+    t.integer  "total_time"
+    t.integer  "rolling_time"
+    t.float    "average_speed"
+    t.float    "maximum_speed"
+    t.integer  "average_cadence"
+    t.integer  "maximum_cadence"
+    t.integer  "average_bpm"
+    t.integer  "maximum_bpm"
+    t.integer  "total_calories"
     t.string   "comment"
     t.boolean  "public",                        :default => false
     t.text     "encoded_points"
@@ -36,8 +36,8 @@ ActiveRecord::Schema.define(:version => 20081109050908) do
     t.string   "start_point"
     t.string   "mid_point"
     t.string   "end_point"
-    t.float    "total_ascent",                  :default => 0.0
-    t.float    "total_descent",                 :default => 0.0
+    t.float    "total_ascent"
+    t.float    "total_descent"
     t.string   "source_hash",     :limit => 40
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -45,20 +45,20 @@ ActiveRecord::Schema.define(:version => 20081109050908) do
 
   create_table "laps", :force => true do |t|
     t.integer  "activity_id"
-    t.float    "total_meters",                                     :default => 0.0
-    t.integer  "total_time_seconds",                               :default => 0
-    t.integer  "total_rolling_time_seconds",                       :default => 0
-    t.integer  "average_cadence",                                  :default => 0
-    t.integer  "maximum_cadence",                                  :default => 0
-    t.integer  "average_bpm",                                      :default => 0
-    t.integer  "maximum_bpm",                                      :default => 0
-    t.float    "average_speed",                                    :default => 0.0
-    t.float    "maximum_speed",                                    :default => 0.0
-    t.integer  "calories",                                         :default => 0
+    t.float    "total_meters"
+    t.integer  "total_time_seconds"
+    t.integer  "total_rolling_time_seconds"
+    t.integer  "average_cadence"
+    t.integer  "maximum_cadence"
+    t.integer  "average_bpm"
+    t.integer  "maximum_bpm"
+    t.float    "average_speed"
+    t.float    "maximum_speed"
+    t.integer  "calories"
     t.datetime "start_time"
     t.datetime "end_time"
-    t.float    "total_ascent",                                     :default => 0.0
-    t.float    "total_descent",                                    :default => 0.0
+    t.float    "total_ascent"
+    t.float    "total_descent"
     t.text     "bpm_list",                   :limit => 2147483647
     t.text     "altitude_list",              :limit => 2147483647
     t.text     "speed_list",                 :limit => 2147483647
@@ -76,6 +76,23 @@ ActiveRecord::Schema.define(:version => 20081109050908) do
     t.binary   "filedata",    :limit => 16777215
     t.datetime "created_at"
     t.datetime "updated_at"
+  end
+
+  create_table "taggings", :force => true do |t|
+    t.integer  "tag_id"
+    t.integer  "taggable_id"
+    t.integer  "tagger_id"
+    t.string   "tagger_type"
+    t.string   "taggable_type"
+    t.string   "context"
+    t.datetime "created_at"
+  end
+
+  add_index "taggings", ["tag_id"], :name => "index_taggings_on_tag_id"
+  add_index "taggings", ["taggable_id", "taggable_type", "context"], :name => "index_taggings_on_taggable_id_and_taggable_type_and_context"
+
+  create_table "tags", :force => true do |t|
+    t.string "name"
   end
 
   create_table "users", :force => true do |t|

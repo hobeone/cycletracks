@@ -15,7 +15,7 @@ class TCXParser
     'Calories'            => [:calories, :to_i],
     'AverageHeartRateBpm' => [:average_bpm, :to_i],
     'MaximumHeartRateBpm' => [:maximum_bpm, :to_i],
-    'Cadence'             => [:cadence, :to_i],
+    'Cadence'             => [:average_cadence, :to_i],
   }
 
   @@trackpt_attrs = {
@@ -135,11 +135,15 @@ class TCXParser
 
       lap_record.start_time = parse_zulu(lap['StartTime'])
       lap_record.end_time = lap_record.start_time + lap_record.time_list[-1]
+      lap_record.average_speed = lap_record.total_meters / (lap_record.end_time - lap_record.start_time) * 3.6
+
       lap_record.total_time_seconds = lap_record.time_list[-1].to_i
       lap_record.average_cadence = lap_record.cadence_list.mean
       lap_record.maximum_cadence = lap_record.cadence_list.max
 
       prev_altitude = lap_record.altitude_list[0]
+      lap_record.total_ascent = 0
+      lap_record.total_descent = 0
       lap_record.altitude_list.each do |i|
         altitude_delta = i - prev_altitude
         if altitude_delta >= 0

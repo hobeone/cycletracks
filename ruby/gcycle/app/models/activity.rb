@@ -10,6 +10,9 @@ class Activity < ActiveRecord::Base
   belongs_to :user
   has_one :source_file
   has_many :laps, :order => 'start_time', :dependent => :delete_all
+
+  acts_as_taggable_on :tags
+
   validates_associated :laps, :user, :source_file
 
   validates_presence_of :name, :start_time, :end_time, :laps, :user,

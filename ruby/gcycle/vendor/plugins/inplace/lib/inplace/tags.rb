@@ -35,7 +35,7 @@ module Inplace
       options_for_edit = jsonify(edit_options)
       options_for_ajax = jsonify(ajax_options)
 
-      initial_tag_text = object[property]
+      initial_tag_text = object.send(property)
       initial_tag_text = initial_default_text if initial_tag_text.nil? or initial_tag_text.empty?
 
       tg = content_tag(element_type, initial_tag_text, element_options)

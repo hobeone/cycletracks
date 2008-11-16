@@ -23,7 +23,8 @@ class User < ActiveRecord::Base
 
 
   def totals
-    totals = {
+    return @total_cache unless @total_cache.nil?
+    @total_cache = {
       :total_meters => activities.sum(:total_meters) || 0.0,
       :total_time => activities.sum(:total_time) || 0.0 ,
       :total_ascent => activities.sum(:total_ascent) || 0.0,
@@ -36,7 +37,7 @@ class User < ActiveRecord::Base
       :maximum_speed => activities.maximum(:maximum_speed) || 0.0,
       :total_calories => activities.sum(:total_calories) || 0,
     }
-    return totals
+    return @total_cache
   end
 
   # HACK HACK HACK -- how to do attr_accessible from here?

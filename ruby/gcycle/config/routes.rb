@@ -15,7 +15,7 @@ ActionController::Routing::Routes.draw do |map|
       :data => :get,
       :public => :get,
     },
-    :has_many => :laps
+    :collection => { :tags => :get }
 
 #  map.connect ':controller/:action/:id'
 #  map.connect ':controller/:action/:id.:format'

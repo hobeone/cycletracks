@@ -10,13 +10,17 @@
     <th><a href='/mytracks/average_speed'>Avg/Max Speed</a></th>
     <th><a href='/mytracks/total_ascent'>Ascent<br/>Decent</a></th>
     <th><a href='/mytracks/total_calories'>Calories</a></th>
-    <th>Delete</th>
   </tr>
 </thead>
 <tbody>
   <% @activities.each do |activity| %>
     <tr id="<%= dom_id(activity)%>">
-      <td><a href="/activities/<%= activity.id %>"><%=activity.name%></a><br/></td>
+      <td>
+        <%= link_to activity.name, activity_url(activity) %><br/>
+        <% activity.tags.each do |tag| %>
+          <%= link_to tag.to_s, tags_activities_url + "/?tags=#{tag}" %>
+        <% end %>
+      </td>
       <td><%= activity.start_time.to_formatted_s(:db) %><br/><%= activity.end_time.to_formatted_s(:db) %></td>
       <td><%= prefered_distance_with_units(activity.total_meters) %></td>
       <td><%= seconds_to_human_readable(activity.total_time) %>
@@ -28,7 +32,6 @@
       <td><%= kph_to_prefered_speed_with_units(activity.average_speed) %><br/> <%= kph_to_prefered_speed_with_units(activity.maximum_speed) %></td>
       <td><%= prefered_distance_with_units(activity.total_ascent)%><br/> <%= prefered_distance_with_units(activity.total_descent)%></td>
       <td><%= activity.total_calories %> Cal</td>
-      <td onclick="delete_activity('<%= dom_id(activity) %>')">delete</td>
     </tr>
   <% end %>
   </tbody>

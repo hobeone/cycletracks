@@ -5,7 +5,8 @@ class ActivitiesController < ApplicationController
 
   before_filter :login_required
   before_filter :authorize_index_view, :only => [ :index ]
-  before_filter :authorize_views_and_mods, :only => [:show, :data, :update, :destroy]
+  before_filter :authorize_views_and_mods, :only => [:show, :data,
+    :update, :destroy]
   layout "base"
 
   def authorize_index_view
@@ -20,34 +21,65 @@ class ActivitiesController < ApplicationController
     return true if @current_user.admin?
     @activity = Activity.find(params[:id])
     return true if @activity.user = @current_user
+    if (request.xhr?)
+      format.json { render :json => @activity, :status => 500}
+    end
+
     flash[:error] = 'Access to that resource denied'
     redirect_to '/'
   end
 
   def index
-    Activity.send(:with_scope, :find => { :conditions => ['user_id = ?', @current_user.id]}) do
-      @activities = Activity.find(:all,
-                                  :order => 'start_time DESC')
-    end
-
-    respond_to do |format|
-      format.html # index.html.erb
-      format.xml  { render :xml => @activities }
+    Activity.send(:with_scope,
+                  :find => {
+      :conditions => ['user_id = ?', @current_user.id]}) do
+      if Activity.count > 0
+        if stale?(:last_modified => Activity.maximum(:updated_at).utc,
+                  :etag => [@current_user]
+                 )
+          @activities = Activity.find(:all,
+                                      :order => 'start_time DESC',
+                                      :include => :tags)
+          respond_to do |format|
+            format.html # index.html.erb
+            format.xml  { render :xml => @activities }
+          end
+        end
+      else
+        @activities = []
+      end
     end
   end
 
+  caches_action :tags
+  def tags
+    Activity.send(:with_scope,
+                  :find => {
+      :conditions => ['user_id = ? or public = ?', @current_user.id, true]}) do
+      tags = params[:tags]
+      @activities = Activity.find_tagged_with(tags, :match_all => true)
+    end
+    render :action => "index"
+  end
+
+  caches_action :show
   def show
-    respond_to do |format|
-      format.kml do
-        render :template => 'activities/kml', :layout => false
+    response.last_modified = @activity.updated_at.utc
+    response.etag = [@activity, @current_user]
+    if stale?(:last_modified => @activity.updated_at.utc,
+              :etag => [@activity, @current_user])
+      respond_to do |format|
+        format.kml do
+          render :template => 'activities/kml', :layout => false
+        end
+        format.tcx do
+          headers['Content-Disposition'] = 'attachment; filename=' +
+            @activity.source_file.filename
+          render :text => @activity.source_file.filedata, :layout => false
+        end
+        format.html # show.html.erb
+        format.xml  { render :xml => @activity }
       end
-      format.tcx do
-        headers['Content-Disposition'] = 'attachment; filename=' +
-          @activity.source_file.filename
-        render :text => @activity.source_file.filedata, :layout => false
-      end
-      format.html # show.html.erb
-      format.xml  { render :xml => @activity }
     end
   end
 
@@ -93,8 +125,6 @@ class ActivitiesController < ApplicationController
   end
 
 
-  # POST /activities
-  # POST /activities.xml
   def create
     tcx_data = params[:tcx_file].read()
     file_hash = OpenSSL::Digest::MD5.hexdigest(tcx_data)
@@ -111,22 +141,27 @@ class ActivitiesController < ApplicationController
       if @activity.save
         flash[:notice] = 'Activity was successfully created.'
         format.html { redirect_to(@activity) }
-        format.xml  { render :xml => @activity, :status => :created, :location => @activity }
+        format.xml  { render :xml => @activity,
+          :status => :created, :location => @activity }
       else
         format.html { render :action => "new" }
-        format.xml  { render :xml => @activity.errors, :status => :unprocessable_entity }
+        format.xml  { render :xml => @activity.errors,
+          :status => :unprocessable_entity }
       end
     end
   end
 
-  # PUT /activities/1
-  # PUT /activities/1.xml
   def update
     respond_to do |format|
       if @activity.update_attributes(params[:activity])
-        flash[:notice] = 'Activity was successfully updated.'
-        format.html { redirect_to(@activity) }
-        format.json { render :json => @activity }
+        expire_action :action => :show
+        expire_action :action => :tags
+
+        format.html {
+          flash[:notice] = 'Activity was successfully updated.'
+          redirect_to(@activity)
+        }
+        format.json { render :text => @activity.to_json(:methods => :tag_list) }
         format.xml  { head :ok }
       else
         format.html { render :action => "edit" }
@@ -136,10 +171,10 @@ class ActivitiesController < ApplicationController
     end
   end
 
-  # DELETE /activities/1
-  # DELETE /activities/1.xml
   def destroy
     @activity.destroy
+    expire_action :action => :index
+    expire_action :action => :show
 
     respond_to do |format|
       format.html { redirect_to(activities_url) }

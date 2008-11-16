@@ -1,0 +1,49 @@
+  <div id="userSummary">
+  <div id="summaryTitle">Summary for <%=current_user.login%>:</div>
+    <div id="userSummaryContent">
+      <div class="summaryGroup">
+        <div class="userSummaryItem">
+          <span class="summaryLabel">Total Distance:</span>
+          <span class="summaryField"><%= prefered_distance_with_units current_user.totals[:total_meters]%></span>
+        </div>
+        <div class="userSummaryItem">
+          <span class="summaryLabel">Total Climbing:</span>
+          <span class="summaryField"><%=prefered_distance_with_units  current_user.totals[:total_ascent]%></span>
+        </div>
+        <div class="userSummaryItem">
+          <span class="summaryLabel">Total Time:</span>
+          <span class="summaryField"><%= seconds_to_human_readable current_user.totals[:total_time] %></span>
+        </div>
+
+      </div>
+      <div class="summaryGroup">
+        <div class="userSummaryItem">
+          <span class="summaryLabel">Rolling Time:</span>
+          <span class="summaryField"><%= seconds_to_human_readable current_user.totals[:rolling_time] %></span>
+        </div>
+        <div class="userSummaryItem">
+          <span class="summaryLabel">Cadence:</span>
+          <span class="summaryField"><%= current_user.totals[:average_cadence] %> / <%= current_user.totals[:maximum_cadence] %> rpm</span>
+        </div>
+
+        <div class="userSummaryItem">
+          <span class="summaryLabel">Heart Rate:</span>
+          <span class="summaryField"><%= current_user.totals[:average_bpm]%> / <%= current_user.totals[:maximum_bpm] %> bpm</span>
+        </div>
+      </div>
+      <div class="summaryGroup">
+        <div class="userSummaryItem">
+          <span class="summaryLabel">Average Speed:</span>
+          <span class="summaryField"><%= kph_to_prefered_speed_with_units current_user.totals[:average_speed] %></span>
+        </div>
+        <div class="userSummaryItem">
+          <span class="summaryLabel">Max Speed:</span>
+          <span class="summaryField"><%= kph_to_prefered_speed_with_units current_user.totals[:maximum_speed] %></span>
+        </div>
+        <div class="userSummaryItem">
+          <span class="summaryLabel">Calories:</span>
+          <span class="summaryField"><%= current_user.totals[:total_calories] %> Cal</span>
+        </div>
+      </div>
+    </div>
+  </div>

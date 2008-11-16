@@ -21,18 +21,18 @@ class CreateBase < ActiveRecord::Migration
       t.references :user
       t.string :name
       t.string :sport
-      t.float :total_meters, :default => 0
+      t.float :total_meters
       t.datetime :start_time
       t.datetime :end_time
-      t.integer :total_time, :default => 0
-      t.integer :rolling_time, :default => 0
-      t.float :average_speed, :default => 0
-      t.float :maximum_speed, :default => 0
-      t.integer :average_cadence, :default => 0
-      t.integer :maximum_cadence, :default => 0
-      t.integer :average_bpm, :default => 0
-      t.integer :maximum_bpm, :default => 0
-      t.integer :total_calories, :default => 0
+      t.integer :total_time
+      t.integer :rolling_time
+      t.float :average_speed
+      t.float :maximum_speed
+      t.integer :average_cadence
+      t.integer :maximum_cadence
+      t.integer :average_bpm
+      t.integer :maximum_bpm
+      t.integer :total_calories
       t.string :comment
       t.boolean :public, :default => false
       t.text :encoded_points
@@ -42,8 +42,8 @@ class CreateBase < ActiveRecord::Migration
       t.string :start_point
       t.string :mid_point
       t.string :end_point
-      t.float :total_ascent, :default => 0.0
-      t.float :total_descent, :default => 0.0
+      t.float :total_ascent
+      t.float :total_descent
       t.string :source_hash, :limit => 40
 
       t.timestamps
@@ -51,20 +51,20 @@ class CreateBase < ActiveRecord::Migration
 
     create_table :laps do |t|
       t.references :activity
-      t.float :total_meters, :default => 0.0
-      t.integer :total_time_seconds, :default => 0
-      t.integer :total_rolling_time_seconds, :default => 0
-      t.integer :average_cadence, :default => 0
-      t.integer :maximum_cadence, :default => 0
-      t.integer :average_bpm, :default => 0
-      t.integer :maximum_bpm, :default => 0
-      t.float :average_speed, :default => 0.0
-      t.float :maximum_speed, :default => 0.0
-      t.integer :calories, :default => 0
+      t.float :total_meters
+      t.integer :total_time_seconds
+      t.integer :total_rolling_time_seconds
+      t.integer :average_cadence
+      t.integer :maximum_cadence
+      t.integer :average_bpm
+      t.integer :maximum_bpm
+      t.float :average_speed
+      t.float :maximum_speed
+      t.integer :calories
       t.datetime :start_time
       t.datetime :end_time
-      t.float :total_ascent, :default => 0.0
-      t.float :total_descent, :default => 0.0
+      t.float :total_ascent
+      t.float :total_descent
       t.text :bpm_list, :limit => 16777215
       t.text :altitude_list, :limit => 16777215
       t.text :speed_list, :limit => 16777215

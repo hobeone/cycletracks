@@ -164,6 +164,7 @@ class ActivitiesController < ApplicationController
 
     respond_to do |format|
       if @activity.save
+        expire_action :action => :index
         flash[:notice] = 'Activity was successfully created.'
         format.html { redirect_to(@activity) }
         format.xml  { render :xml => @activity,

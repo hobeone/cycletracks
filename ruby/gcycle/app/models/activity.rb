@@ -68,7 +68,10 @@ class Activity < ActiveRecord::Base
     self.start_time = laps[0].start_time
     self.end_time = laps[-1].end_time
 
-    self.average_speed = self.total_meters / self.rolling_time * 3.6
+    self.average_speed = 0
+    if self.rolling_time > 0
+      self.total_meters / self.rolling_time * 3.6
+    end
     self.maximum_speed = laps.map{|l| l.maximum_speed}.max * 3.6
 
     self.average_cadence = laps.map{|l| l.average_cadence}.mean

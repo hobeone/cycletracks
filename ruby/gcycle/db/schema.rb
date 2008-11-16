@@ -14,7 +14,6 @@ ActiveRecord::Schema.define(:version => 20081115033050) do
   create_table "activities", :force => true do |t|
     t.integer  "user_id"
     t.string   "name"
-    t.string   "sport"
     t.float    "total_meters"
     t.datetime "start_time"
     t.datetime "end_time"
@@ -48,17 +47,17 @@ ActiveRecord::Schema.define(:version => 20081115033050) do
     t.float    "total_meters"
     t.integer  "total_time_seconds"
     t.integer  "total_rolling_time_seconds"
-    t.integer  "average_cadence"
-    t.integer  "maximum_cadence"
-    t.integer  "average_bpm"
-    t.integer  "maximum_bpm"
+    t.integer  "average_cadence",                                  :default => 0
+    t.integer  "maximum_cadence",                                  :default => 0
+    t.integer  "average_bpm",                                      :default => 0
+    t.integer  "maximum_bpm",                                      :default => 0
     t.float    "average_speed"
     t.float    "maximum_speed"
-    t.integer  "calories"
+    t.integer  "calories",                                         :default => 0
     t.datetime "start_time"
     t.datetime "end_time"
-    t.float    "total_ascent"
-    t.float    "total_descent"
+    t.float    "total_ascent",                                     :default => 0.0
+    t.float    "total_descent",                                    :default => 0.0
     t.text     "bpm_list",                   :limit => 2147483647
     t.text     "altitude_list",              :limit => 2147483647
     t.text     "speed_list",                 :limit => 2147483647

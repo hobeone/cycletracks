@@ -108,11 +108,6 @@
 
         var timeplotURLPrefix = (local) ? "/javascripts/timeplot_js/" : Timeplot.urlPrefix;
 
-        if (local && !("console" in window)) {
-            var firebug = [ timeplotURLPrefix + "lib/firebug/firebug.js" ];
-            SimileAjax.includeJavascriptFiles(document, "", firebug);
-        }
-        
         var canvas = document.createElement("canvas");
 
         if (!canvas.getContext) {

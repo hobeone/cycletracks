@@ -16,7 +16,7 @@ class Activity < ActiveRecord::Base
   validates_associated :laps, :user, :source_file
 
   validates_presence_of :name, :start_time, :end_time, :laps, :user,
-    :source_file
+    :source_file, :rolling_time, :total_time
 
   # ints
   validates_numericality_of(:total_time, :rolling_time,
@@ -30,11 +30,21 @@ class Activity < ActiveRecord::Base
   validates_uniqueness_of(:source_hash, :scope => :user_id)
 
   def validate
-    if self.rolling_time > self.total_time
-      errors.add("rolling_time", "is greater than total_time")
+    if self.rolling_time and self.total_time
+      if self.rolling_time > self.total_time
+        errors.add("rolling_time", "is greater than total_time")
+      end
     end
-    if self.start_time > self.end_time
-      errors.add('start_time', 'is later than end_time')
+    if self.start_time and self.end_time
+      if self.start_time > self.end_time
+        errors.add('start_time', 'is later than end_time')
+      end
+    end
+
+    if self.user.activities.count > self.user.max_activities
+      errors.add(:user,
+        "Too many activities for this user (#{self.user.activities.count}"+
+        " > #{self.user.max_activities}).")
     end
   end
 

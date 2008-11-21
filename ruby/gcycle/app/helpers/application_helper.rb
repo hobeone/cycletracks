@@ -72,6 +72,12 @@ module ApplicationHelper
     return sprintf('%.2f', dist)
   end
 
+  def mps_to_prefered_speed(mps)
+    dist = mps * 3.6
+    dist = km_to_miles(dist) unless use_metric
+    return dist
+  end
+
   def prefered_speed_units
     return 'kph' if use_metric
     return 'mph'

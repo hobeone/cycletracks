@@ -16,6 +16,7 @@ class ActivityTest < ActiveSupport::TestCase
     a.user = User.first
     assert(!a.valid?)
     a.source_file = SourceFile.first
+    a.compute_data_from_laps!
     assert_valid(a)
   end
 end

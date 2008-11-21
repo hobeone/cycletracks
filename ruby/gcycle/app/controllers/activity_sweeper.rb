@@ -4,6 +4,11 @@ class ActivitySweeper < ActionController::Caching::Sweeper
     expire_cache_for(activity)
   end
 
+  def after_create(activity)
+    expire_cache_for(activity)
+  end
+
+
   private
   def expire_cache_for(activity)
     expire_fragment(%r'views/.*/activities/#{activity.user.login}.+_activities_index_page_')

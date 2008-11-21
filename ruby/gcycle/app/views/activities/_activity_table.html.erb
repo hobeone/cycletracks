@@ -22,7 +22,7 @@
           <%= link_to tag.to_s, tags_activities_url + "/?tags=#{tag}" %>
         <% end %>
       </td>
-      <td><%= activity.start_time.to_formatted_s(:db) %><br/><%= activity.end_time.to_formatted_s(:db) %></td>
+      <td><%= activity.user.to_user_localtime(activity.start_time).to_formatted_s(:db) %><br/><%= activity.user.to_user_localtime(activity.end_time).to_formatted_s(:db) %></td>
       <td><%= prefered_distance_with_units(activity.total_meters) %></td>
       <td><%= seconds_to_human_readable(activity.total_time) %>
         <br/>

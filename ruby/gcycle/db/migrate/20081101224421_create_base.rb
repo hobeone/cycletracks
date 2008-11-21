@@ -11,9 +11,9 @@ class CreateBase < ActiveRecord::Migration
       t.timestamps
 
       # custom for gcycle
-      t.boolean :metric
-      t.boolean :admin
-      t.string :timezone, :limit => 40
+      t.boolean :metric, :default => true
+      t.boolean :admin, :default => false
+      t.string :timezone, :limit => 40, :default => 'Pacific Time (US & Canada)'
     end
     add_index :users, :login, :unique => true
 

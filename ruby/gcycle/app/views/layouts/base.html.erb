@@ -5,10 +5,12 @@
 <head>
   <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
   <title>Cycletracks: <%= controller.action_name %></title>
-  <%= javascript_include_tag :all, :cache => true %>
   <%= stylesheet_link_tag 'style.css' %>
   <%= javascript_include_tag "http://www.google.com/jsapi?key=ABQIAAAAoU2YDajIyJPdof6GDzJKshRpKIwH9gjHw5l4siVVB7mD23aSXhSHvrtQQCEPRhQENq4B3lk8joMYzQ" %>
-
+  <script type="text/javascript">
+    google.load("prototype", "1.6");
+    google.load("scriptaculous", "1.8.2");
+  </script>
   <%= yield :head %>
 </head>
 <body <%= yield :body_extra %>>
@@ -22,6 +24,7 @@
           <ul>
             <% if !current_user.nil? %>
               <li><%= link_to 'My Tracks', activities_url %></li>
+              <li><%= link_to 'Search', activities_url + '/search' %></li>
               <li><%= link_to 'Upload', new_activity_url %></li>
               <li><%= link_to 'Settings', user_url(current_user)%></li>
               <li><%= link_to 'Logout', logout_url %></li>

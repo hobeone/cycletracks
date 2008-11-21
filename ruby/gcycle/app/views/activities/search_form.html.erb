@@ -1,0 +1,6 @@
+<% form_tag '/activities/search', :method => :get do -%>
+  Search For: <%= text_field_tag 'q' %> (searches comments and tags)
+  <div>Include Public Activities:
+    <%= check_box_tag 'include_public', 'yes', true %></div>
+  <div><%= submit_tag 'Seach' %></div>
+<% end -%>

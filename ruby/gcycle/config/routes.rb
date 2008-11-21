@@ -15,7 +15,10 @@ ActionController::Routing::Routes.draw do |map|
       :data => :get,
       :public => :get,
     },
-    :collection => { :tags => :get }
+    :collection => {
+      :tags => :get,
+      :search => :get,
+    }
 
 #  map.connect ':controller/:action/:id'
 #  map.connect ':controller/:action/:id.:format'

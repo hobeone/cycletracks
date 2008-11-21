@@ -21,6 +21,33 @@ class User < ActiveRecord::Base
   validates_uniqueness_of   :email
   validates_format_of       :email,    :with => Authentication.email_regex, :message => Authentication.bad_email_message
 
+  def validate
+    if !ActiveSupport::TimeZone::MAPPING.include?(read_attribute(:timezone))
+      errors.add(:timezone, "'%s' is not in the valid list")
+    end
+  end
+
+  def timezone
+    return @tz_cache unless @tz_cache.nil?
+    tz_string = read_attribute(:timezone)
+    @tz_cache = ActiveSupport::TimeZone.new(tz_string)
+    if @tz_cache.nil?
+      @tz_cache = ActiveSupport::TimeZone.new("UTC")
+    end
+    return @tz_cache
+  end
+
+  def timezone=(tz)
+    if tz.instance_of(ActiveSupport::TimeZone)
+      write_attribute(:timezone, tz.name)
+    else
+      write_attribute(:timezone, tz)
+    end
+  end
+
+  def to_user_localtime(time_with_zone)
+    time_with_zone.in_time_zone(self.timezone)
+  end
 
   def totals
     return @total_cache unless @total_cache.nil?

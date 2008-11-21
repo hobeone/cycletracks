@@ -34,11 +34,11 @@
             <div id="activitySummaryContent">
               <div id="startTime">
                 <span class="summaryLabel">Start Time:</span>
-                <span class="summaryField"><%= @activity.start_time.to_formatted_s(:db)  %></span>
+                <span class="summaryField"><%= @activity.user.to_user_localtime(@activity.start_time).to_formatted_s(:db)  %></span>
               </div>
               <div id="endTime">
                 <span class="summaryLabel">End Time:</span>
-                <span class="summaryField"><%= @activity.end_time.to_formatted_s(:db) %></span>
+                <span class="summaryField"><%= @activity.user.to_user_localtime(@activity.end_time).to_formatted_s(:db) %></span>
               </div>
               <div id="totalTime">
                 <span class="summaryLabel">Time:</span>
@@ -94,6 +94,7 @@
                 <span class="summaryLabel">Uploaded By:</span>
                 <span class="summaryField"><%= @activity.user.login %></span>
               </div>
+              <% if logged_in? %>
               <div id="public">
                 <table>
                   <tr>
@@ -116,7 +117,8 @@
                                     :complete => update_page{|page| page.hide 'public_update_span'},
                                     :with => "'activity[public]=' + value",
                                     :url => activity_url(@activity) + '.json') %>
-              </div>
+                                  </div>
+              <% end %>
 
 
 
@@ -126,7 +128,11 @@
                       <span class="summaryLabel">Comment:</span>
                     </td>
                     <td>
-                      <%= editable_content_tag(:span, @activity, 'comment', true, nil, 'click to add a comment', {:class => 'summaryField'}, {:okText => 'save'}) %>
+                      <% if logged_in? %>
+                        <%= editable_content_tag(:span, @activity, 'comment', true, nil, 'click to add a comment', {:class => 'summaryField'}, {:okText => 'save'}) %>
+                      <% else %>
+                        <%= @activity.comment %>
+                      <% end %>
                     </td>
                 </tr>
               </table>
@@ -139,7 +145,11 @@
                       <span class="summaryLabel">Tags:</span>
                     </td>
                     <td>
-                      <%= editable_content_tag(:span, @activity, 'tag_list', true, nil, 'click to add a tag', {:class => 'summaryField'}, {:okText => 'save'}) %>
+                      <% if logged_in? %>
+                        <%= editable_content_tag(:span, @activity, 'tag_list', true, nil, 'click to add a tag', {:class => 'summaryField'}, {:okText => 'save'}) %>
+                      <% else %>
+                        <%= @activity.tag_list %>
+                      <% end %>
                 </td></tr></table>
               </div>
             </div>

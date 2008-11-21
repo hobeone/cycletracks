@@ -3,10 +3,10 @@ require 'lib/rtcx'
 class ActivitiesController < ApplicationController
   include ApplicationHelper
 
-  before_filter :login_required
+  before_filter :login_required, :except => [:show, :data]
   before_filter :authorize_index_view, :only => [ :index ]
-  before_filter :authorize_views_and_mods, :only => [:show, :data,
-    :update, :destroy]
+  before_filter :authorize_views, :only => [:show, :data]
+  before_filter :authorize_mods, :only => [:update, :destroy]
   layout "base"
   cache_sweeper :activity_sweeper, :only => [ :destroy ]
 
@@ -14,20 +14,32 @@ class ActivitiesController < ApplicationController
     return true if @current_user.admin?
     return true if params[:user_id] == @current_user.id.to_s
     return true if params[:user_id].nil?
-    flash[:error] = 'Access to that resource denied'
-    redirect_to '/'
+    render :text => 'Access to that resource denied', :status => 401
   end
 
-  def authorize_views_and_mods
-    return true if @current_user.admin?
+  def authorize_mods
     @activity = Activity.find(params[:id])
     return true if @activity.user = @current_user
+    return true if @current_user.admin?
     if (request.xhr?)
       format.json { render :json => @activity, :status => 500}
     end
 
-    flash[:error] = 'Access to that resource denied'
-    redirect_to '/'
+    render :text => 'Access to that resource denied', :status => 401
+  end
+
+  def authorize_views
+    @activity = Activity.find(params[:id])
+    return true if @activity.public?
+    if logged_in?
+      return true if @activity.user = @current_user
+      return true if @current_user.admin?
+      if (request.xhr?)
+        format.json { render :json => @activity, :status => 500}
+      end
+    else
+      render :text => 'Access to that resource denied', :status => 401
+    end
   end
 
   caches_action :index, :cache_path => Proc.new { |controller|
@@ -80,11 +92,53 @@ class ActivitiesController < ApplicationController
     render :action => "index"
   end
 
-  caches_action :show, :cache_path => Proc.new { |controller|
-    controller.send(:activity_url) + '/' +
-    controller.send(:current_user).metric.to_s +
-    '_activity_show_page_' + controller.params[:id].to_s
+  def search
+    if params[:q]
+      params[:page] ||= 1
+      params[:include_public] ||= false
+
+      opts = Activity.find_options_for_find_tagged_with(params[:q]).merge(
+        :page => params[:page],
+        :per_page => 15,
+        :order => 'start_time DESC'
+      )
+      restrict = 'user_id = :user_id'
+      if params[:include_public]
+        restrict = restrict + ' OR public = :include_public'
+      end
+      opts[:conditions] = [
+        "(#{opts[:conditions]} OR comment LIKE :q) AND (#{restrict})",
+        params.merge(
+          :user_id => @current_user.id
+        )
+      ]
+      begin
+        @activities = Activity.paginate(opts)
+      rescue ActiveRecord::StatementInvalid => e
+        logger.error(e)
+        @error = 'Invalid Search query'
+        render :template => 'shared/500', :layout => nil, :status => '500'
+      end
+    else
+      render :template => 'activities/search_form'
+    end
+  end
+
+  caches_action :show, :data, :cache_path => Proc.new { |controller|
+    view_cache_key(controller)
   }
+
+  def self.view_cache_key(controller)
+    user_key = ''
+    if controller.send(:logged_in?)
+      user_key = controller.send(:current_user).login +
+                 controller.send(:current_user).metric.to_s
+    end
+    return controller.send(:activity_url) + '/' +
+           user_key + '_activity_' + controller.action_name +
+           controller.params[:id].to_s
+  end
+
   def show
     response.last_modified = @activity.updated_at.utc
     response.etag = [@activity, @current_user]
@@ -105,17 +159,6 @@ class ActivitiesController < ApplicationController
     end
   end
 
-  def mps_to_prefered_speed(mps)
-    dist = mps * 3.6
-    dist = km_to_miles(dist) unless use_metric
-    return dist
-  end
-
-  caches_action :data, :cache_path => Proc.new { |controller|
-    controller.send(:activity_url) + '/' +
-    controller.send(:current_user).metric.to_s +
-    '_activity_data_page_' + controller.params[:id].to_s
-  }
   def data
     data = @activity.time_list.zip(
       @activity.altitude_list,
@@ -125,7 +168,7 @@ class ActivitiesController < ApplicationController
       @activity.bpm_list
     )
     activity_data = []
-    st = @activity.start_time
+    st = @activity.user.to_user_localtime(@activity.start_time.in_time_zone)
 
     data.each do |time,alt,speed,cad,dist,bpm|
       activity_data << [
@@ -151,6 +194,7 @@ class ActivitiesController < ApplicationController
   end
 
   def create
+
     tcx_data = params[:tcx_file].read()
     file_hash = OpenSSL::Digest::MD5.hexdigest(tcx_data)
     tcx = TCXParser.new(tcx_data).parse
@@ -164,15 +208,19 @@ class ActivitiesController < ApplicationController
 
     respond_to do |format|
       if @activity.save
+        @activity.tag_list = params[:tags_list]
+        @activity.save
         expire_action :action => :index
-        flash[:notice] = 'Activity was successfully created.'
+        #flash[:notice] = 'Activity was successfully created.'
         format.html { redirect_to(@activity) }
         format.xml  { render :xml => @activity,
           :status => :created, :location => @activity }
       else
         format.html { render :action => "new" }
-        format.xml  { render :xml => @activity.errors,
-          :status => :unprocessable_entity }
+        format.xml do
+          render :xml => @activity.errors,
+          :status => :unprocessable_entity
+        end
       end
     end
   end
@@ -183,16 +231,17 @@ class ActivitiesController < ApplicationController
         expire_action :action => :show
         expire_action :action => :index
 
-        format.html {
+        format.html do
           flash[:notice] = 'Activity was successfully updated.'
           redirect_to(@activity)
-        }
+        end
         format.json { render :text => @activity.to_json(:methods => :tag_list) }
         format.xml  { head :ok }
       else
         format.html { render :action => "edit" }
         format.json { render :json => @activity, :status => 500}
-        format.xml  { render :xml => @activity.errors, :status => :unprocessable_entity }
+        format.xml  { render :xml => @activity.errors,
+          :status => :unprocessable_entity }
       end
     end
   end

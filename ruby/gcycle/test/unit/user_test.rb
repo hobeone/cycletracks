@@ -6,6 +6,11 @@ class UserTest < ActiveSupport::TestCase
   include AuthenticatedTestHelper
   fixtures :users
 
+  def test_valid
+    u = users(:hobe)
+    assert_valid u
+  end
+
   def test_should_create_user
     assert_difference 'User.count' do
       user = create_user

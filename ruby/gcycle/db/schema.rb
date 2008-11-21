@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20081115033050) do
+ActiveRecord::Schema.define(:version => 20081121212101) do
 
   create_table "activities", :force => true do |t|
     t.integer  "user_id"
@@ -107,6 +107,7 @@ ActiveRecord::Schema.define(:version => 20081115033050) do
     t.boolean  "metric"
     t.boolean  "admin"
     t.string   "timezone",                  :limit => 40
+    t.integer  "max_activities",                           :default => 100
   end
 
   add_index "users", ["login"], :name => "index_users_on_login", :unique => true

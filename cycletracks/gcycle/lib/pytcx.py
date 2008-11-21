@@ -263,7 +263,6 @@ def parse_tcx(filedata):
     total_meters = sum([l['total_meters'] for l in lap_records])
     total_time = sum([l['total_time_seconds'] for l in lap_records])
     rolling_time = sum([l['total_rolling_time_seconds'] for l in lap_records])
-    print [l['average_bpm'] for l in lap_records]
 
     activity_record = {
         'name': '%s-%s' % (activity_sport, lap_records[0]['starttime']),

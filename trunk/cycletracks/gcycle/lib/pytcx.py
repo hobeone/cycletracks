@@ -104,10 +104,10 @@ def parse_lap(start_time, lap_string):
     'total_meters': total_meters,
     'total_rolling_time_seconds' : total_time,
     'starttime': parse_zulu(start_time),
-    'average_bpm': getIntTagSubVal(lap, 'AverageHeartRateBpm'),
-    'maximum_bpm': getIntTagSubVal(lap, 'MaximumHeartRateBpm'),
-    'calories': float(getTagVal(lap, 'Calories')),
-    'maximum_speed': float(getTagVal(lap, 'MaximumSpeed')) * 3.6,
+    'average_bpm': getIntTagSubVal(lap, 'AverageHeartRateBpm', 0),
+    'maximum_bpm': getIntTagSubVal(lap, 'MaximumHeartRateBpm', 0),
+    'calories': float(getTagVal(lap, 'Calories', 0)),
+    'maximum_speed': float(getTagVal(lap, 'MaximumSpeed', 0)) * 3.6,
     'average_speed': total_meters / total_time * 3.6 # kph,
     }
 
@@ -263,6 +263,7 @@ def parse_tcx(filedata):
     total_meters = sum([l['total_meters'] for l in lap_records])
     total_time = sum([l['total_time_seconds'] for l in lap_records])
     rolling_time = sum([l['total_rolling_time_seconds'] for l in lap_records])
+    print [l['average_bpm'] for l in lap_records]
 
     activity_record = {
         'name': '%s-%s' % (activity_sport, lap_records[0]['starttime']),

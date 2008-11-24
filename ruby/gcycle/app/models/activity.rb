@@ -16,7 +16,7 @@ class Activity < ActiveRecord::Base
   validates_associated :laps, :user, :source_file
 
   validates_presence_of :name, :start_time, :end_time, :laps, :user,
-    :source_file, :rolling_time, :total_time
+    :rolling_time, :total_time
 
   # ints
   validates_numericality_of(:total_time, :rolling_time,
@@ -29,23 +29,31 @@ class Activity < ActiveRecord::Base
 
   validates_uniqueness_of(:source_hash, :scope => :user_id)
 
-  def validate
+  def validate_on_create
     if self.rolling_time and self.total_time
       if self.rolling_time > self.total_time
         errors.add("rolling_time", "is greater than total_time")
       end
     end
+
     if self.start_time and self.end_time
       if self.start_time > self.end_time
         errors.add('start_time', 'is later than end_time')
       end
     end
 
-    if self.user.activities.count > self.user.max_activities
+    if self.user and self.user.activities.count > self.user.max_activities
       errors.add(:user,
         "Too many activities for this user (#{self.user.activities.count}"+
         " > #{self.user.max_activities}).")
     end
+
+
+    if self.maximum_speed != 0.0 and average_speed == 0.0
+      errors.add(:average_speed,
+        "Average speed can't be 0 if maximum speed is set")
+    end
+
   end
 
   def time_list
@@ -67,6 +75,21 @@ class Activity < ActiveRecord::Base
     self.laps.map{|l| l.bpm_list}.flatten
   end
 
+  def self.create_from_file!(file, user)
+    filedata = File.open(file).read()
+    file_hash = OpenSSL::Digest::MD5.hexdigest(filedata)
+    activities = TCXParser.new(filedata).parse
+    activities.each do |activity|
+      activity.user = user
+      activity.name = File.basename(file)
+      activity.source_hash = file_hash
+      activity.source_file = SourceFile.new
+      activity.source_file.filename = File.basename(file)
+      activity.source_file.filedata = filedata
+      activity.save!
+    end
+  end
+
   def compute_data_from_laps!
     self.total_meters = laps.map{|l| l.total_meters}.sum
     self.total_time = laps.map{|l| l.total_time_seconds}.sum
@@ -80,7 +103,7 @@ class Activity < ActiveRecord::Base
 
     self.average_speed = 0
     if self.rolling_time > 0
-      self.total_meters / self.rolling_time * 3.6
+      self.average_speed = self.total_meters / self.rolling_time * 3.6
     end
     self.maximum_speed = laps.map{|l| l.maximum_speed}.max * 3.6
 

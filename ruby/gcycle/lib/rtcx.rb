@@ -128,9 +128,8 @@ class TCXParser
       end
 
       trackpoints = parse_trackpoints(lap.search('//tcd:Trackpoint'))
-
       trackpoints.each do |k,v|
-        lap_record[k] = v
+        lap_record.send(k.to_s+'=', v)
       end
 
       lap_record.start_time = parse_zulu(lap['StartTime'])

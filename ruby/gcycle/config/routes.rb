@@ -5,7 +5,9 @@ ActionController::Routing::Routes.draw do |map|
   map.login    '/login',    :controller => 'sessions', :action => 'new'
   map.register '/register', :controller => 'users', :action => 'create'
   map.signup   '/signup',   :controller => 'users', :action => 'new'
-  map.resources :users, :has_many => :activities
+  map.resources :users,
+    :has_many => :activities,
+    :only => [:index, :show, :update]
 
   map.resource :session
 
@@ -13,7 +15,6 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :activities,
     :member => {
       :data => :get,
-      :public => :get,
     },
     :collection => {
       :tags => :get,

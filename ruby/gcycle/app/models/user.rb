@@ -23,7 +23,7 @@ class User < ActiveRecord::Base
 
   def validate
     if !ActiveSupport::TimeZone::MAPPING.include?(read_attribute(:timezone))
-      errors.add(:timezone, "'%s' is not in the valid list")
+      errors.add(:timezone, "is not in the valid list")
     end
   end
 
@@ -38,7 +38,7 @@ class User < ActiveRecord::Base
   end
 
   def timezone=(tz)
-    if tz.instance_of(ActiveSupport::TimeZone)
+    if tz.instance_of?(ActiveSupport::TimeZone)
       write_attribute(:timezone, tz.name)
     else
       write_attribute(:timezone, tz)

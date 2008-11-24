@@ -123,20 +123,23 @@ class PolylineEncoder
   # and the segment [p1,p2].  This could probably be replaced with
   # something that is a bit more numerically stable.
   def distance(p0,p1,p2)
-    if p1[0] == p2[0] and p1[1] == p2[1]
-      out = Math.sqrt(((p2[0] - p0[0])**2) + ((p2[1] - p0[1])**2))
+    p0lat, p0long = p0
+    p1lat, p1long = p1
+    p2lat, p2long = p2
+    if p1lat == p2lat and p1long == p2long
+      out = Math.sqrt(((p2lat - p0lat)**2) + ((p2long - p0long)**2))
     else
-      u = ((p0[0] - p1[0])*(p2[0] - p1[0])+(p0[1] - p1[1])*(p2[1] - p1[1]))/
-        (((p2[0] - p1[0])**2) + ((p2[1] - p1[1])**2))
+      u = ((p0lat - p1lat)*(p2lat - p1lat)+(p0long - p1long)*(p2long - p1long))/
+        (((p2lat - p1lat)**2) + ((p2long - p1long)**2))
       if u <= 0
-        out = Math.sqrt( ((p0[0] - p1[0])**2 ) + ((p0[1] - p1[1])**2) )
+        out = Math.sqrt( ((p0lat - p1lat)**2 ) + ((p0long - p1long)**2) )
       end
       if u >= 1
-        out = Math.sqrt(((p0[0] - p2[0])**2) + ((p0[1] - p2[1])**2))
+        out = Math.sqrt(((p0lat - p2lat)**2) + ((p0long - p2long)**2))
       end
       if 0 < u and u < 1
-        out = Math.sqrt( ((p0[0]-p1[0]-u*(p2[0]-p1[0]))**2) +
-          ((p0[1]-p1[1]-u*(p2[1]-p1[1]))**2) )
+        out = Math.sqrt( ((p0lat-p1lat-u*(p2lat-p1lat))**2) +
+          ((p0long-p1long-u*(p2long-p1long))**2) )
       end
     end
     return out

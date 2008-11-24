@@ -104,9 +104,9 @@ ActiveRecord::Schema.define(:version => 20081121212101) do
     t.datetime "remember_token_expires_at"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.boolean  "metric"
-    t.boolean  "admin"
-    t.string   "timezone",                  :limit => 40
+    t.boolean  "metric",                                   :default => true
+    t.boolean  "admin",                                    :default => false
+    t.string   "timezone",                  :limit => 40,  :default => "Pacific Time (US & Canada)"
     t.integer  "max_activities",                           :default => 100
   end
 

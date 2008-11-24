@@ -28,7 +28,11 @@ Rails::Initializer.run do |config|
   config.gem "rubyist-aasm", :lib => "aasm", :source => "http://gems.github.com"
   config.gem 'libxml-ruby', :lib => "xml/libxml"
   config.gem 'duration'
-
+  config.gem "capistrano", :lib => "capistrano"
+  config.gem 'mislav-will_paginate', :version => '2.3.6', :lib => 'will_paginate', :source => 'http://gems.github.com'
+  config.gem "mbleigh-acts-as-taggable-on", :source => "http://gems.github.com", :lib => "acts-as-taggable-on"
+  
+  #config.gem 'fiveruns_tuneup'
   # Only load the plugins named here, in the order given. By default, all plugins 
   # in vendor/plugins are loaded in alphabetical order.
   # :all can be used as a placeholder for all plugins not explicitly named
@@ -58,7 +62,7 @@ Rails::Initializer.run do |config|
   # Use the database for sessions instead of the cookie-based default,
   # which shouldn't be used to store highly confidential information
   # (create the session table with "rake db:sessions:create")
-  # config.action_controller.session_store = :active_record_store
+  #config.action_controller.session_store = :active_record_store
 
   # Use SQL instead of Active Record's schema dumper when creating the test database.
   # This is necessary if your schema can't be completely dumped by the schema dumper,
@@ -68,5 +72,3 @@ Rails::Initializer.run do |config|
   # Activate observers that should always be running
   config.active_record.observers = :tagging_observer
 end
-Mime::Type.register "application/vnd.google-earth.kml+xml", :kml
-Mime::Type.register "text/xml", :tcx

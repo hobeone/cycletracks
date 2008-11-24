@@ -1,2 +1,4 @@
 make index/tag/search pagination ajax
 allow user to select multiple activities to get a summary
+
+look at Eldorado for unit test examples

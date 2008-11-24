@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
   <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
-  <title>Cycletracks: <%= controller.action_name %></title>
+  <title>Cycletracks: <%= @page_title %></title>
   <%= stylesheet_link_tag 'style.css' %>
   <%= javascript_include_tag "http://www.google.com/jsapi?key=ABQIAAAAoU2YDajIyJPdof6GDzJKshRpKIwH9gjHw5l4siVVB7mD23aSXhSHvrtQQCEPRhQENq4B3lk8joMYzQ" %>
   <script type="text/javascript">
@@ -39,6 +39,7 @@
         <div id="primaryContent_columnless">
           <div id="columnA_columnless">
 <p style="color: green"><%= flash[:notice] %></p>
+<p style="color: red"><%= flash[:error] %></p>
 
 <%= yield  %>
 

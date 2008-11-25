@@ -63,6 +63,7 @@ class ActivitiesController < ApplicationController
             :include => :tags,
             :per_page => 15
           )
+          @page_title = 'dashboard'
           respond_to do |format|
             format.html # index.html.erb
             format.xml  { render :xml => @activities }
@@ -153,6 +154,7 @@ class ActivitiesController < ApplicationController
             @activity.source_file.filename
           render :text => @activity.source_file.filedata, :layout => false
         end
+        @page_title = @activity.name
         format.html # show.html.erb
         format.xml  { render :xml => @activity }
       end

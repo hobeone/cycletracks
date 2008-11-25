@@ -29,6 +29,7 @@ Rails::Initializer.run do |config|
   config.gem 'libxml-ruby', :lib => "xml/libxml"
   config.gem 'duration'
   config.gem "capistrano", :lib => "capistrano"
+  config.gem "capistrano-ext", :version => '1.2.1', :lib => 'capistrano'
   config.gem 'mislav-will_paginate', :version => '2.3.6', :lib => 'will_paginate', :source => 'http://gems.github.com'
   config.gem "mbleigh-acts-as-taggable-on", :source => "http://gems.github.com", :lib => "acts-as-taggable-on"
   

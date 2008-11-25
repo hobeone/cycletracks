@@ -12,6 +12,10 @@ test:
   database: gcycle_test
   <<: *defaults
 
+staging:
+  database: gcycle_staging
+  <<: *defaults
+
 production:
   database: gcycle_production
   <<: *defaults

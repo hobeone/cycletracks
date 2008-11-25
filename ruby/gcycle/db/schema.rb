@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20081124051710) do
+ActiveRecord::Schema.define(:version => 20081124053114) do
 
   create_table "activities", :force => true do |t|
     t.integer  "user_id"
@@ -49,27 +49,29 @@ ActiveRecord::Schema.define(:version => 20081124051710) do
     t.float    "total_meters"
     t.integer  "total_time_seconds"
     t.integer  "total_rolling_time_seconds"
-    t.integer  "average_cadence",                                  :default => 0
-    t.integer  "maximum_cadence",                                  :default => 0
-    t.integer  "average_bpm",                                      :default => 0
-    t.integer  "maximum_bpm",                                      :default => 0
+    t.integer  "average_cadence",                                :default => 0
+    t.integer  "maximum_cadence",                                :default => 0
+    t.integer  "average_bpm",                                    :default => 0
+    t.integer  "maximum_bpm",                                    :default => 0
     t.float    "average_speed"
     t.float    "maximum_speed"
-    t.integer  "calories",                                         :default => 0
+    t.integer  "calories",                                       :default => 0
     t.datetime "start_time"
     t.datetime "end_time"
-    t.float    "total_ascent",                                     :default => 0.0
-    t.float    "total_descent",                                    :default => 0.0
-    t.text     "bpm_list",                   :limit => 2147483647
-    t.text     "altitude_list",              :limit => 2147483647
-    t.text     "speed_list",                 :limit => 2147483647
-    t.text     "distance_list",              :limit => 2147483647
-    t.text     "cadence_list",               :limit => 2147483647
-    t.text     "geopt_list",                 :limit => 2147483647
-    t.text     "time_list",                  :limit => 2147483647
+    t.float    "total_ascent",                                   :default => 0.0
+    t.float    "total_descent",                                  :default => 0.0
+    t.text     "bpm_list",                   :limit => 16777215
+    t.text     "altitude_list",              :limit => 16777215
+    t.text     "speed_list",                 :limit => 16777215
+    t.text     "distance_list",              :limit => 16777215
+    t.text     "cadence_list",               :limit => 16777215
+    t.text     "geopt_list",                 :limit => 16777215
+    t.text     "time_list",                  :limit => 16777215
     t.datetime "created_at"
     t.datetime "updated_at"
   end
+
+  add_index "laps", ["activity_id"], :name => "index_laps_on_activity_id"
 
   create_table "source_files", :force => true do |t|
     t.integer  "activity_id"

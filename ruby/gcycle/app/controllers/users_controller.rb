@@ -48,7 +48,7 @@ class UsersController < ApplicationController
         format.xml  { head :ok }
       else
         format.html { render :action => "edit" }
-        format.json { render :json => @user, :status => 500}
+        format.json { render :json => @user, :status => 500 }
         format.xml  { render :xml => @user.errors,
           :status => :unprocessable_entity }
       end

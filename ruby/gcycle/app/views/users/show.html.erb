@@ -28,7 +28,7 @@
       Timezone:
     </td>
     <td>
-      <%= editable_collection_tag(:span, @user, 'timezone', ActiveSupport::TimeZone.all().sort.map{|t| t.to_s}, {:class => 'summaryField'}, {:okText => 'save'}) %>
+      <%= editable_collection_tag(:span, @user, 'timezone', ActiveSupport::TimeZone.all().sort.map{|t| [t.name, t.to_s]}, {:class => 'summaryField'}, {:okText => 'save'}) %>
     </td>
   </tr>
 </table>

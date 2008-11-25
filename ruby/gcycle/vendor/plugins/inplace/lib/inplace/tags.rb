@@ -82,7 +82,7 @@ module Inplace
       options_for_edit = jsonify(edit_options)
       options_for_ajax = jsonify(ajax_options)
 
-      tg = content_tag(element_type, object[property], element_options)
+      tg = content_tag(element_type, object.send(property), element_options)
 
       put_params = protect_against_forgery? ?  "&authenticity_token=#{form_authenticity_token}" : ''
       tg += <<-EOJS

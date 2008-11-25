@@ -7,7 +7,6 @@ class User < ActiveRecord::Base
 
   has_many :activities, :dependent => :destroy
 
-
   validates_presence_of     :login
   validates_length_of       :login,    :within => 3..40
   validates_uniqueness_of   :login
@@ -28,13 +27,16 @@ class User < ActiveRecord::Base
   end
 
   def timezone
-    return @tz_cache unless @tz_cache.nil?
     tz_string = read_attribute(:timezone)
-    @tz_cache = ActiveSupport::TimeZone.new(tz_string)
-    if @tz_cache.nil?
-      @tz_cache = ActiveSupport::TimeZone.new("UTC")
+    tz = ActiveSupport::TimeZone.new(tz_string)
+    if tz.nil?
+      tz = ActiveSupport::TimeZone.new("UTC")
     end
-    return @tz_cache
+    return tz
+  end
+
+  def timezone_string
+    self.timezone.to_s
   end
 
   def timezone=(tz)
@@ -65,6 +67,13 @@ class User < ActiveRecord::Base
       :total_calories => activities.sum(:total_calories) || 0,
     }
     return @total_cache
+  end
+
+  def to_json(options = {})
+    json = super(:only => [:login, :email, :name, :metric],
+                 :methods => [:timezone_string])
+    json.sub!('timezone_string', 'timezone')
+    return json
   end
 
   # HACK HACK HACK -- how to do attr_accessible from here?

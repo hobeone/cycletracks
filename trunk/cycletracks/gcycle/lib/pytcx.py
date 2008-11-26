@@ -32,7 +32,7 @@ def getTagVal(string, tag, value_match = '.+?', default=None):
 
 @memoized
 def make_tag_val_regex(tag):
-  return re.compile("<%s>\s*?<Value>\s*?(\d+?)\s*?</Value>\s*?</%s>" %
+  return re.compile(r"<%s.+>\s*?<Value>\s*?(\d+?)\s*?</Value>\s*?</%s>" %
       (tag,tag), reopts)
 
 def getIntTagSubVal(string, tag, default=None):
@@ -156,6 +156,7 @@ def parse_lap(start_time, lap_string):
           timepoints.append((point_time - starttime).seconds)
           speed_list.append(dist_delta / timedelta * 3.6) # for kph
         else:
+          speed_list.append(0)
           if timepoints:
             timepoints.append(timepoints[-1])
           else:
@@ -236,7 +237,7 @@ def parse_lap(start_time, lap_string):
 def parse_tcx(filedata):
   acts = []
 
-  r = re.compile('<Activity Sport="(\w+?)">(.*?)</Activity>',
+  r = re.compile(r'<Activity Sport="(\w+?)">(.*?)</Activity>',
       re.MULTILINE | re.DOTALL)
   for activity in r.finditer(filedata):
     r = re.compile('<Lap StartTime="(.*?)">(.*?)</Lap>',

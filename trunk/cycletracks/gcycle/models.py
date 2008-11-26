@@ -70,6 +70,7 @@ class CsvListProperty(db.Property):
       except TypeError, err:
         raise BadValueError('Property %s must be convertible '
                             'to a list instance (%s)' % (self.name, err))
+    value = map(self.cast_type,value)
     value = super(CsvListProperty, self).validate(value)
     if value is not None and not isinstance(value, list):
       raise BadValueError('Property %s must be a Text instance' % self.name)
@@ -78,9 +79,13 @@ class CsvListProperty(db.Property):
   def get_value_for_datastore(self, model_instance):
     value = super(CsvListProperty, self).get_value_for_datastore(
         model_instance)
-    return  datastore_types.Text(self.split_on.join(map(str,value)))
+    if len(value) == 0:
+      return None
+    return datastore_types.Text(self.split_on.join(map(str,value)))
 
   def make_value_from_datastore(self, value):
+    if value is None:
+      return []
     return map(self.cast_type,value.split(self.split_on))
 
 
@@ -304,7 +309,6 @@ class SourceDataFile(BaseModel):
   activity = db.ReferenceProperty(Activity, required=True)
   data = BzipBlobProperty(required=True)
 
-
 class Lap(BaseModel):
   activity = db.ReferenceProperty(Activity, required=True)
   total_meters = db.FloatProperty(required=True)
@@ -329,9 +333,39 @@ class Lap(BaseModel):
   total_ascent = db.FloatProperty(default=0.0)
   total_descent = db.FloatProperty(default=0.0)
 
+  # God, Django sucks monkey nuts:
+  def is_valid(self):
+    data_len = len(self.timepoints)
+    if len(self.bpm_list) != data_len:
+      raise db.NotSavedError("bpm_list doesn't have enough entries")
+
+    if len(self.altitude_list) != data_len:
+      raise db.NotSavedError("altitude_list doesn't have enough entries")
+
+    if len(self.speed_list) != data_len:
+      raise db.NotSavedError("speed_list doesn't have enough entries (%s != %s)" % (
+        len(self.speed_list), data_len))
+
+    if len(self.distance_list) != data_len:
+      raise db.NotSavedError("distance_list doesn't have enough entries")
+
+    if len(self.cadence_list) != data_len:
+      raise db.NotSavedError("cadence_list doesn't have enough entries")
+
+    if len(self.geo_points) != data_len:
+      raise db.NotSavedError("geo_points doesn't have enough entries")
+
+    return self
+
+  def put(self):
+      self.is_valid()
+      return super(Lap, self).put()
+
   @property
   @memoized
   def to_kml(self):
     pts = (l.split(',') for l in self.geo_points)
     points = ['%s,%s,0' % (l[1],l[0]) for l in pts]
     return ' '.join(points)
+
+

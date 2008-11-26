@@ -51,22 +51,19 @@ class User < ActiveRecord::Base
     time_with_zone.in_time_zone(self.timezone)
   end
 
-  def totals
-    return @total_cache unless @total_cache.nil?
-    @total_cache = {
-      :total_meters => activities.sum(:total_meters) || 0.0,
-      :total_time => activities.sum(:total_time) || 0.0 ,
-      :total_ascent => activities.sum(:total_ascent) || 0.0,
-      :rolling_time => activities.sum(:rolling_time) || 0,
-      :average_cadence => activities.average(:average_cadence) || 0,
-      :maximum_cadence => activities.maximum(:maximum_cadence) || 0,
-      :average_bpm => activities.average(:average_bpm) || 0,
-      :maximum_bpm => activities.maximum(:maximum_bpm) || 0,
-      :average_speed => activities.average(:average_speed) || 0.0,
-      :maximum_speed => activities.maximum(:maximum_speed) || 0.0,
-      :total_calories => activities.sum(:total_calories) || 0,
-    }
-    return @total_cache
+  def update_totals
+    self.total_meters = activities.sum(:total_meters) || 0.0
+    self.total_time = activities.sum(:total_time) || 0.0
+    self.total_ascent = activities.sum(:total_ascent) || 0.0
+    self.rolling_time = activities.sum(:rolling_time) || 0
+    self.average_cadence = activities.average(:average_cadence) || 0
+    self.maximum_cadence = activities.maximum(:maximum_cadence) || 0
+    self.average_bpm = activities.average(:average_bpm) || 0
+    self.maximum_bpm = activities.maximum(:maximum_bpm) || 0
+    self.average_speed = activities.average(:average_speed) || 0.0
+    self.maximum_speed = activities.maximum(:maximum_speed) || 0.0
+    self.total_calories = activities.sum(:total_calories) || 0
+    self.save!
   end
 
   def to_json(options = {})

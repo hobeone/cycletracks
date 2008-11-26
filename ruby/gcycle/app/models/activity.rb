@@ -7,6 +7,8 @@ class Activity < ActiveRecord::Base
   serialize :mid_point
   serialize :end_point
 
+  attr_accessible :public, :comment
+
   belongs_to :user
   has_one :source_file
   has_many :laps, :order => 'start_time', :dependent => :delete_all
@@ -53,8 +55,13 @@ class Activity < ActiveRecord::Base
       errors.add(:average_speed,
         "Average speed can't be 0 if maximum speed is set")
     end
-
   end
+
+  after_create :update_user_totals
+  def update_user_totals
+    self.user.update_totals
+  end
+
 
   def time_list
     self.laps.map{|l| l.time_list}.flatten

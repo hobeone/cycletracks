@@ -1,4 +1,4 @@
 source_file_one:
   activity: activity_one
   filename: foobar
-  filedata: bazbazbaz
+  filedata: <%= Base64.decode64("H4sIAIzfLEkAA0vLzwcAIWVzjAMAAAA=\n") %>

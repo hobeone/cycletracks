@@ -1,13 +1,15 @@
 #!/usr/bin/env ruby
-require File.dirname(__FILE__) + '/config/boot'
+require File.dirname(__FILE__) + '/../config/boot'
+ENV['RAILS_ENV'] ||= "development"
+require RAILS_ROOT + '/config/environment'
 
 require 'lib/rtcx'
 require 'pp'
 require 'openssl'
 require 'English'
-require 'ruby-prof'
+#require 'ruby-prof'
 
-tcx_dir = File.dirname(__FILE__) + '/../garmin'
+tcx_dir = RAILS_ROOT + '/../garmin'
 user = User.find_by_login('hobe')
 
 files = []
@@ -24,7 +26,7 @@ SourceFile.delete_all()
 files.sort.reverse.each do |file|
   next unless file =~ /.tcx$/
   puts file
-  filedata = File.open(tcx_dir + '/' + file).read()
+  filedata = File.open(file).read()
   file_hash = OpenSSL::Digest::MD5.hexdigest(filedata)
   next if Activity.find_by_source_hash(file_hash)
   #RubyProf.start

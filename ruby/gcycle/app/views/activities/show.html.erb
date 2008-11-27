@@ -233,7 +233,7 @@
 
   function showAddress(response, element_id) {
     if (!response || response.Status.code != 200) {
-      document.getElementById(element_id).innerHTML = "Couldn't Reverse Geocode: " + response.Status.code;
+      document.getElementById(element_id).innerHTML = "Couldn't Reverse Geocode.  Error: " + response.Status.code;
     } else {
       place = response.Placemark[0];
       document.getElementById(element_id).innerHTML = place.address;

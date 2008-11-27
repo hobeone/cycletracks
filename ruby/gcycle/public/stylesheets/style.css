@@ -513,3 +513,7 @@ div.errorDialog {
   border-right-color: #999;
   border-bottom-color: #999;
 }
+
+.activity-summary-table td {
+  padding:0.1em;
+}

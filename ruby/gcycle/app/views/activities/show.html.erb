@@ -18,7 +18,9 @@
     <td align="left" valign="top" width="50%">
         <div id="activity_table">
           <div id="activitySummaryDataComponent" class="activityComponent">
-            <div id="activitySummaryTitle">Summary for <%=@activity.name%> (
+            <div id="activitySummaryTitle">Summary for <%=@activity.name%>
+              <% if logged_in? %>
+                (
               <%=
                 link_to_remote('delete',
                                :method => :delete,
@@ -26,128 +28,171 @@
                                :url => activity_url(@activity),
                                :success => update_page{|page| page.redirect_to(:action => 'index') }
                               )%>
-                ):</div>
-            <div id="activitySummaryContent">
-              <div id="startTime">
-                <span class="summaryLabel">Start Time:</span>
-                <span class="summaryField"><%= @activity.user.to_user_localtime(@activity.start_time).to_formatted_s(:db)  %></span>
-              </div>
-              <div id="endTime">
-                <span class="summaryLabel">End Time:</span>
-                <span class="summaryField"><%= @activity.user.to_user_localtime(@activity.end_time).to_formatted_s(:db) %></span>
-              </div>
-              <div id="totalTime">
-                <span class="summaryLabel">Time:</span>
-                <span class="summaryField">Total: <%= seconds_to_human_readable(@activity.total_time) %> (Rolling: <%= seconds_to_human_readable(@activity.rolling_time) %>) </span>
-              </div>
-              <div id="distance">
-                <span class="summaryLabel">Distance</span>
-                <span class="summaryField"><%= prefered_distance_with_units(@activity.total_meters) %></span>
-              </div>
-              <div id="ascent">
-                <span class="summaryLabel">Ascent:</span>
-                <span class="summaryField"><%=prefered_distance_with_units(@activity.total_ascent)%></span>
-              </div>
-              <div id="descent">
-                <span class="summaryLabel">Descent:</span>
-                <span class="summaryField"><%=prefered_distance_with_units(@activity.total_descent)%></span>
-              </div>
-              <div id="speed">
-                <span class="summaryLabel">Speed:</span>
-                <span class="summaryField">Avg: <%= kph_to_prefered_speed_with_units(@activity.average_speed) %>, Max: <%= kph_to_prefered_speed_with_units @activity.maximum_speed %></span>
-              </div>
+                            )<%end%>:</div>
+            <div class="activity-summary-table">
+              <table id>
+                <tr>
+                  <td width="120">
+                    Start Time
+                  </td>
+                  <td>
+                    <%= @activity.user.to_user_localtime(@activity.start_time).to_formatted_s(:db)  %>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    End Time
+                  </td>
+                  <td>
+                    <%= @activity.user.to_user_localtime(@activity.end_time).to_formatted_s(:db)  %>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    Total Time
+                  </td>
+                  <td>
+                    <%= seconds_to_human_readable(@activity.total_time) %> (Rolling: <%= seconds_to_human_readable(@activity.rolling_time) %>)
+                  </td>
+                </tr>
 
 
-              <div id="heartRate">
-                <span class="summaryLabel">Heart Rate:</span>
-                <span class="summaryField">Avg: <%= @activity.average_bpm %>, Max: <%= @activity.maximum_bpm %> bpm</span>
-              </div>
+                <tr>
+                  <td>
+                    Distance
+                  </td>
+                  <td>
+                    <%= prefered_distance_with_units(@activity.total_meters) %>
+                  </td>
+                </tr>
 
 
-              <div id="cadence">
-                <span class="summaryLabel">Cadence:</span>
-                <span class="summaryField">Avg: <%= @activity.average_cadence %>, Max: <%= @activity.maximum_cadence %> rpm</span>
-              </div>
+                <tr>
+                  <td>
+                    Ascent
+                  </td>
+                  <td>
+                    <%=prefered_distance_with_units(@activity.total_ascent)%>
+                  </td>
+                </tr>
 
 
-              <div id="calories">
-                <span class="summaryLabel">Calories:</span>
-                <span class="summaryField"><%= @activity.total_calories %> Cal</span>
-              </div>
-              <div id="startLocation">
-                <span class="summaryLabel">Start Location:</span>
-                <span class="summaryField" id="start_location"></span>
-              </div>
-              <div id="middleLocation">
-                <span class="summaryLabel">Middle Location:</span>
-                <span class="summaryField" id="mid_location"></span>
-              </div>
-              <div id="endLocation">
-                <span class="summaryLabel">End Location:</span>
-                <span class="summaryField" id="end_location"></span>
-              </div>
-              <div id="uploadedBy">
-                <span class="summaryLabel">Uploaded By:</span>
-                <span class="summaryField"><%= @activity.user.login %></span>
-              </div>
-              <% if logged_in? %>
-              <div id="public">
-                <table>
-                  <tr>
-                    <td>
-                      <span class="summaryLabel">Public:</span>
-                    </td>
-                    <td>
-                      <form>
-                        <%= check_box_tag 'public', 'true', @activity.public, :id => 'public_checkbox' %>
-                      </form>
-                    </td>
-                    <td>
-                      <span id="public_update_span" style="display:none;">&nbsp; saving...</span>
-                    </tr>
-                    </tr>
-                  </table>
+                <tr>
+                  <td>
+                    Speed
+                  </td>
+                  <td>
+                    Avg: <%= kph_to_prefered_speed_with_units(@activity.average_speed) %>, Max: <%= kph_to_prefered_speed_with_units @activity.maximum_speed %>
+                  </td>
+                </tr>
+
+
+                <tr>
+                  <td>
+                    Heart Rate:
+                  </td>
+                  <td>
+                    Avg: <%= @activity.average_bpm %>, Max: <%= @activity.maximum_bpm %> bpm
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    Cadence
+                  </td>
+                  <td>
+                    Avg: <%= @activity.average_cadence %>, Max: <%= @activity.maximum_cadence %> rpm
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    Calories
+                  </td>
+                  <td>
+                    <%= @activity.total_calories %> Cal
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    Start Location
+                  </td>
+                  <td id="start_location">
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    Mid Location
+                  </td>
+                  <td id="mid_location">
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    End Location
+                  </td>
+                  <td id="end_location">
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    Uploaded By
+                  </td>
+                  <td>
+                    <%= @activity.user.login %>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    Public:
+                  </td>
+                  <td>
+                    <form>
+                      <%= check_box_tag 'public', 'true', @activity.public, :id => 'public_checkbox' %>
+                    </form>
+                  </td>
+                  <td>
+                    <span id="public_update_span" style="display:none;">&nbsp; saving...</span>
+                  </td>
+                </tr>
                   <%= observe_field("public_checkbox", :frequency => 1,
                                     :method => :put,
                                     :loading => update_page{|page| page.show 'public_update_span'},
                                     :complete => update_page{|page| page.hide 'public_update_span'},
                                     :with => "'activity[public]=' + value",
                                     :url => activity_url(@activity) + '.json') %>
-                                  </div>
-              <% end %>
 
 
-
-              <div id="comments">
-                <table>
-                  <tr><td>
-                      <span class="summaryLabel">Comment:</span>
-                    </td>
-                    <td>
-                      <% if logged_in? %>
-                        <%= editable_content_tag(:span, @activity, 'comment', true, nil, 'click to add a comment', {:class => 'summaryField'}, {:okText => 'save'}) %>
-                      <% else %>
-                        <%= @activity.comment %>
-                      <% end %>
-                    </td>
+                <tr>
+                  <td>
+                    Comment:
+                  </td>
+                  <td>
+                    <% if logged_in? %>
+                      <%= editable_content_tag(:span, @activity, 'comment', true, nil, 'click to add a comment', {}, {:okText => 'save'}) %>
+                    <% else %>
+                      <%= @activity.comment %>
+                    <% end %>
+                  </td>
                 </tr>
+                <tr>
+                  <td>
+                    Tags:
+                  </td>
+                  <td>
+                    <% if logged_in? %>
+                      <%= editable_content_tag(:span, @activity, 'tag_list', true, nil, 'click to add a tag', {}, {:okText => 'save'}) %>
+                    <% else %>
+                      <%= @activity.tag_list %>
+                    <% end %>
+                </td></tr>
               </table>
-              </div>
-
-              <div id="tags">
-                <table>
-                  <tr>
-                    <td>
-                      <span class="summaryLabel">Tags:</span>
-                    </td>
-                    <td>
-                      <% if logged_in? %>
-                        <%= editable_content_tag(:span, @activity, 'tag_list', true, nil, 'click to add a tag', {:class => 'summaryField'}, {:okText => 'save'}) %>
-                      <% else %>
-                        <%= @activity.tag_list %>
-                      <% end %>
-                </td></tr></table>
-              </div>
             </div>
           </div>
         </div>

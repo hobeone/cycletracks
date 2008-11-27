@@ -38,7 +38,8 @@ class ActivitiesController < ApplicationController
         format.json { render :json => @activity, :status => 500}
       end
     else
-      render :text => 'Access to that resource denied', :status => 401
+      flash[:error] = 'Access to that resource denied'
+      access_denied
     end
   end
 

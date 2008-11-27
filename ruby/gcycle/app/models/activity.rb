@@ -7,7 +7,7 @@ class Activity < ActiveRecord::Base
   serialize :mid_point
   serialize :end_point
 
-  attr_accessible :public, :comment
+  attr_accessible :public, :comment, :tag_list
 
   belongs_to :user
   has_one :source_file
@@ -15,21 +15,23 @@ class Activity < ActiveRecord::Base
 
   acts_as_taggable_on :tags
 
-  validates_associated :laps, :user, :source_file
+  validates_associated :laps, :user, :source_file, :on => :create
 
   validates_presence_of :name, :start_time, :end_time, :laps, :user,
-    :rolling_time, :total_time
+    :rolling_time, :total_time, :on => :create
 
   # ints
   validates_numericality_of(:total_time, :rolling_time,
                             :average_cadence, :maximum_cadence, :average_bpm,
                             :maximum_bpm, :total_calories,
-                            :only_integer => true)
+                            :only_integer => true,
+                            :on => :create)
   # floats
   validates_numericality_of(:total_meters, :average_speed, :maximum_speed,
-                            :total_ascent, :total_descent)
+                            :total_ascent, :total_descent,
+                            :on => :create)
 
-  validates_uniqueness_of(:source_hash, :scope => :user_id)
+  validates_uniqueness_of(:source_hash, :scope => :user_id, :on => :create)
 
   def validate_on_create
     if self.rolling_time and self.total_time

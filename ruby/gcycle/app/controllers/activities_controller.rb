@@ -48,6 +48,17 @@ class ActivitiesController < ApplicationController
     controller.send(:current_user).metric.to_s +
     '_activities_index_page_' + controller.params[:page].to_s
   }
+  caches_action :index, :cache_path => Proc.new { |controller|
+    index_cache_key(controller)
+  }
+
+  def self.index_cache_key(controller)
+    return controller.send(:activities_url) + '/' +
+           controller.send(:current_user).login +
+           controller.send(:current_user).metric.to_s +
+           '_activities_index_page_' + controller.params[:page].to_s
+  end
+
   def index
     params[:page] ||= 1
     Activity.send(:with_scope, :find => {
@@ -212,7 +223,7 @@ class ActivitiesController < ApplicationController
       if @activity.save
         @activity.tag_list = params[:tags_list]
         @activity.save
-        expire_action :action => :index
+        expire_action(self.class.index_cache_key(self))
         #flash[:notice] = 'Activity was successfully created.'
         format.html { redirect_to(@activity) }
         format.xml  { render :xml => @activity,
@@ -230,8 +241,8 @@ class ActivitiesController < ApplicationController
   def update
     respond_to do |format|
       if @activity.update_attributes(params[:activity])
-        expire_action :action => :show
-        expire_action :action => :index
+        expire_action(self.class.index_cache_key(self))
+        expire_action(self.class.view_cache_key(self))
 
         format.html do
           flash[:notice] = 'Activity was successfully updated.'
@@ -250,8 +261,8 @@ class ActivitiesController < ApplicationController
 
   def destroy
     @activity.destroy
-    expire_action :action => :index
-    expire_action :action => :show
+    expire_action(self.class.index_cache_key(self))
+    expire_action(self.class.view_cache_key(self))
 
     respond_to do |format|
       format.html { redirect_to(activities_url) }

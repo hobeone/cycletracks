@@ -13,10 +13,6 @@
 <%= javascript_include_tag "timeplot_js/timeplot-api" %>
 <% end %>
 
-<% content_for :body_extra do %>
-  onload="onLoad();" onresize="onResize();"
-<% end %>
-
 <table width="100%">
   <tr>
     <td align="left" valign="top" width="50%">
@@ -187,14 +183,63 @@
 
 <br/>
 
-<%= javascript_include_tag "greversegeocoder" %>
+<script type="text/javascript">
+  google.load("maps", "2.x");
 
-
-<script id="source" language="javascript" type="text/javascript">
-  function onResize() {
-    var f = 1;
+  function showAddress(response, element_id) {
+    if (!response || response.Status.code != 200) {
+      document.getElementById(element_id).innerHTML = "Couldn't Reverse Geocode: " + response.Status.code;
+    } else {
+      place = response.Placemark[0];
+      document.getElementById(element_id).innerHTML = place.address;
+    }
   }
-  function onLoad() {
+
+  function initialize() {
+    var map = new google.maps.Map2(document.getElementById("map"));
+    map.setMapType(G_PHYSICAL_MAP);
+    map.setCenter(new google.maps.LatLng(0,0),0);
+    var sw = new google.maps.LatLng(<%= @activity.sw_point.join(',') %>);
+    var ne = new google.maps.LatLng(<%= @activity.ne_point.join(',') %>);
+    var bounds = new google.maps.LatLngBounds(sw, ne);
+    var mapZoomLevel = map.getBoundsZoomLevel(bounds);
+    var mapCenter = bounds.getCenter();
+    map.setCenter(mapCenter, mapZoomLevel);
+
+    var polyline1_1 = new google.maps.Polyline.fromEncoded({
+      weight: 4,
+      opacity: 0.6,
+      points: <%= @activity.encoded_points.to_json %>,
+      levels: <%= @activity.encoded_levels.to_json %>,
+      zoomFactor: 2,
+      numLevels: 18
+    });
+    map.addOverlay(polyline1_1);
+    map.addControl(new google.maps.SmallMapControl());
+    geocoder = new google.maps.ClientGeocoder();
+
+    var start_point = new GLatLng(<%= @activity.start_point.join(',') %> );
+    var mid_point = new GLatLng(<%= @activity.mid_point.join(',') %>);
+    var end_point = new GLatLng(<%= @activity.end_point.join(',') %>);
+    geocoder.getLocations(start_point,
+      function(response) {
+        showAddress(response, 'start_location');
+      }
+      );
+    geocoder.getLocations(mid_point,
+      function(response) {
+        showAddress(response, 'mid_location');
+      }
+      );
+    geocoder.getLocations(end_point,
+      function(response) {
+      showAddress(response, 'end_location');
+      }
+    );
+  }
+google.setOnLoadCallback(initialize);
+
+function drawGraphs() {
     var eventSource = new Timeplot.DefaultEventSource();
 
     var timeGeometry = new Timeplot.DefaultTimeGeometry({
@@ -303,52 +348,7 @@
 
     altitudeplot.loadText("/activities/<%=@activity.id%>/data", ",", eventSource);
 };
-</script>
-<script type="text/javascript">
-  google.load("maps", "2.x");
-  function handle_point(point, map, element_id) {
-    var reverse_gcode = new GReverseGeocoder(map);
-    GEvent.addListener(reverse_gcode, "error",
-      function() {
-        document.getElementById(element_id).innerHTML = "Unable to reverse GeoCode";
-      }
-    );
-    GEvent.addListener(reverse_gcode, "load",
-      function(placemark) {
-        document.getElementById(element_id).innerHTML = placemark.address;
-      }
-    );
-    reverse_gcode.reverseGeocode(point);
-  }
 
-  function initialize() {
-    var map = new google.maps.Map2(document.getElementById("map"));
-    map.setMapType(G_PHYSICAL_MAP);
-    map.setCenter(new google.maps.LatLng(0,0),0);
-    var sw = new google.maps.LatLng(<%= @activity.sw_point.join(',') %>);
-    var ne = new google.maps.LatLng(<%= @activity.ne_point.join(',') %>);
-    var bounds = new google.maps.LatLngBounds(sw, ne);
-    var mapZoomLevel = map.getBoundsZoomLevel(bounds);
-    var mapCenter = bounds.getCenter();
-    map.setCenter(mapCenter, mapZoomLevel);
+google.setOnLoadCallback(drawGraphs);
 
-    var polyline1_1 = new google.maps.Polyline.fromEncoded({
-      weight: 4,
-      opacity: 0.6,
-      points: <%= @activity.encoded_points.to_json %>,
-      levels: <%= @activity.encoded_levels.to_json %>,
-      zoomFactor: 2,
-      numLevels: 18
-    });
-    map.addOverlay(polyline1_1);
-    map.addControl(new google.maps.SmallMapControl());
-
-    var start_point = new GLatLng(<%= @activity.start_point.join(',') %> );
-    var mid_point = new GLatLng(<%= @activity.mid_point.join(',') %>);
-    var end_point = new GLatLng(<%= @activity.end_point.join(',') %>);
-    handle_point(start_point, map, 'start_location')
-    handle_point(mid_point, map, 'mid_location')
-    handle_point(end_point, map, 'end_location')
-  }
-  google.setOnLoadCallback(initialize);
 </script>

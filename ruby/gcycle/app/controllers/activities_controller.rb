@@ -56,6 +56,7 @@ class ActivitiesController < ApplicationController
     return controller.send(:activities_url) + '/' +
            controller.send(:current_user).login +
            controller.send(:current_user).metric.to_s +
+           controller.send(:current_user).activities.maximum(:updated_at).to_i.to_s+
            '_activities_index_page_' + controller.params[:page].to_s
   end
 
@@ -207,7 +208,6 @@ class ActivitiesController < ApplicationController
   end
 
   def create
-
     tcx_data = params[:tcx_file].read()
     file_hash = OpenSSL::Digest::MD5.hexdigest(tcx_data)
     tcx = TCXParser.new(tcx_data).parse

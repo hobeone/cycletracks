@@ -55,15 +55,16 @@ Rails::Initializer.run do |config|
   # If you change this key, all old sessions will become invalid!
   # Make sure the secret is at least 30 characters and all random,
   # no regular words or you'll be exposed to dictionary attacks.
-  config.action_controller.session = {
-    :session_key => '_gcycle_session',
-    :secret      => 'f585f351ef04b4a24db0e775332b54339001f02aae72ddd49c56a707a4e75ec7c0450f343991ac8c71b290bf1d097a641aa83a517ad79b5d2789212b00357585'
-  }
+  secret = 'hictoagp' * 16
+  if ENV['RAILS_ENV'] != 'development'
+    secret_file = File.join(RAILS_ROOT, "session_secret")
+    secret = File.read(secret_file)
+  end
 
-  # Use the database for sessions instead of the cookie-based default,
-  # which shouldn't be used to store highly confidential information
-  # (create the session table with "rake db:sessions:create")
-  config.action_controller.session_store = :active_record_store
+  config.action_controller.session = {
+    :session_key => "_gcycle_#{ENV['RAILS_ENV']}_session",
+    :secret      => secret
+  }
 
   # Use SQL instead of Active Record's schema dumper when creating the test database.
   # This is necessary if your schema can't be completely dumped by the schema dumper,

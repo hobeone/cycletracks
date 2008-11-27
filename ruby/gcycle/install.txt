@@ -14,3 +14,11 @@ sudo rake gems:install
 rake db:migrate
 rake db:fixtures:load
 ./script/server
+
+Ruby Enterprise:
+http://www.rubyenterpriseedition.com/download.html#ubuntu
+
+Change apache2.conf:
+PassengerRuby /opt/ruby-enterprise/bin/ruby
+
+

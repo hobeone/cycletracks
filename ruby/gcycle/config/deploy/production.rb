@@ -39,7 +39,28 @@ set :deploy_via, :remote_cache
 #Passenger
 #############################################################
 
+require 'openssl'
+require 'digest/sha1'
+
+
 namespace :deploy do
+  desc 'Check that session_secret exists locally'
+  task :before_update_code do
+    if  !File.readable?('session_secret.encrypted')
+      raise "session_secret file doesn't exist or is not readable"
+    end
+    c = OpenSSL::Cipher::Cipher.new("aes-256-cbc")
+    c.decrypt
+    c.key = OpenSSL::Digest::SHA512.hexdigest(
+      Capistrano::CLI.password_prompt(
+        "Session Key Password: "
+      )
+    )
+    d = c.update(File.read('session_secret.encrypted'))
+    d << c.final
+    $decrypted_session_key = d.to_s
+  end
+
   desc "Create the database yaml file"
   task :after_update_code do
     db_config = <<-EOF
@@ -65,6 +86,8 @@ namespace :deploy do
     #   run "ln -s #{shared_path}/uploads #{release_path}/public/uploads"
     # end
 
+    put($decrypted_session_key,
+      "#{release_path}/session_secret", :mode => 0444)
   end
 
   # Restart passenger on deploy

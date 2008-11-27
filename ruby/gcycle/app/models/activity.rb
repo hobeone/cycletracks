@@ -58,6 +58,7 @@ class Activity < ActiveRecord::Base
   end
 
   after_create :update_user_totals
+  after_destroy :update_user_totals
   def update_user_totals
     self.user.update_totals
   end

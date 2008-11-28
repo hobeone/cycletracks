@@ -44,12 +44,6 @@ class ActivitiesController < ApplicationController
   end
 
   caches_action :index, :cache_path => Proc.new { |controller|
-    controller.send(:activities_url) + '/' +
-    controller.send(:current_user).login +
-    controller.send(:current_user).metric.to_s +
-    '_activities_index_page_' + controller.params[:page].to_s
-  }
-  caches_action :index, :cache_path => Proc.new { |controller|
     index_cache_key(controller)
   }
 
@@ -145,32 +139,29 @@ class ActivitiesController < ApplicationController
   def self.view_cache_key(controller)
     user_key = ''
     if controller.send(:logged_in?)
-      user_key = controller.send(:current_user).login +
+      user_key = controller.send(:current_user).login + '_' +
                  controller.send(:current_user).metric.to_s
     end
     return controller.send(:activity_url) + '/' +
-           user_key + '_activity_' + controller.action_name +
+           user_key + '_activity_' + controller.action_name + '_' +
+           controller.params[:format].to_s + '_' +
            controller.params[:id].to_s
   end
 
   def show
-    response.last_modified = @activity.updated_at.utc
-    response.etag = [@activity, @current_user]
-    if stale?(:last_modified => @activity.updated_at.utc,
-              :etag => [@activity, @current_user])
-      respond_to do |format|
-        format.kml do
-          render :template => 'activities/kml', :layout => false
-        end
-        format.tcx do
-          headers['Content-Disposition'] = 'attachment; filename=' +
-            @activity.source_file.filename
-          render :text => @activity.source_file.filedata, :layout => false
-        end
-        @page_title = @activity.name
-        format.html # show.html.erb
-        format.xml  { render :xml => @activity }
+    respond_to do |format|
+      format.kml do
+        headers['Content-Type'] = 'application/vnd.google-earth.kml+xml'
+        render :template => 'activities/kml', :layout => false
       end
+      format.tcx do
+        headers['Content-Disposition'] = 'attachment; filename=' +
+          @activity.source_file.filename
+        render :text => @activity.source_file.filedata, :layout => false
+      end
+      @page_title = @activity.name
+      format.html # show.html.erb
+      format.xml  { render :xml => @activity }
     end
   end
 

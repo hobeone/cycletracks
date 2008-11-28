@@ -13,14 +13,14 @@ default_run_options[:pty] = true
 ssh_options[:forward_agent] = true
 set :use_sudo, true
 set :scm_verbose, true
-set :rails_env, "production"
+set :rails_env, "staging"
 
 #############################################################
 #Servers
 #############################################################
 
 set :user, "hobe"
-set :domain, "lorien.corp.google.com"
+set :domain, "packetspike.net"
 server domain, :app, :web
 role :db, domain, :primary => true
 
@@ -30,18 +30,13 @@ role :db, domain, :primary => true
 
 set :scm, :subversion
 set :repository, "https://cycletracks.googlecode.com/svn/ruby/gcycle"
-#set :branch, "master"
-#set :scm_user, 'bort'
-#set :scm_passphrase, "PASSWORD"
-set :deploy_via, :remote_cache
+set :deploy_via, :export
 
 #############################################################
 #Passenger
 #############################################################
 
 require 'openssl'
-require 'digest/sha1'
-
 
 namespace :deploy do
   desc 'Check that session_secret exists locally'
@@ -64,30 +59,20 @@ namespace :deploy do
   desc "Create the database yaml file"
   task :after_update_code do
     db_config = <<-EOF
-    production:
+    staging:
       adapter: mysql
       encoding: utf8
       username: root
       password:
-      database: gcycle_production
+      database: gcycle_staging
       host: localhost
     EOF
 
     put db_config, "#{release_path}/config/database.yml"
 
-    #########################################################
-    # Uncomment the following to symlink an uploads directory.
-    # Just change the paths to whatever you need.
-    #########################################################
-
-    # desc "Symlink the upload directories"
-    # task :before_symlink do
-    #   run "mkdir -p #{shared_path}/uploads"
-    #   run "ln -s #{shared_path}/uploads #{release_path}/public/uploads"
-    # end
-
     put($decrypted_session_key,
       "#{release_path}/session_secret", :mode => 0444)
+
   end
 
   # Restart passenger on deploy

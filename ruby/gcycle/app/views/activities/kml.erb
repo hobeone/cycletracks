@@ -51,7 +51,7 @@
 </description>
   <styleUrl>#lapstyle</styleUrl>
   <LineString>
-      <coordinates><%= lap.geopoints_to_kml_order %></coordinates>
+  <coordinates><%= lap.geopoints_to_kml_order.map{|p| p.join(',')}.join(' ') %></coordinates>
       <extrude>1</extrude>
       <tessellate>1</tessellate>
   </LineString>

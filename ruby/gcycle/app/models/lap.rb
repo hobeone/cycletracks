@@ -25,7 +25,7 @@ class Lap < ActiveRecord::Base
   end
 
   def geopoints_to_kml_order
-    return geopt_list.map{|pt| [pt[1],pt[0]]}
+    return geopt_list.map{|pt| [pt[1],pt[0],0]}
   end
 
   def bpm_list=(list_data)

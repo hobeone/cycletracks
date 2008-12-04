@@ -1,0 +1,2 @@
+factor out common code in views
+paginate index

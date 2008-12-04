@@ -4,7 +4,6 @@
 {% block title %}CycleTracks: Activity {{ activity.name }}{% endblock %}
 
 {% block extra_head %}
-<script type="text/javascript" src="/static/greversegeocoder.js"></script>
 <script type="text/javascript" src="/static/jquery.inplace.pack.js"></script>
 
 <script src="/static/timeplot_ajax/simile-ajax-api.js" type="text/javascript"></script>
@@ -18,62 +17,8 @@
 
 <script type="text/javascript" src="/static/timeplot_js/timeline-api.js"></script>
 <script type="text/javascript" src="/static/timeplot_js/timeplot-api.js"></script>
-
-<script type="text/javascript">
-  google.load("maps", "2.x");
-  function handle_point(point, map, element_id) {
-    var reverse_gcode = new GReverseGeocoder(map);
-    GEvent.addListener(reverse_gcode, "error",
-      function() {
-        document.getElementById(element_id).innerHTML = "Unable to reverse GeoCode";
-      }
-    );
-    GEvent.addListener(reverse_gcode, "load",
-      function(placemark) {
-        document.getElementById(element_id).innerHTML = placemark.address;
-      }
-    );
-    reverse_gcode.reverseGeocode(point);
-  }
-
-  function initialize() {
-    var map = new google.maps.Map2(document.getElementById("map"));
-    map.setMapType(G_PHYSICAL_MAP);
-    map.setCenter(new google.maps.LatLng(0,0),0);
-    var sw = new google.maps.LatLng({{sw}});
-    var ne = new google.maps.LatLng({{ne}});
-    var bounds = new google.maps.LatLngBounds(sw, ne);
-    var mapZoomLevel = map.getBoundsZoomLevel(bounds);
-    var mapCenter = bounds.getCenter();
-    map.setCenter(mapCenter, mapZoomLevel);
-
-    var polyline1_1 = new google.maps.Polyline.fromEncoded({
-      weight: 4,
-      opacity: 0.6,
-      points: {{pts|safe}},
-      levels: {{levs|safe}},
-      zoomFactor: 2,
-      numLevels: 18
-    });
-    map.addOverlay(polyline1_1);
-    map.addControl(new google.maps.SmallMapControl());
-
-    var start_point = new GLatLng({{ start_lat_lng }});
-    var mid_point = new GLatLng({{ mid_lat_lng }});
-    var end_point = new GLatLng({{ end_lat_lng }});
-    handle_point(start_point, map, 'start_location')
-    handle_point(mid_point, map, 'mid_location')
-    handle_point(end_point, map, 'end_location')
-  }
-  google.setOnLoadCallback(initialize);
-</script>
-
 {% endblock %}
 
-
-{% block extra_body %}
-onload="onLoad();" onresize="onResize();"
-{% endblock %}
 
 {% block content %}
 <table width="100%">
@@ -85,30 +30,30 @@ onload="onLoad();" onresize="onResize();"
             <div id="activitySummaryContent">
               <div id="startTime">
                 <span class="summaryLabel">Start Time:</span>
-                <span class="summaryField">{{ activity.start_time|time_to_offset:user.get_profile.tzoffset }}</span>
+                <span class="summaryField">{{ activity.start_time|time_to_offset:activity.user.get_profile.tzoffset }}</span>
               </div>
 
               <div id="endTime">
                 <span class="summaryLabel">End Time:</span>
-                <span class="summaryField">{{ activity.end_time|time_to_offset:user.get_profile.tzoffset }}</span>
+                <span class="summaryField">{{ activity.end_time|time_to_offset:activity.user.get_profile.tzoffset }}</span>
               </div>
 
 
               <div id="distance">
                 <span class="summaryLabel">Distance</span>
-                <span class="summaryField">{{ activity.total_meters|meters_to_prefered_distance:user.get_profile.use_imperial }} {{user.get_profile.use_imperial|miles_or_km_units}}</span>
+                <span class="summaryField">{{ activity.total_meters|meters_to_prefered_distance:use_imperial }} {{use_imperial|miles_or_km_units}}</span>
               </div>
 
 
               <div id="ascent">
                 <span class="summaryLabel">Ascent:</span>
-                <span class="summaryField">{{activity.total_ascent|format_meters:user.get_profile.use_imperial}} {{user.get_profile.use_imperial|meters_or_feet_units}}</span>
+                <span class="summaryField">{{activity.total_ascent|format_meters:use_imperial}} {{use_imperial|meters_or_feet_units}}</span>
               </div>
 
 
               <div id="descent">
                 <span class="summaryLabel">Descent:</span>
-                <span class="summaryField">{{activity.total_descent|format_meters:user.get_profile.use_imperial}} {{user.get_profile.use_imperial|meters_or_feet_units}}</span>
+                <span class="summaryField">{{activity.total_descent|format_meters:use_imperial}} {{use_imperial|meters_or_feet_units}}</span>
               </div>
 
               <div id="rollingTime">
@@ -125,7 +70,7 @@ onload="onLoad();" onresize="onResize();"
 
               <div id="speed">
                 <span class="summaryLabel">Speed:</span>
-                <span class="summaryField">Avg: {{ activity.average_speed|kph_to_prefered_speed:user.get_profile.use_imperial }} {{user.get_profile.use_imperial|mph_or_kph_units}}, Max: {{ activity.maximum_speed|kph_to_prefered_speed:user.get_profile.use_imperial }} {{user.get_profile.use_imperial|mph_or_kph_units}}</span>
+                <span class="summaryField">Avg: {{ activity.average_speed|kph_to_prefered_speed:use_imperial }} {{use_imperial|mph_or_kph_units}}, Max: {{ activity.maximum_speed|kph_to_prefered_speed:use_imperial }} {{use_imperial|mph_or_kph_units}}</span>
               </div>
 
 
@@ -218,14 +163,14 @@ onload="onLoad();" onresize="onResize();"
   </tr>
   <tr>
     <td valign="top">
-      Altitude ({{user.get_profile.use_imperial|meters_or_feet_units}}):
+      Altitude ({{use_imperial|meters_or_feet_units}}):
       <div id="altitudechart" style="width: 430px; height: 200px"></div>
-      Speed ({{user.get_profile.use_imperial|mph_or_kph_units}}):
+      Speed ({{use_imperial|mph_or_kph_units}}):
 <div id="speedchart" style="width: 430px; height: 200px"></div>
 
     </td>
     <td>
-      Distance ({{user.get_profile.use_imperial|miles_or_km_units}}):
+      Distance ({{use_imperial|miles_or_km_units}}):
       <div id="distancechart" style="width: 430px; height: 200px"></div>
       Heart Rate (BPM):
       <div id="bpmchart" style="width: 430px; height: 200px"></div>
@@ -238,12 +183,64 @@ onload="onLoad();" onresize="onResize();"
 
 <br/>
 
+<script type="text/javascript">
+  google.load("maps", "2.x");
 
-<script id="source" language="javascript" type="text/javascript">
-  function onResize() {
-    var f = 1;
+  function showAddress(response, element_id) {
+    if (!response || response.Status.code != 200) {
+      document.getElementById(element_id).innerHTML = "Couldn't Reverse Geocode.  Error: " + response.Status.code;
+    } else {
+      place = response.Placemark[0];
+      document.getElementById(element_id).innerHTML = place.address;
+    }
   }
-  function onLoad() {
+
+  function initialize() {
+    var map = new google.maps.Map2(document.getElementById("map"));
+    map.setMapType(G_PHYSICAL_MAP);
+    map.setCenter(new google.maps.LatLng(0,0),0);
+    var sw = new google.maps.LatLng({{activity.sw_point}});
+    var ne = new google.maps.LatLng({{activity.ne_point}});
+    var bounds = new google.maps.LatLngBounds(sw, ne);
+    var mapZoomLevel = map.getBoundsZoomLevel(bounds);
+    var mapCenter = bounds.getCenter();
+    map.setCenter(mapCenter, mapZoomLevel);
+
+    var polyline1_1 = new google.maps.Polyline.fromEncoded({
+      weight: 4,
+      opacity: 0.6,
+      points: {{pts|safe}},
+      levels: {{levs|safe}},
+      zoomFactor: 2,
+      numLevels: 18
+    });
+    map.addOverlay(polyline1_1);
+    map.addControl(new google.maps.SmallMapControl());
+
+    var start_point = new GLatLng({{ activity.start_point }});
+    var mid_point = new GLatLng({{ activity.mid_point }});
+    var end_point = new GLatLng({{ activity.end_point }});
+    geocoder = new google.maps.ClientGeocoder();
+
+    geocoder.getLocations(start_point,
+      function(response) {
+        showAddress(response, 'start_location');
+      }
+      );
+    geocoder.getLocations(mid_point,
+      function(response) {
+        showAddress(response, 'mid_location');
+      }
+      );
+    geocoder.getLocations(end_point,
+      function(response) {
+      showAddress(response, 'end_location');
+      }
+    );
+  }
+  google.setOnLoadCallback(initialize);
+
+  function drawGraphs() {
     var eventSource = new Timeplot.DefaultEventSource();
 
     var timeGeometry = new Timeplot.DefaultTimeGeometry({
@@ -279,7 +276,8 @@ onload="onLoad();" onresize="onResize();"
     var altitudeInfo = [
       Timeplot.createPlotInfo({
         id: "plot1",
-        dataSource: new Timeplot.Processor(new Timeplot.ColumnSource(eventSource,1), Timeplot.Operator.average, { size: 5 }),
+        dataSource: new Timeplot.Processor(
+          new Timeplot.ColumnSource(eventSource,1), Timeplot.Operator.average, { size: 5 }),
         valueGeometry: altitudeGeometry,
         timeGeometry: timeGeometry,
         lineColor: "#ff0000",
@@ -349,9 +347,10 @@ onload="onLoad();" onresize="onResize();"
     bpmplot = Timeplot.create(document.getElementById("bpmchart"),
         bpmInfo);
 
-
     altitudeplot.loadText("/activity/data/{{activity.key}}", ",", eventSource);
-};
+  };
+google.setOnLoadCallback(drawGraphs);
+
 </script>
 
 

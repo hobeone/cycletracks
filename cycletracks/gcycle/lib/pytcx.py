@@ -32,7 +32,7 @@ def getTagVal(string, tag, value_match = '.+?', default=None):
 
 @memoized
 def make_tag_val_regex(tag):
-  return re.compile(r"<%s.+>\s*?<Value>\s*?(\d+?)\s*?</Value>\s*?</%s>" %
+  return re.compile(r"<%s(?:.+)?>\s*?<Value>\s*?(\d+?)\s*?</Value>\s*?</%s>" %
       (tag,tag), reopts)
 
 def getIntTagSubVal(string, tag, default=None):
@@ -90,6 +90,11 @@ def joinArrayOrNone(array, joinstr=','):
     array = None
   return array
 
+def fill_list(list, fill_data, amount):
+  list.extend(
+    [fill_data for i in xrange(0,amount)]
+  )
+  return list
 
 def parse_lap(start_time, lap_string):
   lap = lap_string
@@ -168,6 +173,8 @@ def parse_lap(start_time, lap_string):
     cad = getTagVal(trackpoint, 'Cadence', None)
     if cad:
       try:
+        if len(cadence_list) == 0 and len(timepoints) > 0:
+          cadence_list = fill_list(cadence_list, 0, len(timepoints)-1)
         cadence_list.append(int(cad))
       except ValueError, e:
         raise InvalidTCXFormat("Cadence must be an integer")
@@ -179,6 +186,8 @@ def parse_lap(start_time, lap_string):
 
     bpm = getIntTagSubVal(trackpoint, 'HeartRateBpm', None)
     if bpm:
+      if len(bpm_list) == 0 and len(timepoints) > 0:
+        bpm_list = fill_list(bpm_list, '0', len(timepoints)-1)
       bpm_list.append(str(bpm))
     else:
       if bpm_list:
@@ -186,14 +195,21 @@ def parse_lap(start_time, lap_string):
 
     alt = getTagVal(trackpoint, 'AltitudeMeters', None)
     if alt:
+      if len(altitude_list) == 0 and len(timepoints) > 0:
+        altitude_list = fill_list(altitude_list, float(alt), len(timepoints)-1)
       altitude_list.append(float(alt))
     else:
       if altitude_list:
         altitude_list.append(altitude_list[-1])
 
+
     lat = getTagVal(trackpoint, 'LatitudeDegrees', None)
     long = getTagVal(trackpoint, 'LongitudeDegrees', None)
     if lat and long:
+      if len(geo_points) == 0 and len(timepoints) > 0:
+        geo_points = fill_list(geo_points,
+            '%s,%s' % (lat,long),
+            len(timepoints)-1)
       geo_points.append('%s,%s' % (lat,long))
     else:
       if geo_points:

@@ -336,24 +336,40 @@ class Lap(BaseModel):
   # God, Django sucks monkey nuts:
   def is_valid(self):
     data_len = len(self.timepoints)
-    if len(self.bpm_list) != data_len:
-      raise db.NotSavedError("bpm_list doesn't have enough entries")
+    if len(self.bpm_list) != 0 and len(self.bpm_list) != data_len:
+      raise db.NotSavedError(
+          "bpm_list has the wrong number of entries (%i != %i)" %
+          (len(self.bpm_list), data_len)
+       )
 
     if len(self.altitude_list) != data_len:
-      raise db.NotSavedError("altitude_list doesn't have enough entries")
+      raise db.NotSavedError(
+          "altitude_list has the wrong number of entries (%i != %i)" %
+          (len(self.altitude_list), data_len)
+      )
 
     if len(self.speed_list) != data_len:
-      raise db.NotSavedError("speed_list doesn't have enough entries (%s != %s)" % (
-        len(self.speed_list), data_len))
+      raise db.NotSavedError(
+          "speed_list has the wrong number of entries (%s != %s)" % (
+            len(self.speed_list), data_len))
 
     if len(self.distance_list) != data_len:
-      raise db.NotSavedError("distance_list doesn't have enough entries")
+      raise db.NotSavedError(
+          "distance_list has the wrong number of entries (%i != %i)" %
+          (len(self.distance_list), data_len)
+      )
 
     if len(self.cadence_list) != data_len:
-      raise db.NotSavedError("cadence_list doesn't have enough entries")
+      raise db.NotSavedError(
+          "cadence_list has the wrong number of entries (%i != %i)" %
+          (len(self.cadence_list), data_len)
+      )
 
     if len(self.geo_points) != data_len:
-      raise db.NotSavedError("geo_points doesn't have enough entries")
+      raise db.NotSavedError(
+          "geo_points has the wrong number of entries (%i != %i)" %
+          (len(self.geo_points), data_len)
+      )
 
     return self
 

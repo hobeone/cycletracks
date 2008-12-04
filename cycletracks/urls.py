@@ -1,25 +1,25 @@
 from django.conf.urls.defaults import *
 
-from gcycle import views
+from gcycle import controllers
 
-handler500 = 'gcycle.views.handle_view_exception'
+handler500 = 'gcycle.controllers.site.handle_view_exception'
 urlpatterns = patterns('',
-  (r'^$', 'gcycle.views.main'),
-  (r'^mytracks/(?P<sorting>\S+)?$', 'gcycle.views.dashboard'),
-  (r'^upload/$', 'gcycle.views.upload'),
-  (r'^about/$', 'gcycle.views.about'),
-  (r'^admin/users/$', 'gcycle.admin.users'),
-  (r'^admin/dashboard/(?P<user>\S+)$', 'gcycle.views.dashboard'),
-  (r'^activity/show/(\S+)$', 'gcycle.activity.show'),
-  (r'^activity/data/(\S+)$', 'gcycle.activity.data'),
-  (r'^activity/source/(\S+)$', 'gcycle.activity.source'),
-  (r'^activity/public/(\S+)$', 'gcycle.activity.public'),
-  (r'^activity/delete/$', 'gcycle.activity.delete'),
-  (r'^activity/kml/(\S+)$', 'gcycle.activity.activity_kml'),
-  (r'^activity/update/$', 'gcycle.activity.update'),
-  (r'^activity/tag/(.+)$', 'gcycle.activity.tag'),
-  (r'^reports/(\S+)?$', 'gcycle.reports.report'),
-  (r'^report/data/(\S+)?$', 'gcycle.reports.data'),
-  (r'^user/settings/$', 'gcycle.user.settings'),
-  (r'^user/update/$', 'gcycle.user.update'),
+  (r'^$', 'gcycle.controllers.site.main'),
+  (r'^mytracks/(?P<sorting>\S+)?$', 'gcycle.controllers.activity.index'),
+  (r'^upload/$', 'gcycle.controllers.site.upload'),
+  (r'^about/$', 'gcycle.controllers.site.about'),
+  (r'^admin/users/$', 'gcycle.controllers.admin.users'),
+  (r'^admin/dashboard/(?P<user>\S+)$', 'gcycle.controllers.activity.index'),
+  (r'^activity/show/(\S+)$', 'gcycle.controllers.activity.show'),
+  (r'^activity/data/(\S+)$', 'gcycle.controllers.activity.data'),
+  (r'^activity/source/(\S+)$', 'gcycle.controllers.activity.source'),
+  (r'^activity/public/(\S+)$', 'gcycle.controllers.activity.public'),
+  (r'^activity/delete/$', 'gcycle.controllers.activity.delete'),
+  (r'^activity/kml/(\S+)$', 'gcycle.controllers.activity.activity_kml'),
+  (r'^activity/update/$', 'gcycle.controllers.activity.update'),
+  (r'^activity/tag/(.+)$', 'gcycle.controllers.activity.tag'),
+#  (r'^reports/(\S+)?$', 'gcycle.reports.report'),
+#  (r'^report/data/(\S+)?$', 'gcycle.reports.data'),
+  (r'^user/settings/$', 'gcycle.controllers.user.settings'),
+  (r'^user/update/$', 'gcycle.controllers.user.update'),
 )

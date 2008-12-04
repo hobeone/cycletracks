@@ -3,9 +3,9 @@ import datetime
 import os
 
 from gcycle.models import *
-from gcycle import views
-from gcycle import reports
-from gcycle import activity
+from gcycle.controllers import site
+from gcycle.controllers import reports
+from gcycle.controllers import activity
 from gcycle.lib import pytcx
 
 from google.appengine.api import datastore_errors

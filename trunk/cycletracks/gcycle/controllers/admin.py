@@ -17,12 +17,25 @@ def users(request):
 @auth_decorators.login_required
 def update_users(request):
   response = []
-  users = User.all()
-  users.filter('totals_updated_at <',
-      datetime.datetime.utcnow() - datetime.timedelta(days=1))
+  users = UserProfile.all()
   for u in users:
-    u.get_profile().update_totals()
+    u.update_totals()
     response.append('updated %s' % u)
+
+  return HttpResponse('<br/>'.join(response))
+
+@auth_decorators.login_required
+def update_acts(request):
+  response = []
+  for s in SourceDataFile.all():
+    s.delete()
+
+  for l in Lap.all():
+    l.delete()
+
+  for a in Activity.all():
+    a.delete()
+
 
   return HttpResponse('<br/>'.join(response))
 

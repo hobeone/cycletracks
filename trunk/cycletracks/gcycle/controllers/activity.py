@@ -21,19 +21,13 @@ from gcycle.lib.memoized import *
 
 def require_valid_activity(f):
   def wrapper(request, *args, **kw):
-    a = Activity.get(args[0])
+    a = Activity.get_by_id(int(args[0]))
     if a is None:
       return render_to_response(
           'error.html', {'error': "Activity doesn't exist."})
-    return f(request, *args, **kw)
+    return f(request, a)
 
   return wrapper
-
-
-@memoized
-def index_cache_key(user):
-  key = '%s-index' % str(user.key())
-  return key
 
 
 @auth_decorators.login_required
@@ -44,35 +38,23 @@ def index(request, sorting=None, user=None):
     user = User.get(user)
 
   if sorting is None: sorting = 'start_time'
-  cache_key = index_cache_key(user)
-  cached = memcache.get(cache_key)
-  if settings.DEBUG: cached = None
-  if cached is None or cached['sorting'] != sorting:
-    activity_query = Activity.all()
-    activity_query.ancestor(user)
-    activity_query.order('-%s' % sorting)
-    activities_exist = activity_query.count(1)
-    t = loader.get_template('dashboard.html')
-    c = Context({'user_activities' : activity_query,
-       'num_activities' :activities_exist,
-       'user_totals': user.get_profile(),
-       'user' : user,
-      })
-    rendered = t.render(c)
-    if not memcache.set(cache_key,
-        {'sorting': sorting, 'response': rendered}, 60*120):
-      logging.error("Memcache set failed for %s." % cache_key)
-    return HttpResponse(rendered)
-  else:
-    logging.debug('Got cached version of dashboard')
-    return HttpResponse(cached['response'])
-
+  activity_query = Activity.all()
+  activity_query.filter('user = ', user)
+  activity_query.order('-%s' % sorting)
+  activities_exist = activity_query.count(1)
+  return render_to_response(
+    'dashboard.html',
+    {'user_activities' : activity_query,
+     'num_activities' :activities_exist,
+     'user_totals': user.get_profile(),
+     'user' : user,
+    })
 
 @auth_decorators.login_required
 def tag(request, tag):
   """Like the index action but only shows activities with a certain tag"""
   acts = Activity.all()
-  acts.ancestor(request.user)
+  acts.filter('user =', request.user)
   acts.filter('tags =', tag)
   acts.order('-start_time')
 
@@ -84,7 +66,8 @@ def tag(request, tag):
         'user': request.user})
 
 
-def activity_kml(request, activity_id):
+@require_valid_activity
+def activity_kml(request, activity):
   """Convert the activity in to a kml file
 
   Args:
@@ -94,12 +77,10 @@ def activity_kml(request, activity_id):
   Returns:
   - rendered kml file
   """
-  a = Activity.get(activity_id)
   return HttpResponse(
       loader.render_to_string('activity/kml.html',
-        { 'points' : a.to_kml,
-          'user' : a.user,
-          'activity' : a}),
+        { 'user' : activity.user,
+          'activity' : activity}),
       mimetype='application/vnd.google-earth.kml+xml'
       )
 
@@ -107,7 +88,7 @@ def activity_kml(request, activity_id):
 def kml_location(request, activity):
   """Helper function to generate the link to an Activities kml url"""
   return ("http://%s/activity/kml/%s" % (
-    request.META['HTTP_HOST'], activity.key()))
+    request.META['HTTP_HOST'], activity.key().id()))
 
 def show_cache_key(activity, use_imperial):
   return '%s_%s' % (activity.key(), use_imperial)
@@ -123,6 +104,7 @@ def show_activity(request, activity):
   if activity_stats is None:
     activity_stats = {
       'activity' : activity,
+      'kml_location' : kml_location(request, activity),
       'use_imperial' : use_imperial,
       'pts': simplejson.dumps(activity.encoded_points),
       'levs' : simplejson.dumps(activity.encoded_levels),
@@ -132,32 +114,27 @@ def show_activity(request, activity):
 
 # So people don't have to login to see a public activity.
 @require_valid_activity
-def public(request, activity_id):
-  a = Activity.get(activity_id)
-
-  if not a.public:
+def public(request, activity):
+  if not activity.public:
     return render_to_response('error.html',
       {'error': "You are not allowed to see this activity. The activity doesn't belong to you and the owner hasn't made it public."})
 
-  return show_activity(request, a)
+  return show_activity(request, activity)
 
 
 @auth_decorators.login_required
 @require_valid_activity
-def show(request, activity_id):
-  a = Activity.get(activity_id)
-
-  if (a.safeuser != request.user and not a.public
+def show(request, activity):
+  if (activity.safeuser != request.user and not activity.public
       and not request.user.is_superuser):
     return render_to_response('error.html',
         {'error': "You are not allowed to see this activity.  The activity doesn't belong to you and the owner hasn't made it public."})
 
-  return show_activity(request, a)
+  return show_activity(request, activity)
 
 
 @require_valid_activity
-def source(request, activity_id):
-  activity = Activity.get(activity_id)
+def source(request, activity):
   if (activity.safeuser != request.user and not activity.public
       and not request.user.is_superuser):
     return render_to_response('error.html',
@@ -177,13 +154,13 @@ def data_cache_key(activity):
       )
 
 
-def data(request, activity_id):
+@require_valid_activity
+def data(request, activity):
   """Convert activity datasets into a text file usable by timeplot:
   date,altitude,speed,cadence,distance,bpm
 
   Requires a valid activity_id.
   """
-  activity = Activity.get(activity_id)
   if (activity.safeuser != request.user and not activity.public
       and not request.user.is_superuser):
     return render_to_response('error.html',
@@ -246,7 +223,7 @@ def update(request):
       else:
         activity_value = True
 
-    activity = Activity.get(activity_id)
+    activity = Activity.get_by_id(int(activity_id))
     if activity is None:
       return render_to_response(
           'error.html', {'error': "Activity doesn't exist."})
@@ -259,8 +236,6 @@ def update(request):
       if getattr(activity, activity_attribute) != activity_value:
         setattr(activity, activity_attribute, activity_value)
         activity.put()
-        if not memcache.delete(index_cache_key(request.user)):
-          logging.error("Memcache delete failed.")
       return HttpResponse(activity_value)
   except Exception, e:
     return HttpResponse('Error: %s' % e)
@@ -272,7 +247,7 @@ def delete(request):
     if 'activity_id' not in request.POST:
       return HttpResponseNotFound('No activity id given')
     activity_id = request.POST['activity_id']
-    a = Activity.get(activity_id)
+    a = Activity.get_by_id(int(activity_id))
     if a is None:
       return HttpResponseNotFound(
           "That activity doesn't exist")
@@ -282,8 +257,6 @@ def delete(request):
 
     a.delete()
     if not memcache.delete(str(a.key())):
-      logging.error("Memcache delete failed.")
-    if not memcache.delete(index_cache_key(request.user)):
       logging.error("Memcache delete failed.")
 
     return HttpResponse('')

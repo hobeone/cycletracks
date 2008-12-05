@@ -98,28 +98,6 @@ def tarerator(tfile):
   for f in files:
     yield tfile.extractfile(f).read()
 
-def activity_save(user, activity_dict):
-  """Save an activity and laps
-  Args:
-  - user: User instance, user who will own the activity
-  - activity_dict: dict as returned from parse_tcx()
-
-  Returns:
-  - Activity object key
-  """
-  activity = models.Activity(parent = user, user = user, **activity_dict)
-  akey = activity.put()
-  d = models.SourceDataFile(parent = activity,
-      data = activity_dict['tcxdata'],
-      activity = activity)
-  d.put()
-  for lap_dict in activity_dict['laps']:
-    lap = models.Lap(parent = activity, activity = activity, **lap_dict)
-    lap.put()
-
-  return akey
-
-
 def handle_uploaded_file(user, filedata, tags=[]):
   files = []
   # .zip
@@ -160,10 +138,9 @@ def handle_uploaded_file(user, filedata, tags=[]):
   for file in files:
     # fast fail:
     if models.Activity.hash_exists(md5.new(file).hexdigest(), user):
-      return HttpResponse('Error: Upload error:\n"An activity with the same source hash already exists"',
+      return HttpResponse(
+          'Error: Upload error:\n'
+          '"An activity with the same source hash already exists"',
         content_type='text/plain')
 
-    activities = pytcx.parse_tcx(file)
-    for act_dict in activities:
-      act_dict['tags'] = tags
-      db.run_in_transaction(activity_save, user, act_dict)
+    Activity.create_from_tcx(file, user, tags)

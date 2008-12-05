@@ -6,7 +6,6 @@ from gcycle.lib import pytcx
 import glob
 import pprint
 pp = pprint.PrettyPrinter(indent=2)
-from gcycle.controllers import site
 from appengine_django.auth.models import User
 from google.appengine.api import users
 import os
@@ -23,7 +22,7 @@ for file in files:
   print file
   stime = time.time()
   try:
-    site.handle_uploaded_file(user, open(file))
+    Activity.create_from_tcx(open(file).read(), user)
   except pytcx.TCXExpception, e:
     print e
   print '%.4f seconds' % (time.time() - stime)

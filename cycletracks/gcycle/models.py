@@ -106,18 +106,18 @@ class UserProfile(BaseModel):
   user = db.ReferenceProperty(User, required=True)
   use_imperial = db.BooleanProperty(default=False)
   tzoffset = db.IntegerProperty(default=0)
-  total_meters = db.FloatProperty()
-  total_time = db.IntegerProperty()
-  rolling_time = db.IntegerProperty()
-  average_speed = db.FloatProperty()
-  maximum_speed = db.FloatProperty()
-  average_cadence = db.IntegerProperty()
-  maximum_cadence = db.IntegerProperty()
-  average_bpm = db.IntegerProperty()
-  maximum_bpm = db.IntegerProperty()
-  total_ascent = db.FloatProperty()
-  total_descent = db.FloatProperty()
-  total_calories = db.FloatProperty()
+  total_meters = db.FloatProperty(default=0.0)
+  total_time = db.IntegerProperty(default=0)
+  rolling_time = db.IntegerProperty(default=0)
+  average_speed = db.FloatProperty(default=0.0)
+  maximum_speed = db.FloatProperty(default=0.0)
+  average_cadence = db.IntegerProperty(default=0)
+  maximum_cadence = db.IntegerProperty(default=0)
+  average_bpm = db.IntegerProperty(default=0)
+  maximum_bpm = db.IntegerProperty(default=0)
+  total_ascent = db.FloatProperty(default=0.0)
+  total_descent = db.FloatProperty(default=0.0)
+  total_calories = db.FloatProperty(default=0.0)
   totals_updated_at = db.DateTimeProperty()
 
   @property
@@ -142,7 +142,7 @@ class UserProfile(BaseModel):
 
   def update_totals(self):
     query = Activity.all()
-    query.filter('user = ', self)
+    query.filter('user = ', self.user)
     self.reset_totals()
     speeds = []
     cadences = []
@@ -213,7 +213,7 @@ class Activity(BaseModel):
   def hash_exists(cls, source_hash, user):
     q = Activity.all()
     q.filter('source_hash =', source_hash)
-    q.ancestor(user)
+    q.filter('user =', user)
     activity_count = q.count(1)
     return activity_count > 0
 

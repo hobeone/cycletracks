@@ -22,7 +22,8 @@ for file in files:
   print file
   stime = time.time()
   try:
-    Activity.create_from_tcx(open(file).read(), user)
+    act = Activity.create_from_tcx(open(file).read(), user)
+    act.user.get_profile().update_totals()
   except pytcx.TCXExpception, e:
     print e
   print '%.4f seconds' % (time.time() - stime)

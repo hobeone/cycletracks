@@ -15,7 +15,7 @@ from google.appengine.api import memcache
 from google.appengine.api import users
 from google.appengine.runtime import DeadlineExceededError
 
-from gcycle import models
+from gcycle.models import *
 from gcycle.controllers import activity
 from gcycle.lib import pytcx
 
@@ -54,17 +54,15 @@ def upload(request):
   if request.method == 'POST':
     form = UploadFileForm(request.POST, request.FILES)
     if form.is_valid():
-      cache_key = activity.index_cache_key(request.user)
-      if not memcache.delete(cache_key):
-        logging.error("Memcache delete failed.")
       try:
         tags = form.cleaned_data['tags']
         if tags:
           tags = tags.split(',')
           tags = map(unicode, tags)
           tags = map(unicode.strip, tags)
-        handle_uploaded_file(request.user, request.FILES['file'], tags=tags)
-        return HttpResponseRedirect('/mytracks/')
+        act = handle_uploaded_file(
+            request.user, request.FILES['file'], tags=tags)
+        return HttpResponseRedirect('/activity/show/%s' % act.key().id())
 
       except pytcx.TCXExpception, e:
         return render_to_response('error.html', {'error': e})
@@ -136,11 +134,6 @@ def handle_uploaded_file(user, filedata, tags=[]):
     files = [filedata.read()]
 
   for file in files:
-    # fast fail:
-    if models.Activity.hash_exists(md5.new(file).hexdigest(), user):
-      return HttpResponse(
-          'Error: Upload error:\n'
-          '"An activity with the same source hash already exists"',
-        content_type='text/plain')
-
-    Activity.create_from_tcx(file, user, tags)
+    act = Activity.create_from_tcx(file, user, tags)
+    act.user.get_profile().update_totals()
+    return act

@@ -12,89 +12,70 @@ indexes:
 
 # Unused in query history -- copied from input.
 - kind: Activity
-  ancestor: yes
-
-# Unused in query history -- copied from input.
-- kind: Activity
-  ancestor: yes
   properties:
+  - name: user
   - name: average_bpm
     direction: desc
 
 # Unused in query history -- copied from input.
 - kind: Activity
-  ancestor: yes
   properties:
+  - name: user
   - name: average_cadence
     direction: desc
 
 # Unused in query history -- copied from input.
 - kind: Activity
-  ancestor: yes
   properties:
+  - name: user
   - name: average_speed
     direction: desc
 
 # Unused in query history -- copied from input.
 - kind: Activity
-  ancestor: yes
   properties:
+  - name: user
   - name: name
     direction: desc
 
 # Unused in query history -- copied from input.
 - kind: Activity
-  ancestor: yes
   properties:
+  - name: user
   - name: rolling_time
     direction: desc
 
-# Unused in query history -- copied from input.
+# Used 18 times in query history.
 - kind: Activity
-  ancestor: yes
   properties:
-  - name: start_time
-
-# Unused in query history -- copied from input.
-- kind: Activity
-  ancestor: yes
-  properties:
+  - name: user
   - name: start_time
     direction: desc
 
 # Unused in query history -- copied from input.
 - kind: Activity
-  ancestor: yes
   properties:
-  - name: tag
-  - name: start_time
-    direction: desc
-
-# Unused in query history -- copied from input.
-- kind: Activity
-  ancestor: yes
-  properties:
-  - name: tags
-  - name: start_time
-    direction: desc
-
-# Unused in query history -- copied from input.
-- kind: Activity
-  ancestor: yes
-  properties:
+  - name: user
   - name: total_ascent
     direction: desc
 
 # Unused in query history -- copied from input.
 - kind: Activity
-  ancestor: yes
   properties:
+  - name: user
   - name: total_calories
+    direction: desc
+
+# Unused in query history -- copied from input.
+- kind: Activity
+  properties:
+  - name: user
+  - name: total_meters
     direction: desc
 
 # Unused in query history -- copied from input.
 - kind: Activity
   ancestor: yes
   properties:
-  - name: total_meters
+  - name: start_time
     direction: desc

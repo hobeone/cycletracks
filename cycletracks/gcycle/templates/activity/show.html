@@ -116,7 +116,7 @@
                   value_required: true,
                   field_type: "select",
                   select_options: "True, False",
-                  params: "activity_id={{activity.key}}&attribute=public",
+                  params: "activity_id={{activity.key.id}}&attribute=public",
                   });
                 </script>
               </div>
@@ -130,7 +130,7 @@
                   url: "/activity/update/",
                   params: "ajax=yes",
                   value_required: true,
-                  params: "activity_id={{activity.key}}&attribute=comment"
+                  params: "activity_id={{activity.key.id}}&attribute=comment"
                   });
                 </script>
               </div>
@@ -143,7 +143,7 @@
                   url: "/activity/update/",
                   params: "ajax=yes",
                   value_required: true,
-                  params: "activity_id={{activity.key}}&attribute=tags"
+                  params: "activity_id={{activity.key.id}}&attribute=tags"
                   });
                 </script>
               </div>
@@ -156,8 +156,8 @@
       <div>
         <a href="http://maps.google.com/maps?q={{kml_location}}&t=p">Bigger Map</a> -
         <a href="{{kml_location}}">Download KML</a> -
-        <a href="/activity/public/{{activity.key}}">Public Link</a> -
-        <a href="/activity/source/{{activity.key}}">Source TCX File</a>
+        <a href="/activity/public/{{activity.key.id}}">Public Link</a> -
+        <a href="/activity/source/{{activity.key.id}}">Source TCX File</a>
       </div>
     </td>
   </tr>
@@ -347,7 +347,7 @@
     bpmplot = Timeplot.create(document.getElementById("bpmchart"),
         bpmInfo);
 
-    altitudeplot.loadText("/activity/data/{{activity.key}}", ",", eventSource);
+    altitudeplot.loadText("/activity/data/{{activity.key.id}}", ",", eventSource);
   };
 google.setOnLoadCallback(drawGraphs);
 

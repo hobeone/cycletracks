@@ -17,8 +17,8 @@
 </thead>
 <tbody>
     {% for entry in user_activities %}
-    <tr id="activity_{{entry.key}}">
-      <td><a href="/activity/show/{{ entry.key }}">{{ entry.name }}</a><br/>{{entry.tags|link_tags|safe}}</td>
+    <tr id="activity_{{entry.key.id}}">
+      <td><a href="/activity/show/{{ entry.key.id }}">{{ entry.name }}</a><br/>{{entry.tags|link_tags|safe}}</td>
       <td>{{ entry.start_time|time_to_offset:user.get_profile.tzoffset|date:"n/j/y-H:i" }}<br/>{{ entry.end_time|time_to_offset:user.get_profile.tzoffset|date:"n/j/y-H:i" }}</td>
       <td>{{ entry.total_meters|meters_to_prefered_distance:user.get_profile.use_imperial}} {{user.get_profile.use_imperial|miles_or_km_units}}</td>
       <td>{{ entry.total_time|seconds_to_human_readable }}
@@ -30,7 +30,7 @@
       <td>{{ entry.average_speed|kph_to_prefered_speed:user.get_profile.use_imperial }} {{user.get_profile.use_imperial|mph_or_kph_units}}<br/> {{ entry.maximum_speed|kph_to_prefered_speed:user.get_profile.use_imperial }} {{user.get_profile.use_imperial|mph_or_kph_units}}</td>
       <td>{{ entry.total_ascent|format_meters:user.get_profile.use_imperial }} {{user.get_profile.use_imperial|meters_or_feet_units}}<br/> {{entry.total_descent|format_meters:user.get_profile.use_imperial}} {{user.get_profile.use_imperial|meters_or_feet_units}}</td>
       <td>{{ entry.total_calories|floatformat:"-2" }} Cal</td>
-      <td onclick="delete_activity('{{ entry.key }}')">delete</td>
+      <td onclick="delete_activity('{{ entry.key.id }}')">delete</td>
     </tr>
     {% endfor %}
   </tbody>

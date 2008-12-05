@@ -14,6 +14,7 @@ def meters_to_feet(meters):
 
 @register.filter
 def km_to_miles(value):
+  if value is None: value = 0
   return value * 0.621371192
 
 @register.filter

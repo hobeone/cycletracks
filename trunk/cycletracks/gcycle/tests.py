@@ -4,7 +4,6 @@ import os
 
 from gcycle.models import *
 from gcycle.controllers import site
-from gcycle.controllers import reports
 from gcycle.controllers import activity
 from gcycle.lib import pytcx
 
@@ -37,60 +36,6 @@ class testCsvListPropery(unittest.TestCase):
     c.put()
     c = testModel.get(key)
     self.failUnlessEqual(c.csv[-1], 'testing')
-
-
-class testReports(unittest.TestCase):
-  def setUp(self):
-    apiproxy_stub_map.apiproxy.GetStub('datastore_v3').Clear()
-    self.gaia_user = users.User('f@e.com')
-    self.app_user = User(user = self.gaia_user, username = 'bar')
-    self.app_user.put()
-
-  def testBuckets(self):
-    Activity(
-        user = self.app_user,
-        name = 'foo',
-        sport = 'bar',
-        total_meters = 4.0,
-        start_time = datetime.datetime(2008, 2, 22, 10),
-        end_time = datetime.datetime(2008, 2, 22, 12),
-        total_time = 7200,
-        rolling_time = 7200,
-        average_speed = 2.0,
-        maximum_speed = 2.0,
-        source_hash = 'foobar'
-    ).put()
-
-    Activity(
-        user = self.app_user,
-        name = 'foobar2',
-        sport = 'bar',
-        total_meters = 16.0,
-        start_time = datetime.datetime(2008, 4, 1, 10),
-        end_time = datetime.datetime(2008, 4, 1, 12),
-        total_time = 7200,
-        rolling_time = 7200,
-        average_speed = 4.0,
-        maximum_speed = 6.0,
-        source_hash = 'foobaz'
-    ).put()
-
-    acts = Activity.all().fetch(2)
-
-    firstdate = datetime.date(
-        year=acts[0].start_time.year,
-        month=acts[0].start_time.month,
-        day=acts[0].start_time.day)
-
-    lastdate = datetime.date(
-        year=acts[-1].start_time.year,
-        month=acts[-1].start_time.month,
-        day=acts[-1].start_time.day)
-
-    b = reports.createBuckets(firstdate, lastdate, 'week')
-    timegroup = lambda a: datetime.date(a.start_time.year,a.start_time.month,a.start_time.day)
-    acts = reports.group_by_attr(acts, timegroup)
-    r = reports.sum_by_buckets(acts, b)
 
 
 class testTcxParser(unittest.TestCase):
@@ -147,7 +92,7 @@ asd
     self.assertEqual(len(act['laps']), 2)
     self.assertEqual(act['total_calories'], 6754.0)
     self.assertAlmostEqual(act['total_meters'], 78993.84, 2)
-    self.assertEqual(act['total_time'], 964)
+    self.assertEqual(act['total_time'], 26164)
 
     u = User(username = 'test', user = users.User('test@ex.com'))
     u.put()
@@ -213,7 +158,6 @@ class UserTestCase(unittest.TestCase):
     self.assertEqual(UserProfile.all().count(), 0)
     profile = u.get_profile()
     self.assertEquals(profile.user, u)
-    self.assert_(profile.totals)
     self.assertEquals(profile.activity_count, 0)
 
   def tearDown(self):
@@ -226,6 +170,10 @@ class ActivityTestCase(unittest.TestCase):
     self.gaia_user = users.User('f@e.com')
     self.app_user = User(user = self.gaia_user, username = 'bar')
     self.app_user.put()
+
+  def testCreateFromTcx(self):
+    testfile = open('gcycle/test/valid_multi_lap.tcx').read()
+    a = Activity.create_from_tcx(testfile, self.app_user)
 
   def testActivityTags(self):
     a = Activity(
@@ -247,43 +195,6 @@ class ActivityTestCase(unittest.TestCase):
       print a.name
       print a.tags
 
-
-
-  def testActivityAddition(self):
-    a = Activity(
-        user = self.app_user,
-        name = 'foo',
-        sport = 'bar',
-        total_meters = 4.0,
-        start_time = datetime.datetime.utcnow(),
-        end_time = datetime.datetime.utcnow(),
-        total_time = 2,
-        rolling_time = 2,
-        average_speed = 2.0,
-        maximum_speed = 2.0,
-        source_hash = 'foobaz',
-    )
-
-    b = Activity(
-        user = self.app_user,
-        name = 'foo',
-        sport = 'bar',
-        total_meters = 16.0,
-        start_time = datetime.datetime.utcnow(),
-        end_time = datetime.datetime.utcnow(),
-        total_time = 4,
-        rolling_time = 4,
-        average_speed = 4.0,
-        maximum_speed = 6.0,
-        source_hash = 'foobaz',
-    )
-
-    added = (a + b)
-    self.assertEqual(added.average_speed, 3.3333333333333335)
-    self.assertEqual(added.total_time, 6)
-    added = a
-    for act in [b]:
-      added += act
 
   def test_safe_user(self):
     a = Activity(

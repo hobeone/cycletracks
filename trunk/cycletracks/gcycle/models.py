@@ -12,6 +12,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.db import models
 
 import bz2
+import datetime
 
 # Monkey patch appengine supplied User model.
 def new_getprofile(self):
@@ -105,56 +106,73 @@ class UserProfile(BaseModel):
   user = db.ReferenceProperty(User, required=True)
   use_imperial = db.BooleanProperty(default=False)
   tzoffset = db.IntegerProperty(default=0)
+  total_meters = db.FloatProperty()
+  total_time = db.IntegerProperty()
+  rolling_time = db.IntegerProperty()
+  average_speed = db.FloatProperty()
+  maximum_speed = db.FloatProperty()
+  average_cadence = db.IntegerProperty()
+  maximum_cadence = db.IntegerProperty()
+  average_bpm = db.IntegerProperty()
+  maximum_bpm = db.IntegerProperty()
+  total_ascent = db.FloatProperty()
+  total_descent = db.FloatProperty()
+  total_calories = db.FloatProperty()
+  totals_updated_at = db.DateTimeProperty()
 
   @property
   def activity_count(self):
     query = Activity.all()
-    query.ancestor(self)
+    query.filter('user = ', self)
     return query.count()
 
-  @property
-  def totals(self):
-    total_data = {
-        'total_meters' : 0,
-        'total_time' : 0,
-        'rolling_time' : 0,
-        'total_calories' : 0,
-        'average_speed' : [],
-        'maximum_speed' : 0,
-        'average_cadence' : [],
-        'maximum_cadence' : 0,
-        'average_bpm' : [],
-        'maximum_bpm' : 0,
-        'total_ascent' : 0,
-        'total_descent' : 0
-        }
+  def reset_totals(self):
+    self.total_meters = 0.0
+    self.total_time = 0
+    self.rolling_time = 0
+    self.average_speed = 0.0
+    self.maximum_speed = 0.0
+    self.average_cadence = 0
+    self.maximum_cadence = 0
+    self.average_bpm = 0
+    self.maximum_bpm = 0
+    self.total_ascent = 0.0
+    self.total_descent = 0.0
+    self.total_calories = 0.0
+
+  def update_totals(self):
     query = Activity.all()
-    query.ancestor(self.user)
+    query.filter('user = ', self)
+    self.reset_totals()
+    speeds = []
+    cadences = []
+    bpms = []
+    self.totals_updated_at = datetime.datetime.utcnow()
     for activity in query:
-      total_data['total_meters'] += activity.total_meters
-      total_data['total_time'] += activity.total_time
-      total_data['rolling_time'] += activity.rolling_time
-      total_data['total_calories'] += activity.total_calories
-      total_data['total_ascent'] += activity.total_ascent
-      total_data['total_descent'] += activity.total_descent
+      self.total_meters += activity.total_meters
+      self.total_time += activity.total_time
+      self.rolling_time += activity.rolling_time
+      self.total_calories += activity.total_calories
+      self.total_ascent += activity.total_ascent
+      self.total_descent += activity.total_descent
 
-      total_data['average_speed'].append(activity.average_speed)
-      if activity.maximum_speed > total_data['maximum_speed']:
-        total_data['maximum_speed'] = activity.maximum_speed
+      speeds.append(activity.average_speed)
+      if activity.maximum_speed > self.maximum_speed:
+        self.maximum_speed = activity.maximum_speed
 
-      total_data['average_cadence'].append(activity.average_cadence)
-      if activity.maximum_cadence > total_data['maximum_cadence']:
-        total_data['maximum_cadence'] = activity.maximum_cadence
+      cadences.append(activity.average_cadence)
+      if activity.maximum_cadence > self.maximum_cadence:
+        self.maximum_cadence = activity.maximum_cadence
 
-      total_data['average_bpm'].append(activity.average_bpm)
-      if activity.maximum_bpm > total_data['maximum_bpm']:
-        total_data['maximum_bpm'] = activity.maximum_bpm
+      bpms.append(activity.average_bpm)
+      if activity.maximum_bpm > self.maximum_bpm:
+        self.maximum_bpm = activity.maximum_bpm
 
+    self.average_speed = average(speeds, 0.0)
+    self.average_cadence = int(average(cadences))
+    self.average_bpm = int(average(bpms))
+    return self.put()
 
-    total_data['average_speed'] = average(total_data['average_speed'])
-    total_data['average_cadence'] = average(total_data['average_cadence'])
-    total_data['average_bpm'] = average(total_data['average_bpm'])
-    return total_data
 
 class Activity(BaseModel):
   user = db.ReferenceProperty(User, required=True)
@@ -164,7 +182,6 @@ class Activity(BaseModel):
   start_time = db.DateTimeProperty(required=True)
   end_time = db.DateTimeProperty(required=True)
   total_time = db.IntegerProperty(required=True)
-  # verify rolling time > 0 and < total_time
   rolling_time = db.IntegerProperty(required=True)
   average_speed = db.FloatProperty(required=True)
   maximum_speed = db.FloatProperty(required=True)
@@ -172,6 +189,8 @@ class Activity(BaseModel):
   maximum_cadence = db.IntegerProperty(default=0)
   average_bpm = db.IntegerProperty(default=0)
   maximum_bpm = db.IntegerProperty(default=0)
+  total_ascent = db.FloatProperty(default=0.0)
+  total_descent = db.FloatProperty(default=0.0)
   total_calories = db.FloatProperty(default=0.0)
   comment = db.StringProperty()
   public = db.BooleanProperty(default=False)
@@ -182,10 +201,13 @@ class Activity(BaseModel):
   start_point = db.GeoPtProperty()
   mid_point = db.GeoPtProperty()
   end_point = db.GeoPtProperty()
-  total_ascent = db.FloatProperty(default=0.0)
-  total_descent = db.FloatProperty(default=0.0)
+
   source_hash = db.StringProperty(required=True)
   tags = AutoStringListProperty()
+
+  created_at = db.DateTimeProperty(auto_now_add=True)
+  updated_at = db.DateTimeProperty(auto_now=True)
+  parsed_at = db.DateTimeProperty(auto_now_add=True)
 
   @classmethod
   def hash_exists(cls, source_hash, user):
@@ -195,13 +217,22 @@ class Activity(BaseModel):
     activity_count = q.count(1)
     return activity_count > 0
 
+  def is_valid(self):
+    # TODO: when app engine bigtable libs pull their heads out, add real
+    # validation
+    if not self.is_saved():
+      if Activity.hash_exists(self.source_hash, self.user):
+        raise db.NotSavedError(
+          "An activity with the same source hash already exists")
+    if self.rolling_time > self.total_time:
+      raise db.NotSavedError("rolling time > total_time(%i != %i)" %
+        (self.rolling_time, self.total_time)
+      )
 
   def put(self):
-    if(Activity.hash_exists(self.source_hash, self.user)
-        and not self.is_saved()):
-      raise db.NotSavedError(
-          "An activity with the same source hash already exists")
-    super(Activity, self).put()
+    self.is_valid()
+    return_status = super(Activity, self).put()
+    return return_status
 
 
   def delete(self):
@@ -209,6 +240,56 @@ class Activity(BaseModel):
     to_del.extend(self.lap_set)
     to_del.extend(self.sourcedatafile_set)
     return db.delete(to_del)
+
+
+  def reparse(self):
+    source = self.sourcedatafile_set.get()
+    if source is None:
+      raise db.NotSavedError('no source file to reparse')
+
+    laps = self.lap_set.fetch(self.lap_set.count())
+    return db.run_in_transaction(self._reparse, source, laps)
+
+  def _reparse(self, source, laps):
+    activity_dict = pytcx.parse_tcx(source.data)[0]
+    for k,v in activity_dict.iteritems():
+      if k in self.fields():
+        setattr(self,k,v)
+    self.parsed_at = datetime.datetime.utcnow()
+    self.put()
+
+    db.delete(laps)
+    for lap_dict in activity_dict['laps']:
+      lap = Lap(activity = self, **lap_dict)
+      lap.put()
+
+
+  @classmethod
+  def create_from_tcx(self, tcx_data, user, tags = []):
+    return db.run_in_transaction(
+        self._create_from_tcx, tcx_data, user, tags
+    )
+
+  @classmethod
+  def _create_from_tcx(self, tcx_data, user, tags = []):
+    act_dict = pytcx.parse_tcx(tcx_data)[0]
+    activity = Activity(user = user, **act_dict)
+    activity.put()
+    d = SourceDataFile(
+        parent = activity,
+        data = tcx_data,
+        activity = activity
+    )
+    d.put()
+    for lap_dict in act_dict['laps']:
+      lap = Lap(
+        parent = activity,
+        activity = activity,
+        **lap_dict
+      )
+      lap.put()
+    return activity
+
 
   @property
   def safeuser(self):
@@ -273,41 +354,12 @@ class Activity(BaseModel):
     points =  ['%s,%s,0' % (l[1],l[0]) for l in [l.split(',') for l in points]]
     return ' '.join(points)
 
-  def __add__(self, other):
-    if not isinstance(other, self.__class__):
-      raise NotImplemented, ('%s only supports addition to %s' %
-          (self.__class__, self.__class))
-    added = {}
-    for p in ['average_bpm', 'average_cadence', 'average_speed']:
-      added[p] = self._add_averages(other, p)
-    added['start_point'] = other.start_point
-    added['end_point'] = other.end_point
-    added['mid_point'] = other.start_point
-
-    added['start_time'] = self.start_time
-    added['end_time'] = other.end_time
-    added['sport'] = self.sport
-    added['name'] = self.name
-    added['user'] = self.user
-    added['source_hash'] = 'temp'
-
-    for p in ['maximum_bpm', 'maximum_speed', 'maximum_cadence']:
-      added[p] = max([getattr(self,p), getattr(other,p)])
-
-    for p in ['rolling_time', 'total_calories', 'total_meters', 'total_time']:
-      added[p] = sum([getattr(self,p), getattr(other,p)])
-
-    return Activity(**added)
-
-
-  def _add_averages(self,other,prop):
-    """Add averages weighted by rolling time"""
-    return (getattr(self,prop) * self.rolling_time + getattr(other,prop) * other.rolling_time) / (self.rolling_time + other.rolling_time)
 
 
 class SourceDataFile(BaseModel):
   activity = db.ReferenceProperty(Activity, required=True)
   data = BzipBlobProperty(required=True)
+
 
 class Lap(BaseModel):
   activity = db.ReferenceProperty(Activity, required=True)
@@ -374,8 +426,8 @@ class Lap(BaseModel):
     return self
 
   def put(self):
-      self.is_valid()
-      return super(Lap, self).put()
+    self.is_valid()
+    return super(Lap, self).put()
 
   @property
   @memoized

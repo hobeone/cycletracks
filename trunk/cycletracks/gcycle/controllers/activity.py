@@ -55,7 +55,7 @@ def index(request, sorting=None, user=None):
     t = loader.get_template('dashboard.html')
     c = Context({'user_activities' : activity_query,
        'num_activities' :activities_exist,
-       'user_totals': user.get_profile().totals,
+       'user_totals': user.get_profile(),
        'user' : user,
       })
     rendered = t.render(c)

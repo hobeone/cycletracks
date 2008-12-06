@@ -23,8 +23,7 @@ def require_valid_activity(f):
   def wrapper(request, *args, **kw):
     a = Activity.get_by_id(int(args[0]))
     if a is None:
-      return render_to_response(
-          'error.html', {'error': "Activity doesn't exist."})
+      raise Http404
     return f(request, a)
 
   return wrapper
@@ -116,8 +115,7 @@ def show_activity(request, activity):
 @require_valid_activity
 def public(request, activity):
   if not activity.public:
-    return render_to_response('error.html',
-      {'error': "You are not allowed to see this activity. The activity doesn't belong to you and the owner hasn't made it public."})
+    return non_public_activity()
 
   return show_activity(request, activity)
 
@@ -127,8 +125,7 @@ def public(request, activity):
 def show(request, activity):
   if (activity.safeuser != request.user and not activity.public
       and not request.user.is_superuser):
-    return render_to_response('error.html',
-        {'error': "You are not allowed to see this activity.  The activity doesn't belong to you and the owner hasn't made it public."})
+    return non_public_activity()
 
   return show_activity(request, activity)
 
@@ -137,9 +134,11 @@ def show(request, activity):
 def source(request, activity):
   if (activity.safeuser != request.user and not activity.public
       and not request.user.is_superuser):
-    return render_to_response('error.html',
-        {'error': ("You are not allowed to see this activity. The activity doesn't belong to you and the owner hasn't made it public.")})
+    return non_public_activity()
 
+  sourcedata = activity.sourcedatafile_set.get()
+  if sourcedata is None:
+    raise Http404("This activity doesn't have a source file")
   return HttpResponse(
       activity.sourcedatafile_set[0].data,
       mimetype='text/plain',
@@ -153,6 +152,13 @@ def data_cache_key(activity):
       activity.user.get_profile().use_imperial
       )
 
+def non_public_activity():
+  return HttpResponseForbidden(
+      "You are not allowed to see this activity. The activity doesn't"
+      "belong to you and the owner hasn't made it public."
+  )
+
+
 
 @require_valid_activity
 def data(request, activity):
@@ -163,8 +169,7 @@ def data(request, activity):
   """
   if (activity.safeuser != request.user and not activity.public
       and not request.user.is_superuser):
-    return render_to_response('error.html',
-        {'error': ("You are not allowed to see this activity. The activity doesn't belong to you and the owner hasn't made it public.")})
+    return non_public_activity()
 
   activity_data = memcache.get(data_cache_key(activity))
   if settings.DEBUG: activity_data = None
@@ -225,12 +230,10 @@ def update(request):
 
     activity = Activity.get_by_id(int(activity_id))
     if activity is None:
-      return render_to_response(
-          'error.html', {'error': "Activity doesn't exist."})
+      raise Http404
 
     if activity.user != request.user:
-      return render_to_response('error.html',
-        {'error': "You are not allowed to edit this activity"})
+      return HttpResponseForbidden('')
 
     if activity_attribute in UPDATEABLE_ACTIVITY_ATTRIBUTES:
       if getattr(activity, activity_attribute) != activity_value:
@@ -249,11 +252,9 @@ def delete(request):
     activity_id = request.POST['activity_id']
     a = Activity.get_by_id(int(activity_id))
     if a is None:
-      return HttpResponseNotFound(
-          "That activity doesn't exist")
+      raise Http404
     if request.user != a.user:
-      return HttpResponseForbidden(
-          'You are not allowed to delete this activity')
+      return HttpResponseForbidden('')
 
     a.delete()
     if not memcache.delete(str(a.key())):

@@ -67,11 +67,16 @@ class CsvListProperty(db.Property):
   def validate(self, value):
     if value is not None and not isinstance(value, list):
       try:
-        value = list(value)
+        if isinstance(value, str):
+          value = self.make_value_from_datastore(value)
+        else:
+          value = list(value)
       except TypeError, err:
         raise BadValueError('Property %s must be convertible '
                             'to a list instance (%s)' % (self.name, err))
-    value = map(self.cast_type,value)
+
+    if value is not None:
+      value = map(self.cast_type,value)
     value = super(CsvListProperty, self).validate(value)
     if value is not None and not isinstance(value, list):
       raise BadValueError('Property %s must be a Text instance' % self.name)
@@ -80,7 +85,7 @@ class CsvListProperty(db.Property):
   def get_value_for_datastore(self, model_instance):
     value = super(CsvListProperty, self).get_value_for_datastore(
         model_instance)
-    if len(value) == 0:
+    if value is None or len(value) == 0:
       return None
     return datastore_types.Text(self.split_on.join(map(str,value)))
 
@@ -388,36 +393,36 @@ class Lap(BaseModel):
   # God, Django sucks monkey nuts:
   def is_valid(self):
     data_len = len(self.timepoints)
-    if len(self.bpm_list) != 0 and len(self.bpm_list) != data_len:
+    if self.bpm_list and len(self.bpm_list) != 0 and len(self.bpm_list) != data_len:
       raise db.NotSavedError(
           "bpm_list has the wrong number of entries (%i != %i)" %
           (len(self.bpm_list), data_len)
        )
 
-    if len(self.altitude_list) != data_len:
+    if self.altitude_list and len(self.altitude_list) != data_len:
       raise db.NotSavedError(
           "altitude_list has the wrong number of entries (%i != %i)" %
           (len(self.altitude_list), data_len)
       )
 
-    if len(self.speed_list) != data_len:
+    if self.speed_list and len(self.speed_list) != data_len:
       raise db.NotSavedError(
           "speed_list has the wrong number of entries (%s != %s)" % (
             len(self.speed_list), data_len))
 
-    if len(self.distance_list) != data_len:
+    if self.distance_list and len(self.distance_list) != data_len:
       raise db.NotSavedError(
           "distance_list has the wrong number of entries (%i != %i)" %
           (len(self.distance_list), data_len)
       )
 
-    if len(self.cadence_list) != data_len:
+    if self.cadence_list and len(self.cadence_list) != data_len:
       raise db.NotSavedError(
           "cadence_list has the wrong number of entries (%i != %i)" %
           (len(self.cadence_list), data_len)
       )
 
-    if len(self.geo_points) != data_len:
+    if self.geo_points and len(self.geo_points) != data_len:
       raise db.NotSavedError(
           "geo_points has the wrong number of entries (%i != %i)" %
           (len(self.geo_points), data_len)

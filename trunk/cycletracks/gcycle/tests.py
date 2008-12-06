@@ -19,6 +19,10 @@ from django.test.client import Client
 
 import pprint
 pp = pprint.PrettyPrinter(indent=2)
+
+# Other test files
+from gcycle.test.test_activity_controller import *
+
 class testModel(BaseModel):
   csv = CsvListProperty(str)
 
@@ -114,29 +118,6 @@ asd
 
     self.assertEqual(a.total_ascent, 0)
     self.assertAlmostEqual(a.total_descent, 18.263, 2)
-
-class testMainViews(unittest.TestCase):
-  def setUp(self):
-    os.environ['USER_EMAIL'] = 'test@unitttest.com'
-    self.c = Client()
-
-  def testFrontPageAutoSignup(self):
-    self.assertEqual(User.all().count(), 0)
-    response = self.c.get('/')
-    self.assertEqual(302,response.status_code)
-    self.assertEqual(User.all().count(), 1)
-
-  def testFrontPageRealUser(self):
-    self.app_user = User(user = users.get_current_user(), username = 'bar')
-    self.app_user.put()
-    response = self.c.get('/')
-    self.assertEqual(302,response.status_code)
-    self.assert_('http://testserver/mytracks/' in str(response))
-
-  def tearDown(self):
-    for u in User.all():
-      u.delete()
-
 
 class UserTestCase(unittest.TestCase):
   def test_required_fields(self):

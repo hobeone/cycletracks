@@ -155,7 +155,7 @@
                     <span class="summaryField" id="public_flag">{{ activity.public }}</span>
                     <script type="text/javascript">
                       $("#public_flag").editInPlace({
-                      url: "/activity/update/",
+                      url: "/a/"+{{activity.key.id}},
                       params: "ajax=yes",
                       value_required: true,
                       field_type: "select",
@@ -174,7 +174,7 @@
                     <span class="summaryField" id="editable_comment">{{ activity.comment }}</span>
                     <script type="text/javascript">
                       $("#editable_comment").editInPlace({
-                      url: "/activity/update/",
+                      url: "/a/" + {{activity.key.id}},
                       params: "ajax=yes",
                       value_required: true,
                       params: "activity_id={{activity.key.id}}&attribute=comment"
@@ -190,7 +190,7 @@
                     <span class="summaryField" id="editable_tags">{{ activity.tags|join:", "}}</span>
                     <script type="text/javascript">
                       $("#editable_tags").editInPlace({
-                      url: "/activity/update/",
+                      url: "/a/" + {{activity.key.id}},
                       params: "ajax=yes",
                       value_required: true,
                       params: "activity_id={{activity.key.id}}&attribute=tags"
@@ -207,9 +207,9 @@
       <div id="map" style="width: 460px; height: 400px"></div>
       <div>
         <a href="http://maps.google.com/maps?q={{kml_location}}&t=p">Bigger Map</a> -
-        <a href="{{kml_location}}">Download KML</a> -
-        <a href="/activity/public/{{activity.key.id}}">Public Link</a> -
-        <a href="/activity/source/{{activity.key.id}}">Source TCX File</a>
+        <a href="{% url activity_kml activity.key.id %}">Download KML</a> -
+        <a href="{% url activity_public activity.key.id %}">Public Link</a> -
+        <a href="{% url activity_source activity.key.id %}">Source File</a>
       </div>
     </td>
   </tr>
@@ -399,7 +399,7 @@
     bpmplot = Timeplot.create(document.getElementById("bpmchart"),
         bpmInfo);
 
-    altitudeplot.loadText("/activity/data/{{activity.key.id}}", ",", eventSource);
+    altitudeplot.loadText("{% url activity_data activity.key.id %}", ",", eventSource);
   };
 google.setOnLoadCallback(drawGraphs);
 

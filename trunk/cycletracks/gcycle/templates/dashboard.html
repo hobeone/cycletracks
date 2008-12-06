@@ -4,25 +4,7 @@
 {% block title %}CycleTracks Dashboard{% endblock %}
 
 {% block extra_head %}
-<script type="text/javascript">
-  function delete_activity(id) {
-    if (confirm('Are you sure?'))
-    {
-    $.ajax({
-        url: '/activity/delete/',
-        type: 'POST',
-        timeout: 4000,
-        data: {'activity_id':id},
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          alert('Error Deleting Activity ' + id +': ' + textStatus)
-        },
-        success: function(response){
-          $('#activity_'+id).fadeOut(500)
-        }
-    });
-    }
-  };
-</script>
+
 {% endblock %}
 
 {% block content %}

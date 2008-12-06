@@ -295,6 +295,9 @@ class Activity(BaseModel):
       lap.put()
     return activity
 
+  @models.permalink
+  def get_absolute_url(self):
+    return ("activity_show", [self.key().id()])
 
   @property
   def safeuser(self):

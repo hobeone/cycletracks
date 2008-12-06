@@ -38,19 +38,6 @@ class TestActivityController(TestCase):
     self.assertContains(response, 'ActivityOne', status_code=200)
     self.assertTemplateUsed(response, 'dashboard.html')
 
-  def test_index_shows_error_if_no_activity_exists(self):
-    user_with_no_activities = User.all().filter('username =', 'joe').get()
-    assert user_with_no_activities is not None
-    assert user_with_no_activities.get_profile().activity_count == 0
-    os.environ['USER_EMAIL'] = user_with_no_activities.user.email()
-
-    response = self.client.get("/mytracks/")
-    self.assertContains(response,
-        "You haven't uploaded any activities",
-        status_code=200)
-    self.assertContains(response, "joe's tracks")
-    self.assertTemplateUsed(response, 'dashboard.html')
-
 
   def test_shows_activity_on_valid_id(self):
     activity = models.Activity.all().get()

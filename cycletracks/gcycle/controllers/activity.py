@@ -6,6 +6,7 @@ from django.template import loader, Context
 
 from django.utils import simplejson
 from django.contrib.auth import decorators as auth_decorators
+from django.core.paginator import Paginator, InvalidPage, EmptyPage
 
 from google.appengine.api import datastore_errors
 from google.appengine.api import memcache
@@ -28,7 +29,6 @@ def require_valid_activity(f):
 
   return wrapper
 
-
 @auth_decorators.login_required
 def index(request, sorting=None, user=None):
   if user is None:
@@ -36,15 +36,31 @@ def index(request, sorting=None, user=None):
   else:
     user = User.get(user)
 
-  if sorting is None: sorting = 'start_time'
-  activity_query = Activity.all()
-  activity_query.filter('user = ', user)
-  activity_query.order('-%s' % sorting)
-  activities_exist = activity_query.count(1)
+  if sorting is None or sorting not in Activity.properties():
+    sorting = 'start_time'
+
+  activity_query = Activity.gql(
+    'WHERE user = :1 ORDER BY %s DESC' % sorting, user
+  )
+  paginator = Paginator(activity_query, 15)
+  # Make sure page request is an int. If not, deliver first page.
+  try:
+    page = int(request.GET.get('page', '1'))
+  except ValueError:
+    page = 1
+  # If page request  is out of range, deliver last page of results.
+  try:
+    records = paginator.page(page)
+  except (EmptyPage, InvalidPage):
+    records = paginator.page(paginator.num_pages)
+
+  #activity_query = Activity.all()
+  #activity_query.filter('user = ', user)
+  #activity_query.order('-%s' % sorting)
+  #activities_exist = activity_query.count(1)
   return render_to_response(
     'dashboard.html',
-    {'user_activities' : activity_query,
-     'num_activities' :activities_exist,
+    {'records' : records,
      'user_totals': user.get_profile(),
      'user' : user,
     })

@@ -2,7 +2,7 @@ from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 from django.http import HttpResponseServerError
 from django.template import loader, Context
-
+from django.core.urlresolvers import reverse
 from django.template.loader import render_to_string
 from django.shortcuts import render_to_response
 from django import forms
@@ -38,7 +38,7 @@ def handle_view_exception(request):
 
 @auth_decorators.login_required
 def main(request):
-  return HttpResponseRedirect('/mytracks/')
+  return HttpResponseRedirect(reverse('activity_index'))
 
 
 def about(request):
@@ -62,7 +62,7 @@ def upload(request):
           tags = map(unicode.strip, tags)
         act = handle_uploaded_file(
             request.user, request.FILES['file'], tags=tags)
-        return HttpResponseRedirect('/activity/show/%s' % act.key().id())
+        return HttpResponseRedirect(a.get_absolute_url())
 
       except pytcx.TCXExpception, e:
         return render_to_response('error.html', {'error': e})

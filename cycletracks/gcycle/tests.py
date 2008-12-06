@@ -152,6 +152,24 @@ class ActivityTestCase(unittest.TestCase):
     self.app_user = User(user = self.gaia_user, username = 'bar')
     self.app_user.put()
 
+  def testPermalink(self):
+    a = Activity(
+        user = self.app_user,
+        name = 'foo',
+        sport = 'bar',
+        total_meters = 4.0,
+        start_time = datetime.datetime.utcnow(),
+        end_time = datetime.datetime.utcnow(),
+        total_time = 2,
+        rolling_time = 2,
+        average_speed = 2.0,
+        maximum_speed = 2.0,
+        source_hash = 'foobaz',
+    )
+    a.tags = "foo, bar"
+    a.put()
+    print a.get_absolute_url()
+
   def testCreateFromTcx(self):
     testfile = open('gcycle/test/valid_multi_lap.tcx').read()
     a = Activity.create_from_tcx(testfile, self.app_user)

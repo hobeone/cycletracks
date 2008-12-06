@@ -7,12 +7,12 @@ from django.template import loader, Context
 from django.utils import simplejson
 from django.contrib.auth import decorators as auth_decorators
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
+from django.core.urlresolvers import reverse
 
 from google.appengine.api import datastore_errors
 from google.appengine.api import memcache
-from google.appengine.api import urlfetch
+from google.appengine.api import users
 
-import urllib
 import logging
 import datetime
 
@@ -54,10 +54,6 @@ def index(request, sorting=None, user=None):
   except (EmptyPage, InvalidPage):
     records = paginator.page(paginator.num_pages)
 
-  #activity_query = Activity.all()
-  #activity_query.filter('user = ', user)
-  #activity_query.order('-%s' % sorting)
-  #activities_exist = activity_query.count(1)
   return render_to_response(
     'dashboard.html',
     {'records' : records,
@@ -82,7 +78,7 @@ def tag(request, tag):
 
 
 @require_valid_activity
-def activity_kml(request, activity):
+def kml(request, activity):
   """Convert the activity in to a kml file
 
   Args:
@@ -102,8 +98,8 @@ def activity_kml(request, activity):
 
 def kml_location(request, activity):
   """Helper function to generate the link to an Activities kml url"""
-  return ("http://%s/activity/kml/%s" % (
-    request.META['HTTP_HOST'], activity.key().id()))
+  return ("http://%s%s" % (
+    request.get_host(), reverse('activity_kml', args=[activity.key().id()])))
 
 def show_cache_key(activity, use_imperial):
   return '%s_%s' % (activity.key(), use_imperial)
@@ -139,11 +135,18 @@ def public(request, activity):
 @auth_decorators.login_required
 @require_valid_activity
 def show(request, activity):
-  if (activity.safeuser != request.user and not activity.public
-      and not request.user.is_superuser):
-    return non_public_activity()
+  if request.method == 'GET':
+    if (activity.safeuser != request.user and not activity.public
+        and not request.user.is_superuser):
+      return non_public_activity()
+    return show_activity(request, activity)
 
-  return show_activity(request, activity)
+  elif request.method == 'DELETE':
+    return delete(request, activity)
+
+  elif request.method == 'POST':
+    return update(request, activity)
+
 
 
 @require_valid_activity
@@ -231,51 +234,40 @@ def data(request, activity):
 UPDATEABLE_ACTIVITY_ATTRIBUTES = ['comment', 'name', 'public', 'tags']
 
 @auth_decorators.login_required
-def update(request):
+def update(request, activity):
   try:
-    activity_id = request.POST['activity_id']
     activity_attribute = request.POST['attribute']
     activity_value = request.POST['update_value']
+  except KeyError, e:
+    return HttpResponseBadRequest("Invalid Request")
 
-    # LAME
-    if activity_attribute == 'public':
-      if activity_value == 'False':
-        activity_value = False
-      else:
-        activity_value = True
+  # LAME
+  if activity_attribute == 'public':
+    if activity_value == 'False':
+      activity_value = False
+    else:
+      activity_value = True
 
-    activity = Activity.get_by_id(int(activity_id))
-    if activity is None:
-      raise Http404
+  if activity.user != request.user:
+    return HttpResponseForbidden('')
 
-    if activity.user != request.user:
-      return HttpResponseForbidden('')
-
-    if activity_attribute in UPDATEABLE_ACTIVITY_ATTRIBUTES:
-      if getattr(activity, activity_attribute) != activity_value:
-        setattr(activity, activity_attribute, activity_value)
-        activity.put()
-      return HttpResponse(activity_value)
-  except Exception, e:
-    return HttpResponse('Error: %s' % e)
+  if activity_attribute in UPDATEABLE_ACTIVITY_ATTRIBUTES:
+    if getattr(activity, activity_attribute) != activity_value:
+      setattr(activity, activity_attribute, activity_value)
+      activity.put()
+    return HttpResponse(activity_value)
 
 
 @auth_decorators.login_required
-def delete(request):
-  if request.method == 'POST':
-    if 'activity_id' not in request.POST:
-      return HttpResponseNotFound('No activity id given')
-    activity_id = request.POST['activity_id']
-    a = Activity.get_by_id(int(activity_id))
-    if a is None:
-      raise Http404
-    if request.user != a.user:
+def delete(request, activity):
+  if request.method == 'DELETE':
+    if request.user != activity.user:
       return HttpResponseForbidden('')
 
-    a.delete()
-    if not memcache.delete(str(a.key())):
+    activity.delete()
+    if not memcache.delete(str(activity.key())):
       logging.error("Memcache delete failed.")
 
     return HttpResponse('')
   else:
-    return HttpResponse('Must use POST')
+    return HttpResponse('Must use DELETE')

@@ -48,7 +48,7 @@
   <td>Calories:</td><td>{{ lap.calories|floatformat:"-2" }}</td>
 </tr>
 </table>
-<a href="http://cycletracks.appspot.com/activity/show/{{activity.key}}">View at CycleTracks</a>
+<a href="http://cycletracks.appspot.com/{{ activity.get_absolute_url }}">View at CycleTracks</a>
 ]]>
 </description>
   <styleUrl>#lapstyle</styleUrl>

@@ -41,13 +41,13 @@ handlers:
   static_files: static/favicon.ico
   upload: static/favicon.ico
 
-- url: /activity/kml/.*
+- url: /a/\d+.kml
   script: main.py
 
-- url: /activity/public/.*
+- url: /a/\d+.pub
   script: main.py
 
-- url: /activity/data/.*
+- url: /a/\d+.data
   script: main.py
 
 - url: /about.*

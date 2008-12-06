@@ -3,22 +3,22 @@
 <table cellspacing="2" width="100%">
   <thead>
   <tr>
-    <th><a href='/mytracks/name'>Activity Name</a></th>
-    <th><a href='/mytracks/start_time'>Start Time<br/>(End Time)</a></th>
-    <th><a href='/mytracks/total_meters'>Distance</a></th>
-    <th><a href='/mytracks/rolling_time'>Time<br/>(Rolling)</a></th>
-    <th><a href='/mytracks/average_cadence'>Avg/Max Cadence</a></th>
-    <th><a href='/mytracks/average_bpm'>Avg/Max BPM</a></th>
-    <th><a href='/mytracks/average_speed'>Avg/Max Speed</a></th>
-    <th><a href='/mytracks/total_ascent'>Ascent<br/>Decent</a></th>
-    <th><a href='/mytracks/total_calories'>Calories</a></th>
+    <th><a href='{% url activity_sorted_index sorting="name"%}'>Activity Name</a></th>
+    <th><a href='{% url activity_sorted_index sorting="start_time"%}'>Start Time<br/>(End Time)</a></th>
+    <th><a href='{% url activity_sorted_index sorting="total_meters"%}'>Distance</a></th>
+    <th><a href='{% url activity_sorted_index sorting="rolling_time"%}'>Time<br/>(Rolling)</a></th>
+    <th><a href='{% url activity_sorted_index sorting="average_cadence"%}'>Avg/Max Cadence</a></th>
+    <th><a href='{% url activity_sorted_index sorting="average_bpm"%}'>Avg/Max BPM</a></th>
+    <th><a href='{% url activity_sorted_index sorting="average_speed"%}'>Avg/Max Speed</a></th>
+    <th><a href='{% url activity_sorted_index sorting="total_ascent"%}'>Ascent<br/>Decent</a></th>
+    <th><a href='{% url activity_sorted_index sorting="total_calories"%}'>Calories</a></th>
     <th>Delete</th>
   </tr>
 </thead>
 <tbody>
     {% for entry in records.object_list %}
     <tr id="activity_{{entry.key.id}}">
-      <td><a href="/activity/show/{{ entry.key.id }}">{{ entry.name }}</a><br/>{{entry.tags|link_tags|safe}}</td>
+      <td><a href="{{ entry.get_absolute_url }}">{{ entry.name }}</a><br/>{{entry.tags|link_tags|safe}}</td>
       <td>{{ entry.start_time|time_to_offset:user.get_profile.tzoffset|date:"n/j/y-H:i" }}<br/>{{ entry.end_time|time_to_offset:user.get_profile.tzoffset|date:"n/j/y-H:i" }}</td>
       <td>{{ entry.total_meters|meters_to_prefered_distance:user.get_profile.use_imperial}} {{user.get_profile.use_imperial|miles_or_km_units}}</td>
       <td>{{ entry.total_time|seconds_to_human_readable }}
@@ -58,4 +58,22 @@
     </span>
 </div>
 </div>
-
+<script type="text/javascript">
+  function delete_activity(id) {
+    if (confirm('Are you sure?'))
+    {
+    $.ajax({
+        url: '/a/' + id,
+        type: 'DELETE',
+        timeout: 4000,
+        data: {'activity_id':id},
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          alert('Error Deleting Activity ' + id +': ' + textStatus)
+        },
+        success: function(response){
+          $('#activity_'+id).fadeOut(500)
+        }
+    });
+    }
+  };
+</script>

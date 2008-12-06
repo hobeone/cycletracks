@@ -82,10 +82,6 @@
 <br/>
 <h2>{{user.username}}'s tracks:</h2>
 <div class="datatable">
-  {% ifnotequal num_activities 0 %}
-    {% include "activity_table.html" %}
-  {% else %}
-        <p>You haven't uploaded any activities.  Click the upload link to get started.</p>
-  {% endifnotequal %}
+  {% include "activity_table.html" %}
 </div>
 {% endblock %}

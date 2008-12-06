@@ -16,7 +16,7 @@
   </tr>
 </thead>
 <tbody>
-    {% for entry in user_activities %}
+    {% for entry in records.object_list %}
     <tr id="activity_{{entry.key.id}}">
       <td><a href="/activity/show/{{ entry.key.id }}">{{ entry.name }}</a><br/>{{entry.tags|link_tags|safe}}</td>
       <td>{{ entry.start_time|time_to_offset:user.get_profile.tzoffset|date:"n/j/y-H:i" }}<br/>{{ entry.end_time|time_to_offset:user.get_profile.tzoffset|date:"n/j/y-H:i" }}</td>
@@ -35,3 +35,27 @@
     {% endfor %}
   </tbody>
 </table>
+
+<!-- logic for navigation with urls for pages  -->
+<div style="float:right" >
+<div class="pagination">
+    <span class="step-links">
+        {% if records.has_previous %}
+            <a href="?page={{ records.previous_page_number }}">previous</a>
+        {% else %}
+            <a><em>previous</em></a>
+        {% endif %}
+        &nbsp;|&nbsp;
+        <span class="current">
+            <small> Page {{ records.number }} of {{ records.paginator.num_pages }}</small>
+        </span>
+        &nbsp;|&nbsp;
+        {% if records.has_next %}
+            <a href="?page={{ records.next_page_number }}">next</a>
+        {% else %}
+            <a><em>next</em></a>&nbsp;
+        {% endif %}
+    </span>
+</div>
+</div>
+

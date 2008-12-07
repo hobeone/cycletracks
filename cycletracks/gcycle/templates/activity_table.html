@@ -63,8 +63,8 @@
     if (confirm('Are you sure?'))
     {
     $.ajax({
-        url: '/a/' + id,
-        type: 'DELETE',
+        url: '/a/' + id + '.delete',
+        type: 'POST',
         timeout: 4000,
         data: {'activity_id':id},
         error: function(XMLHttpRequest, textStatus, errorThrown) {

@@ -141,9 +141,6 @@ def show(request, activity):
       return non_public_activity()
     return show_activity(request, activity)
 
-  elif request.method == 'DELETE':
-    return delete(request, activity)
-
   elif request.method == 'POST':
     return update(request, activity)
 
@@ -259,8 +256,10 @@ def update(request, activity):
 
 
 @auth_decorators.login_required
+@require_valid_activity
+
 def delete(request, activity):
-  if request.method == 'DELETE':
+  if request.method == 'POST':
     if request.user != activity.user:
       return HttpResponseForbidden('')
 
@@ -270,4 +269,4 @@ def delete(request, activity):
 
     return HttpResponse('')
   else:
-    return HttpResponse('Must use DELETE')
+    return HttpResponse('Must use POST', status=501)

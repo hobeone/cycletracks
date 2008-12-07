@@ -156,11 +156,18 @@
                     <script type="text/javascript">
                       $("#public_flag").editInPlace({
                       url: "/a/"+{{activity.key.id}},
-                      params: "ajax=yes",
                       value_required: true,
                       field_type: "select",
                       select_options: "True, False",
-                      params: "activity_id={{activity.key.id}}&attribute=public",
+                      params: "ajax=yes&attribute=public",
+                      success: function(html, original_element){
+                      if(html == 'False'){
+                        $("#public_update").html('Set this activity to public to share it.')
+                      } else {
+                        $("#public_update").html('<a href="http://maps.google.com/maps?q={{kml_location}}&t=p">Bigger Map</a> - <a href="{% url activity_public activity.key.id %}">Public Link</a>');
+                      }
+                        return(html);
+                      },
                       });
                     </script>
                   </td>
@@ -206,10 +213,16 @@
     <td>
       <div id="map" style="width: 460px; height: 400px"></div>
       <div>
-        <a href="http://maps.google.com/maps?q={{kml_location}}&t=p">Bigger Map</a> -
         <a href="{% url activity_kml activity.key.id %}">Download KML</a> -
-        <a href="{% url activity_public activity.key.id %}">Public Link</a> -
-        <a href="{% url activity_source activity.key.id %}">Source File</a>
+        <a href="{% url activity_source activity.key.id %}">Source File</a> -
+        <span id="public_update">
+        {% if activity.public %}
+        <a href="http://maps.google.com/maps?q={{kml_location}}&t=p">Bigger Map</a> -
+        <a href="{% url activity_public activity.key.id %}">Public Link</a>
+        {% else %}
+        Set this activity to public to share it.
+        {% endif %}
+      </span>
       </div>
     </td>
   </tr>

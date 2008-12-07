@@ -62,7 +62,7 @@ def upload(request):
           tags = map(unicode.strip, tags)
         act = handle_uploaded_file(
             request.user, request.FILES['file'], tags=tags)
-        return HttpResponseRedirect(a.get_absolute_url())
+        return HttpResponseRedirect(act.get_absolute_url())
 
       except pytcx.TCXExpception, e:
         return render_to_response('error.html', {'error': e})

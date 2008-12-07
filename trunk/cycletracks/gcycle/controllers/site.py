@@ -64,15 +64,12 @@ def upload(request):
             request.user, request.FILES['file'], tags=tags)
         return HttpResponseRedirect(act.get_absolute_url())
 
-      except pytcx.TCXExpception, e:
-        return render_to_response('error.html', {'error': e})
-
-      except db.NotSavedError, e:
-        return render_to_response('error.html', {'error': e})
+      except (pytcx.TCXExpception, db.NotSavedError), e:
+        return HttpResponse('error: %s' % e, status=501)
 
     else:
       return HttpResponse('Error: Upload errors:\n%s' % repr(form.errors),
-          content_type='text/plain')
+          content_type='text/plain', status=501)
   else:
     form = UploadFileForm()
   return render_to_response('upload.html', {'form': form, 'user': request.user})

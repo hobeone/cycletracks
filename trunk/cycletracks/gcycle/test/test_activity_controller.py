@@ -107,13 +107,22 @@ class TestActivityController(TestCase):
 
   def test_delete_on_valid_id(self):
     activity = models.Activity.all().get()
-    url = reverse('activity_show', args=[activity.key().id()])
-    response = self.client.delete(url)
+    url = reverse('activity_delete', args=[activity.key().id()])
+    response = self.client.post(url)
+    self.failUnlessEqual(response.status_code, 200)
     assert models.Activity.get(activity.key()) == None
 
+
+  def test_delete_on_valid_id_using_get_should_501(self):
+    activity = models.Activity.all().get()
+    url = reverse('activity_delete', args=[activity.key().id()])
+    response = self.client.get(url)
+    self.failUnlessEqual(response.status_code, 501)
+
+
   def test_delete_on_invalid_id(self):
-    url = reverse('activity_show', args=[1000000000])
-    response = self.client.delete(url)
+    url = reverse('activity_delete', args=[1000000000])
+    response = self.client.post(url)
     self.failUnlessEqual(response.status_code, 404)
 
   def test_update_on_valid_id(self):

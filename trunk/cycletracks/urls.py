@@ -14,7 +14,11 @@ urlpatterns = patterns('gcycle.controllers',
   (r'^admin/dashboard/(?P<user>\S+)$', 'activity.index'),
   url(r'^a/$',                  'activity.index',  name='activity_index'),
   url(r'^a/(?P<sorting>\D+)$', 'activity.index', name='activity_sorted_index'),
+  # dispatches to show or update depending on HTTP method
   url(r'^a/(\d+)$',         'activity.show',   name='activity_show'),
+  # GFE don't support DELETE method apparently, otherwise we could use the
+  # above path on that method.
+  url(r'^a/(\d+)\.delete$', 'activity.delete',   name='activity_delete'),
   url(r'^a/(\d+)\.pub$',    'activity.public', name='activity_public'),
   url(r'^a/(\d+)\.data$',   'activity.data',   name='activity_data'),
   url(r'^a/(\d+)\.kml$',    'activity.kml',    name='activity_kml'),

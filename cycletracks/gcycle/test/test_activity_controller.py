@@ -28,8 +28,8 @@ class TestActivityController(TestCase):
     self.data.setup()
     os.environ['USER_EMAIL'] = UserData.admin_user.user.email()
 
-    host = 'django.testserver'
-    self.client = Client(HTTP_HOST=host)
+    self.host = 'django.testserver'
+    self.client = Client(HTTP_HOST=self.host)
 
   def tearDown(self):
       self.data.teardown()

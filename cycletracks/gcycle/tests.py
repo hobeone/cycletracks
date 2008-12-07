@@ -22,6 +22,7 @@ pp = pprint.PrettyPrinter(indent=2)
 
 # Other test files
 from gcycle.test.test_activity_controller import *
+from gcycle.test.test_site_controller import *
 
 class testModel(BaseModel):
   csv = CsvListProperty(str)
@@ -136,7 +137,7 @@ class UserTestCase(unittest.TestCase):
     u = User(user = ex_user, username = 'bar')
     u.put()
     self.assert_(u.key())
-    self.assertEqual(UserProfile.all().count(), 0)
+    self.assertEqual(UserProfile.all().filter('user =', u).count(), 0)
     profile = u.get_profile()
     self.assertEquals(profile.user, u)
     self.assertEquals(profile.activity_count, 0)

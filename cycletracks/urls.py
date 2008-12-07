@@ -5,7 +5,7 @@ from gcycle import controllers
 handler500 = 'gcycle.controllers.site.handle_view_exception'
 urlpatterns = patterns('gcycle.controllers',
   (r'^$', 'site.main'),
-  (r'^upload/$', 'site.upload'),
+  url(r'^upload/$', 'site.upload', name='upload'),
   (r'^about/$', 'site.about'),
   (r'^admin/users/$', 'admin.users'),
   (r'^admin/update_users/$', 'admin.update_users'),

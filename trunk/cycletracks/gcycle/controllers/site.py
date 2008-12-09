@@ -26,6 +26,7 @@ import gzip
 import sys
 import logging
 import md5
+import re
 
 def handle_view_exception(request):
   exception = sys.exc_info()
@@ -131,6 +132,9 @@ def handle_uploaded_file(user, filedata, tags=[]):
     files = [filedata.read()]
 
   for file in files:
-    act = Activity.create_from_tcx(file, user, tags)
-    act.user.get_profile().update_totals()
-    return act
+    if re.search(r'xmlns="http://www.topografix.com/GPX/1/0"', file):
+      pass
+    else:
+      act = Activity.create_from_tcx(file, user, tags)
+      act.user.get_profile().update_totals()
+      return act

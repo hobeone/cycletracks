@@ -5,12 +5,14 @@ from google.appengine.ext import db
 from google.appengine.api import datastore_types
 
 from gcycle.lib import pytcx
+from gcycle.lib import pygpx
 from gcycle.lib.memoized import *
 from gcycle.lib.average import *
 
 from django.core.exceptions import ImproperlyConfigured
 from django.db import models
 
+import md5
 import bz2
 import datetime
 
@@ -182,7 +184,7 @@ class UserProfile(BaseModel):
 class Activity(BaseModel):
   user = db.ReferenceProperty(User, required=True)
   name = db.StringProperty(required=True)
-  sport = db.StringProperty(required=True)
+  sport = db.StringProperty()
   total_meters = db.FloatProperty(required=True)
   start_time = db.DateTimeProperty(required=True)
   end_time = db.DateTimeProperty(required=True)
@@ -295,6 +297,52 @@ class Activity(BaseModel):
       lap.put()
     return activity
 
+  @classmethod
+  def create_from_gpx(self, gpx_data, user, tags = []):
+    return db.run_in_transaction(self._create_from_gpx, gpx_data, user, tags)
+
+  @classmethod
+  def _create_from_gpx(self, gpx_data, user, tags = []):
+    gpx_lap = pygpx.parse_gpx(gpx_data)
+    geo_info = pytcx.encode_activity_points([gpx_lap['geo_points']])
+    print geo_info
+    activity = Activity(
+        user = user,
+        name = str(gpx_lap['starttime']),
+        total_meters = gpx_lap['total_meters'],
+        start_time = gpx_lap['starttime'],
+        end_time = gpx_lap['endtime'],
+        total_time = gpx_lap['total_time_seconds'],
+        rolling_time = gpx_lap['total_rolling_time_seconds'],
+        average_speed = gpx_lap['average_speed'],
+        maximum_speed = gpx_lap['maximum_speed'],
+        total_ascent = gpx_lap['total_ascent'],
+        total_descent = gpx_lap['total_descent'],
+        source_hash = md5.new(gpx_data).hexdigest(),
+        encoded_points = geo_info['encoded_points'],
+        encoded_levels = geo_info['encoded_levels'],
+        ne_point = geo_info['ne_point'],
+        sw_point = geo_info['sw_point'],
+        start_point = geo_info['start_point'],
+        mid_point = geo_info['mid_point'],
+        end_point = geo_info['end_point'],
+    )
+    activity.put()
+    d = SourceDataFile(
+        parent = activity,
+        data = gpx_data,
+        activity = activity
+    )
+    d.put()
+    lap = Lap(
+      parent = activity,
+      activity = activity,
+      **gpx_lap
+    )
+    lap.put()
+    return activity
+
+
   @models.permalink
   def get_absolute_url(self):
     return ("activity_show", [self.key().id()])
@@ -374,20 +422,20 @@ class Lap(BaseModel):
   total_meters = db.FloatProperty(required=True)
   total_time_seconds = db.IntegerProperty(required=True)
   total_rolling_time_seconds = db.IntegerProperty(required=True)
-  average_cadence = db.IntegerProperty(required=True)
-  maximum_cadence = db.IntegerProperty(required=True)
-  average_bpm = db.IntegerProperty(required=True)
-  maximum_bpm = db.IntegerProperty(required=True)
+  average_cadence = db.IntegerProperty()
+  maximum_cadence = db.IntegerProperty()
+  average_bpm = db.IntegerProperty()
+  maximum_bpm = db.IntegerProperty()
   average_speed = db.FloatProperty(required=True)
   maximum_speed = db.FloatProperty(required=True)
-  calories = db.FloatProperty(required=True)
+  calories = db.FloatProperty()
   starttime = db.DateTimeProperty(required=True)
   endtime = db.DateTimeProperty(required=True)
-  bpm_list = CsvListProperty(required=True, cast_type=int)
+  bpm_list = CsvListProperty(cast_type=int)
   altitude_list = CsvListProperty(required=True, cast_type=float)
   speed_list = CsvListProperty(required=True, cast_type=float)
   distance_list = CsvListProperty(required=True, cast_type=float)
-  cadence_list = CsvListProperty(required=True, cast_type=int)
+  cadence_list = CsvListProperty(cast_type=int)
   geo_points = CsvListProperty(split_on=':')
   timepoints = CsvListProperty(required=True, cast_type=int)
   total_ascent = db.FloatProperty(default=0.0)

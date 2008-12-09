@@ -1,14 +1,10 @@
 import os
-import pprint
-pp = pprint.PrettyPrinter(indent=2)
 
 from django.test import TestCase
 from django.test.client import Client
 from django.core.urlresolvers import reverse
 
 from google.appengine.ext import db
-from google.appengine.api import apiproxy_stub_map
-from appengine_django.auth.models import User
 
 from gcycle import models
 from gcycle.test.user_fixtures import UserData

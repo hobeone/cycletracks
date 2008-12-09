@@ -23,6 +23,7 @@ pp = pprint.PrettyPrinter(indent=2)
 # Other test files
 from gcycle.test.test_activity_controller import *
 from gcycle.test.test_site_controller import *
+from gcycle.test.test_activity_model import *
 
 class testModel(BaseModel):
   csv = CsvListProperty(str)
@@ -145,74 +146,3 @@ class UserTestCase(unittest.TestCase):
   def tearDown(self):
     for u in User.all():
       u.delete()
-
-class ActivityTestCase(unittest.TestCase):
-  def setUp(self):
-    apiproxy_stub_map.apiproxy.GetStub('datastore_v3').Clear()
-    self.gaia_user = users.User('f@e.com')
-    self.app_user = User(user = self.gaia_user, username = 'bar')
-    self.app_user.put()
-
-  def testPermalink(self):
-    a = Activity(
-        user = self.app_user,
-        name = 'foo',
-        sport = 'bar',
-        total_meters = 4.0,
-        start_time = datetime.datetime.utcnow(),
-        end_time = datetime.datetime.utcnow(),
-        total_time = 2,
-        rolling_time = 2,
-        average_speed = 2.0,
-        maximum_speed = 2.0,
-        source_hash = 'foobaz',
-    )
-    a.tags = "foo, bar"
-    a.put()
-    print a.get_absolute_url()
-
-  def testCreateFromTcx(self):
-    testfile = open('gcycle/test/valid_multi_lap.tcx').read()
-    a = Activity.create_from_tcx(testfile, self.app_user)
-
-  def testActivityTags(self):
-    a = Activity(
-        user = self.app_user,
-        name = 'foo',
-        sport = 'bar',
-        total_meters = 4.0,
-        start_time = datetime.datetime.utcnow(),
-        end_time = datetime.datetime.utcnow(),
-        total_time = 2,
-        rolling_time = 2,
-        average_speed = 2.0,
-        maximum_speed = 2.0,
-        source_hash = 'foobaz',
-    )
-    a.tags = "foo, bar"
-    a.put()
-    for a in db.GqlQuery("SELECT * from Activity WHERE tags = 'foo'"):
-      print a.name
-      print a.tags
-
-
-  def test_safe_user(self):
-    a = Activity(
-        user = self.app_user,
-        name = 'foo',
-        sport = 'bar',
-        total_meters = 0.0,
-        start_time = datetime.datetime.utcnow(),
-        end_time = datetime.datetime.utcnow(),
-        total_time = 0,
-        rolling_time = 0,
-        average_speed = 0.0,
-        maximum_speed = 0.0,
-        source_hash = 'foobaz',
-    )
-    a.put()
-    self.app_user.delete()
-    a = Activity.get(a.key())
-    self.assert_(a)
-    self.assertRaises(db.Error, getattr, a, 'user')
-    self.assertEqual(None, a.safeuser)

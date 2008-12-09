@@ -48,10 +48,9 @@ def encode_activity_points(laps_points):
   points = []
   for lap in laps_points:
     points.extend(lap)
-  newp = [ (float(p.split(',')[0]), float(p.split(',')[1])) for p in points]
   minlat, maxlat = 90,-90
   minlong, maxlong = 180,-180
-  for pt in newp:
+  for pt in points:
     lat,long = pt[0],pt[1]
     if lat > maxlat: maxlat = lat
     if lat < minlat: minlat = lat
@@ -63,15 +62,15 @@ def encode_activity_points(laps_points):
   mid_point = points[len(points) / 2]
   end_point = points[-1]
 
-  pts, levs = glineenc.encode_pairs(newp)
+  pts, levs = glineenc.encode_pairs(points)
   return {
       'encoded_points': pts,
       'encoded_levels': levs,
-      'ne_point': '%s,%s' % (ne[0], ne[1]),
-      'sw_point': '%s,%s' % (sw[0], sw[1]),
-      'start_point': str(start_point),
-      'mid_point': str(mid_point),
-      'end_point': str(end_point)
+      'ne_point': '%f,%f' % ne,
+      'sw_point': '%f,%f' % sw,
+      'start_point': '%f,%f' % tuple(start_point),
+      'mid_point': '%f,%f' % tuple(mid_point),
+      'end_point': '%f,%f' % tuple(end_point),
       }
 
 class TCXExpception(Exception):
@@ -208,9 +207,9 @@ def parse_lap(start_time, lap_string):
     if lat and long:
       if len(geo_points) == 0 and len(timepoints) > 0:
         geo_points = fill_list(geo_points,
-            '%s,%s' % (lat,long),
+            [float(lat),float(long)],
             len(timepoints)-1)
-      geo_points.append('%s,%s' % (lat,long))
+      geo_points.append([float(lat),float(long)])
     else:
       if geo_points:
         geo_points.append(geo_points[-1])

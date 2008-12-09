@@ -132,9 +132,10 @@ def handle_uploaded_file(user, filedata, tags=[]):
     files = [filedata.read()]
 
   for file in files:
+    act = None
     if re.search(r'xmlns="http://www.topografix.com/GPX/1/0"', file):
-      pass
+      act = Activity.create_from_gpx(file, user, tags)
     else:
       act = Activity.create_from_tcx(file, user, tags)
-      act.user.get_profile().update_totals()
-      return act
+    act.user.get_profile().update_totals()
+    return act

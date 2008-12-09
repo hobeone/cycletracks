@@ -45,7 +45,7 @@ indexes:
   - name: rolling_time
     direction: desc
 
-# Used 4 times in query history.
+# Used 2 times in query history.
 - kind: Activity
   properties:
   - name: user

@@ -342,7 +342,8 @@
       Timeplot.createPlotInfo({
         id: "plot1",
         dataSource: new Timeplot.Processor(
-          new Timeplot.ColumnSource(eventSource,1), Timeplot.Operator.average, { size: 5 }),
+          new Timeplot.ColumnSource(eventSource,1),
+          Timeplot.Operator.average, { size: 3 }),
         valueGeometry: altitudeGeometry,
         timeGeometry: timeGeometry,
         lineColor: "#ff0000",
@@ -355,7 +356,7 @@
         id: "plot2",
         dataSource: new Timeplot.Processor(
           new Timeplot.ColumnSource(eventSource,2),
-            Timeplot.Operator.average, { size: 15 }),
+            Timeplot.Operator.average, { size: 3 }),
         valueGeometry: speedGeometry,
         timeGeometry: timeGeometry,
         lineColor: "#D0A825",

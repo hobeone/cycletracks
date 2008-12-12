@@ -209,6 +209,7 @@ class Activity(BaseModel):
   mid_point = db.GeoPtProperty()
   end_point = db.GeoPtProperty()
 
+  source_type = db.StringProperty(default='tcx')
   source_hash = db.StringProperty(required=True)
   tags = AutoStringListProperty()
 
@@ -281,6 +282,7 @@ class Activity(BaseModel):
   def _create_from_tcx(self, tcx_data, user, tags = []):
     act_dict = pytcx.parse_tcx(tcx_data)[0]
     activity = Activity(user = user, **act_dict)
+    activity.source_type = 'tcx'
     activity.put()
     d = SourceDataFile(
         parent = activity,
@@ -303,30 +305,9 @@ class Activity(BaseModel):
 
   @classmethod
   def _create_from_gpx(self, gpx_data, user, tags = []):
-    gpx_lap = pygpx.parse_gpx(gpx_data)
-    geo_info = pytcx.encode_activity_points([gpx_lap['geo_points']])
-    print geo_info
-    activity = Activity(
-        user = user,
-        name = str(gpx_lap['starttime']),
-        total_meters = gpx_lap['total_meters'],
-        start_time = gpx_lap['starttime'],
-        end_time = gpx_lap['endtime'],
-        total_time = gpx_lap['total_time_seconds'],
-        rolling_time = gpx_lap['total_rolling_time_seconds'],
-        average_speed = gpx_lap['average_speed'],
-        maximum_speed = gpx_lap['maximum_speed'],
-        total_ascent = gpx_lap['total_ascent'],
-        total_descent = gpx_lap['total_descent'],
-        source_hash = md5.new(gpx_data).hexdigest(),
-        encoded_points = geo_info['encoded_points'],
-        encoded_levels = geo_info['encoded_levels'],
-        ne_point = geo_info['ne_point'],
-        sw_point = geo_info['sw_point'],
-        start_point = geo_info['start_point'],
-        mid_point = geo_info['mid_point'],
-        end_point = geo_info['end_point'],
-    )
+    act_dict = pygpx.parse_gpx(gpx_data)
+    activity = Activity(user = user, **act_dict)
+    activity.source_type = 'gpx'
     activity.put()
     d = SourceDataFile(
         parent = activity,
@@ -334,12 +315,15 @@ class Activity(BaseModel):
         activity = activity
     )
     d.put()
-    lap = Lap(
-      parent = activity,
-      activity = activity,
-      **gpx_lap
-    )
-    lap.put()
+    for lap_dict in act_dict['laps']:
+      lap_dict['geo_points'] = (
+          ['%f,%f' % tuple(i) for i in lap_dict['geo_points']])
+      lap = Lap(
+        parent = activity,
+        activity = activity,
+        **lap_dict
+      )
+      lap.put()
     return activity
 
 

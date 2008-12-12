@@ -137,7 +137,7 @@ def parse_gpx(filedata):
   dist = 0
   for lap in et.findall("//"+segmentTag):
     lap_records.append(parse_segment(lap, starting_dist = dist))
-    dist = lap_records[-1]['total_meters']
+    dist = sum([l['total_meters'] for l in lap_records])
 
   if not lap_records:
     raise InvalidTCXFormat(

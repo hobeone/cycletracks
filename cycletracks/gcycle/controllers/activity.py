@@ -266,7 +266,7 @@ def delete(request, activity):
     activity.delete()
     if not memcache.delete(str(activity.key())):
       logging.error("Memcache delete failed.")
-
+    activity.user.get_profile().update_totals()
     return HttpResponse('')
   else:
     return HttpResponse('Must use POST', status=501)

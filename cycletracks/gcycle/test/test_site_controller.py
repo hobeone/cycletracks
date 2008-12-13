@@ -48,10 +48,19 @@ class TestSiteController(TestCase):
     response = self.client.post(url, {'tags' : 'test'})
     self.failUnlessEqual(response.status_code, 501)
 
-
   def test_upload_with_invalid_data(self):
     url = reverse('upload')
     tcx_file = open('gcycle/test/invalid_tcx.tcx')
     response = self.client.post(url, {'tags' : 'test', 'file': tcx_file})
     self.failUnlessEqual(response.status_code, 501)
 
+  def test_upload_with_activity_limit(self):
+    u = User.all().filter('username = ', UserData.admin_user.username).get()
+    assert u
+    p = u.get_profile()
+    p.total_allowed_activities = 0
+    p.put()
+    url = reverse('upload')
+    tcx_file = open('gcycle/test/valid_multi_lap.tcx')
+    response = self.client.post(url, {'file': tcx_file})
+    self.failUnlessEqual(response.status_code, 501)

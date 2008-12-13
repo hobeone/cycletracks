@@ -126,6 +126,7 @@ class UserProfile(BaseModel):
   total_descent = db.FloatProperty(default=0.0)
   total_calories = db.FloatProperty(default=0.0)
   totals_updated_at = db.DateTimeProperty()
+  total_allowed_activities = db.IntegerProperty(default=40)
 
   @property
   def activity_count(self):
@@ -232,10 +233,12 @@ class Activity(BaseModel):
       if Activity.hash_exists(self.source_hash, self.user):
         raise db.NotSavedError(
           "An activity with the same source hash already exists")
+
     if self.rolling_time > self.total_time:
       raise db.NotSavedError("rolling time > total_time(%i != %i)" %
         (self.rolling_time, self.total_time)
       )
+
 
   def put(self):
     self.is_valid()

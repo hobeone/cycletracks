@@ -95,6 +95,12 @@ def tarerator(tfile):
     yield tfile.extractfile(f).read()
 
 def handle_uploaded_file(user, filedata, tags=[]):
+  # belongs in the user or activity model, but Transaction semantics in app
+  # engine prevent doing the query needed inside the transaction.
+  if(user.get_profile().total_allowed_activities <=
+      user.get_profile().activity_count):
+    raise db.NotSavedError("User has too many activities")
+
   files = []
   # .zip
   try:
@@ -137,5 +143,7 @@ def handle_uploaded_file(user, filedata, tags=[]):
       act = Activity.create_from_gpx(file, user, tags)
     else:
       act = Activity.create_from_tcx(file, user, tags)
+    # belongs in the user or activity model, but Transaction semantics in app
+    # engine prevent doing the query needed inside the transaction.
     act.user.get_profile().update_totals()
     return act

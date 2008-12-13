@@ -108,6 +108,11 @@ class AutoStringListProperty(db.StringListProperty):
     value = super(AutoStringListProperty, self).validate(value)
     return value
 
+def getOrDefault(object, name, default):
+  """Return default if getattr returns None"""
+  v = getattr(object, name, default)
+  if v is None: v = default
+  return v
 
 class UserProfile(BaseModel):
   user = db.ReferenceProperty(User, required=True)
@@ -127,6 +132,7 @@ class UserProfile(BaseModel):
   total_calories = db.FloatProperty(default=0.0)
   totals_updated_at = db.DateTimeProperty()
   total_allowed_activities = db.IntegerProperty(default=40)
+  timestamp = db.DateTimeProperty(auto_now=True)
 
   @property
   def activity_count(self):
@@ -157,10 +163,10 @@ class UserProfile(BaseModel):
     bpms = []
     self.totals_updated_at = datetime.datetime.utcnow()
     for activity in query:
-      self.total_meters += activity.total_meters
+      self.total_meters += getOrDefault(activity, 'total_meters', 0)
       self.total_time += activity.total_time
       self.rolling_time += activity.rolling_time
-      self.total_calories += activity.total_calories
+      self.total_calories += getOrDefault(activity, 'total_calories', 0)
       self.total_ascent += activity.total_ascent
       self.total_descent += activity.total_descent
 
@@ -398,11 +404,10 @@ class Activity(BaseModel):
     return ' '.join(points)
 
 
-
 class SourceDataFile(BaseModel):
   activity = db.ReferenceProperty(Activity, required=True)
   data = BzipBlobProperty(required=True)
-
+  timestamp = db.DateTimeProperty(auto_now=True)
 
 class Lap(BaseModel):
   activity = db.ReferenceProperty(Activity, required=True)
@@ -427,6 +432,7 @@ class Lap(BaseModel):
   timepoints = CsvListProperty(required=True, cast_type=int)
   total_ascent = db.FloatProperty(default=0.0)
   total_descent = db.FloatProperty(default=0.0)
+  timestamp = db.DateTimeProperty(auto_now=True)
 
   # God, Django sucks monkey nuts:
   def is_valid(self):

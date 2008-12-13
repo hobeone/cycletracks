@@ -114,7 +114,7 @@
                     {{ activity.total_calories|floatformat:"-2" }}
                   </td>
                 </tr>
-
+                {% if show_locations %}
                 <tr>
                   <td>
                     Start Location
@@ -138,6 +138,7 @@
                   <td id="end_location">
                   </td>
                 </tr>
+                {% endif %}
 
                 <tr>
                   <td>
@@ -153,6 +154,7 @@
                   </td>
                   <td>
                     <span class="summaryField" id="public_flag">{{ activity.public }}</span>
+                    {% if show_locations %}
                     <script type="text/javascript">
                       $("#public_flag").editInPlace({
                       url: "/a/"+{{activity.key.id}},
@@ -170,6 +172,8 @@
                       },
                       });
                     </script>
+                    {% endif %}
+
                   </td>
                 </tr>
 
@@ -179,6 +183,7 @@
                   </td>
                   <td>
                     <span class="summaryField" id="editable_comment">{{ activity.comment }}</span>
+                    {% if show_locations %}
                     <script type="text/javascript">
                       $("#editable_comment").editInPlace({
                       url: "/a/" + {{activity.key.id}},
@@ -187,6 +192,7 @@
                       params: "activity_id={{activity.key.id}}&attribute=comment"
                       });
                     </script>
+                    {% endif %}
                   </td>
                 </tr>
                 <tr>
@@ -195,14 +201,15 @@
                   </td>
                   <td>
                     <span class="summaryField" id="editable_tags">{{ activity.tags|join:", "}}</span>
+                    {% if show_locations %}
                     <script type="text/javascript">
                       $("#editable_tags").editInPlace({
                       url: "/a/" + {{activity.key.id}},
                       params: "ajax=yes",
-                      value_required: true,
                       params: "activity_id={{activity.key.id}}&attribute=tags"
                       });
                     </script>
+                    {% endif %}
                   </td>
                 </tr>
               </table>
@@ -281,6 +288,7 @@
     });
     map.addOverlay(polyline1_1);
     map.addControl(new google.maps.SmallMapControl());
+    {% if show_locations %}
 
     var start_point = new GLatLng({{ activity.start_point }});
     var mid_point = new GLatLng({{ activity.mid_point }});
@@ -301,7 +309,8 @@
       function(response) {
       showAddress(response, 'end_location');
       }
-    );
+      );
+    {% endif %}
   }
   google.setOnLoadCallback(initialize);
 

@@ -110,6 +110,9 @@ def show_activity(request, activity):
     use_imperial = request.user.get_profile().use_imperial
 
   activity_stats = memcache.get(show_cache_key(activity, use_imperial))
+  show_locations = False
+  if activity.user == request.user:
+    show_locations = True
   if settings.DEBUG: activity_stats = None
 
   if activity_stats is None:
@@ -120,6 +123,7 @@ def show_activity(request, activity):
       'pts': simplejson.dumps(activity.encoded_points),
       'levs' : simplejson.dumps(activity.encoded_levels),
     }
+  activity_stats['show_locations'] = show_locations
   return render_to_response('activity/show.html', activity_stats)
 
 

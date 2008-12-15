@@ -29,6 +29,15 @@ def require_valid_activity(f):
 
   return wrapper
 
+def json_index(activity_query):
+  """Returns a json representation of the activities"""
+  d = []
+  for a in activity_query:
+    d.append({
+        'source_hash': a.source_hash,
+        })
+  return HttpResponse(simplejson.dumps(d, sort_keys=True, indent=2))
+
 @auth_decorators.login_required
 def index(request, sorting=None, user=None):
   if user is None:
@@ -42,6 +51,9 @@ def index(request, sorting=None, user=None):
   activity_query = Activity.gql(
     'WHERE user = :1 ORDER BY %s DESC' % sorting, user
   )
+  if 'json' in request.GET:
+    return json_index(activity_query)
+
   paginator = Paginator(activity_query, 15)
   # Make sure page request is an int. If not, deliver first page.
   try:

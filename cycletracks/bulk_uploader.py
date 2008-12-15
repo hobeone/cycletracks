@@ -1,10 +1,14 @@
 #!/usr/bin/python
+import main
+from django.utils import simplejson
+
 import os
 import httplib
 import urllib
 import urllib2
 import cookielib
-import mimetools, mimetypes
+import mimetools
+import mimetypes
 import os
 import stat
 import sys
@@ -14,6 +18,7 @@ from optparse import OptionParser
 import glob
 import time
 import socket
+import md5
 
 class Callable:
     def __init__(self, anycallable):
@@ -159,17 +164,27 @@ class CtUploader(object):
       print "Uploading %s" % filename
       try:
         self.upload_file(filename)
-      except socket.error, e:
+      except(socket.error, urllib2.HTTPError), e:
         print "Error uploading %s" % filename
+      else:
+        print "Sleeping 30 seconds..."
+        time.sleep(30)
 
-      print "Sleeping 30 seconds..."
-      time.sleep(30)
+  def get_server_list(self):
+    opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cookiejar))
+    uri = 'http://cycletracks.appspot.com/a/?json=true'
+    jsonresponse = opener.open(uri).read()
+    response = simplejson.loads(jsonresponse)
+    return [str(a['source_hash']) for a in response]
 
 
 if __name__=="__main__":
   parser = OptionParser()
   parser.add_option("-u", "--user", dest="username",
-                  help="USER to login as", metavar="USER")
+                    help="USER to login as", metavar="USER")
+  parser.add_option("--host", dest="host",
+                    help="HOST to connect to", metavar="HOST")
+
 
   (options, args) = parser.parse_args()
   if options.username is None:
@@ -182,4 +197,10 @@ if __name__=="__main__":
   u = CtUploader(options.username, password)
   u.google_login()
   print "Got a google cookie to use..."
-  u.upload_files(args)
+  source_hashes = u.get_server_list()
+  for f in args:
+    local_md5 = md5.new(open(f).read()).hexdigest()
+    if local_md5 in source_hashes:
+      print "%s already uploaded, skipping..." % f
+    else:
+      u.upload_files([f])

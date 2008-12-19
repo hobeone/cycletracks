@@ -8,12 +8,13 @@
 <ul>
   <li><a href="#wtf_is_this">WTF is this?</a></li>
   <li><a href="#device_support">What GPS devices does it support?</a></li>
+  <li><a href="#account_setup">Setting up your account.</a></li>
   <li><a href="#features">What can I do with Cycletracks?</a></li>
 </ul>
 
 <a name="wtf_is_this"></a><h3>WTF is this?</h3>
 <p>
-Cycletracks is a webapp to store and view information from a Garmin cycle computer (I've developed it using my Garmin 705).  I put it together after getting fed up with the really really long load times of Motionbased and Connect.
+Cycletracks is a webapp to store and view information from a Garmin cycle computer (I've developed it using my Garmin 705).  I put it together after getting fed up with the really really long load times of Motionbased and Connect.  I've since added support for more generic gps information by supporting GPX files.
 </p>
 
 <p>
@@ -22,21 +23,32 @@ If you want to help develop the app please let me know.  You can grab the source
 
 
 <a name="device_support"></a><h3>What GPS devices does it support?</h3>
+<h4>For TCX files:</h4>
 <p>
-I only own the Garmin Edge 705 so that is the only device I know works with it.  The 605 <em>should</em> work as the are basically the same.  I don't know if the 2 or 305 will work.  If you have one you will need to extract the data into a TCX formatted data file.  If you figure out how to do this drop me a line in the discussion group.
+I only own the Garmin Edge 705 so that is the only device I know works with it.  The 605 <em>should</em> work as the are basically the same.  I don't know if the 205 or 305 will work.  If you have one you will need to extract the data into a TCX formatted data file.  If you figure out how to do this drop me a line in the discussion group.
 <p>
+
+<h4>For GPX files:</h4>
+<p> The GPX support should allow any device that can export a GPX file to upload to cycletracks.  GPX doesn't support all the data that TCX does so some information will be missing (Cadence, Heart Rate) and some data is calculated by cycletracks so may be less accurate (distance and speed).  If your device doesn't export GPX but some other format you may be able to use a program like <a href="http://www.gpsbabel.org/">GPSBabel</a> to convert it to GPX.
+
+<a name="account_setup"></a><h3>Setting up your account:</h3>
+<p>
+<ul>
+  <li>Click on the 'Settings' Tab and choose your timezone and what kind of units you would like to display (Metric or Imperial).</li>
+</ul>
+</p>
 
 <a name="features"></a><h3>What you can do:</h3>
 <p>
 <ul>
-  <li>Upload your TCX files (either one at a time or as a compressed archive).  This may mean that you need a 605 or 705 as older Garmins may not export in this format.</li>
+  <li>Upload your TCX and GPX files (either one at a time or as a compressed archive).</li>
   <li>See the grand totals of all your activities.</li>
   <li>See a detailed view of one activity with a Google map, and graphs for heart rate, cadence etc.</li>
   <li>Download a kml file of an activity for viewing in Google Earth or Google Maps</li>
-  <li>Generate reports which group activities by week or month</li>
   <li>Send a link to an activity to your firends.</li>
 </ul>
 </p>
+
 
 
 <a name="sharing"></a><h3>How do I share an activity with my friends?</h3>
@@ -51,13 +63,13 @@ I only own the Garmin Edge 705 so that is the only device I know works with it. 
 
 <ul>
   <li>Times are rounded to integers of seconds</li>
-  <li>Map data is encoded before rendering (to save space) but this may introduce some imprecision into the geo points.</li>
+  <li>Map data is encoded before rendering (to save space) but this may introduce some imprecision into the geo points as shown on the Google maps.</li>
 </ul>
 
 <strong>Other Notes:</strong>
 <ul>
   <li>To change the name of an activity click on the name in the show screen, an edit box should appear.</li>
-  <li>This should work with the public and comment fields too</li>
+  <li>This should work with the public, comment and tag fields too</li>
 
 </ul>
 <p>

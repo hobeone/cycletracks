@@ -10,7 +10,7 @@ indexes:
 # automatically uploaded to the admin console when you next deploy
 # your application using appcfg.py.
 
-# Used 11 times in query history.
+# Used 13 times in query history.
 - kind: Activity
   properties:
   - name: tags
@@ -53,7 +53,7 @@ indexes:
   - name: rolling_time
     direction: desc
 
-# Used 90 times in query history.
+# Used 98 times in query history.
 - kind: Activity
   properties:
   - name: user

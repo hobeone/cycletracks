@@ -20,7 +20,7 @@
       <td>{{ entry.average_speed|kph_to_prefered_speed:user.get_profile.use_imperial }} {{user.get_profile.use_imperial|mph_or_kph_units}}</td>
       <td>
         {% for t in entry.tags %}
-        <a href='{% url tags_index t %}'>{{t}}</a>
+          <a href='{% url tags_index t %}'>{{t}}</a>&nbsp;
         {% endfor %}
       </td>
     </tr>

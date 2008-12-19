@@ -26,7 +26,20 @@
     <td align="left" valign="top" width="50%">
         <div id="activity_table">
           <div id="activitySummaryDataComponent" class="activityComponent">
-            <div id="activitySummaryTitle">Summary for {{activity.name}}:</div>
+            <div id="activitySummaryTitle">
+              Summary for <span id="editable_name">{{activity.name}}</span>:
+                    {% if show_locations %}
+              <a onclick="delete_activity('{{ activity.key.id }}')">delete</a>
+                    <script type="text/javascript">
+                      $("#editable_name").editInPlace({
+                      url: "/a/" + {{activity.key.id}},
+                      params: "ajax=yes",
+                      value_required: true,
+                      params: "activity_id={{activity.key.id}}&attribute=name"
+                      });
+                    </script>
+                    {% endif %}
+            </div>
 
             <div class="activity-summary-table">
               <table id>
@@ -425,6 +438,24 @@
     altitudeplot.loadText("{% url activity_data activity.key.id %}", ",", eventSource);
   };
 google.setOnLoadCallback(drawGraphs);
+
+function delete_activity(id) {
+  if (confirm('Are you sure?'))
+  {
+  $.ajax({
+      url: '/a/' + id + '.delete',
+      type: 'POST',
+      timeout: 4000,
+      data: {'activity_id':id},
+      error: function(XMLHttpRequest, textStatus, errorThrown) {
+        alert('Error Deleting Activity ' + id +': ' + textStatus)
+      },
+      success: function(response){
+        window.location = "/a/"
+      }
+  });
+  }
+};
 
 </script>
 

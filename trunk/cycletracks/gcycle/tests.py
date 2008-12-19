@@ -98,7 +98,7 @@ asd
     self.assertEqual(len(act['laps']), 2)
     self.assertEqual(act['total_calories'], 6754.0)
     self.assertAlmostEqual(act['total_meters'], 78993.84, 2)
-    self.assertEqual(act['total_time'], 26164)
+    self.assertEqual(act['total_time'], 26162)
 
     u = User(username = 'test', user = users.User('test@ex.com'))
     u.put()

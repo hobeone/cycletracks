@@ -1,36 +1,28 @@
 {% load extra_filters %}
-
 <table cellspacing="2" width="100%">
   <thead>
   <tr>
     <th><a href='{% url activity_sorted_index sorting="name"%}'>Activity Name</a></th>
-    <th><a href='{% url activity_sorted_index sorting="start_time"%}'>Start Time<br/>(End Time)</a></th>
+    <th><a href='{% url activity_sorted_index sorting="start_time"%}'>Start Time</th>
     <th><a href='{% url activity_sorted_index sorting="total_meters"%}'>Distance</a></th>
-    <th><a href='{% url activity_sorted_index sorting="rolling_time"%}'>Time<br/>(Rolling)</a></th>
-    <th><a href='{% url activity_sorted_index sorting="average_cadence"%}'>Avg/Max Cadence</a></th>
-    <th><a href='{% url activity_sorted_index sorting="average_bpm"%}'>Avg/Max BPM</a></th>
-    <th><a href='{% url activity_sorted_index sorting="average_speed"%}'>Avg/Max Speed</a></th>
-    <th><a href='{% url activity_sorted_index sorting="total_ascent"%}'>Ascent<br/>Decent</a></th>
-    <th><a href='{% url activity_sorted_index sorting="total_calories"%}'>Calories</a></th>
-    <th>Delete</th>
+    <th><a href='{% url activity_sorted_index sorting="rolling_time"%}'>Rolling Time</a></th>
+    <th><a href='{% url activity_sorted_index sorting="average_speed"%}'>Avg Speed</a></th>
+    <th>Tags</th>
   </tr>
 </thead>
 <tbody>
     {% for entry in records.object_list %}
     <tr id="activity_{{entry.key.id}}">
-      <td><a href="{{ entry.get_absolute_url }}">{{ entry.name }}</a><br/>{{entry.tags|link_tags|safe}}</td>
-      <td>{{ entry.start_time|time_to_offset:user.get_profile.tzoffset|date:"n/j/y-H:i" }}<br/>{{ entry.end_time|time_to_offset:user.get_profile.tzoffset|date:"n/j/y-H:i" }}</td>
+      <td><a href="{{ entry.get_absolute_url }}">{{ entry.name }}</a></td>
+      <td>{{ entry.start_time|time_to_offset:user.get_profile.tzoffset|date:"n/j/y-H:i" }}</td>
       <td>{{ entry.total_meters|meters_to_prefered_distance:user.get_profile.use_imperial}} {{user.get_profile.use_imperial|miles_or_km_units}}</td>
-      <td>{{ entry.total_time|seconds_to_human_readable }}
-        <br/>
-        ({{ entry.rolling_time|seconds_to_human_readable }})
+      <td>{{ entry.rolling_time|seconds_to_human_readable }}</td>
+      <td>{{ entry.average_speed|kph_to_prefered_speed:user.get_profile.use_imperial }} {{user.get_profile.use_imperial|mph_or_kph_units}}</td>
+      <td>
+        {% for t in entry.tags %}
+        <a href='{% url tags_index t %}'>{{t}}</a>
+        {% endfor %}
       </td>
-      <td>{{ entry.average_cadence|floatformat:"-2" }} rpm<br/> {{ entry.maximum_cadence|floatformat:"-2" }} rpm</td>
-      <td>{{ entry.average_bpm|floatformat:"-2" }} bpm<br/> {{ entry.maximum_bpm|floatformat:"-2" }} bpm</td>
-      <td>{{ entry.average_speed|kph_to_prefered_speed:user.get_profile.use_imperial }} {{user.get_profile.use_imperial|mph_or_kph_units}}<br/> {{ entry.maximum_speed|kph_to_prefered_speed:user.get_profile.use_imperial }} {{user.get_profile.use_imperial|mph_or_kph_units}}</td>
-      <td>{{ entry.total_ascent|format_meters:user.get_profile.use_imperial }} {{user.get_profile.use_imperial|meters_or_feet_units}}<br/> {{entry.total_descent|format_meters:user.get_profile.use_imperial}} {{user.get_profile.use_imperial|meters_or_feet_units}}</td>
-      <td>{{ entry.total_calories|floatformat:"-2" }} Cal</td>
-      <td onclick="delete_activity('{{ entry.key.id }}')">delete</td>
     </tr>
     {% endfor %}
   </tbody>
@@ -38,7 +30,7 @@
 
 <!-- logic for navigation with urls for pages  -->
 <div style="float:right" >
-<div class="pagination">
+  <div class="pagination">
     <span class="step-links">
         {% if records.has_previous %}
             <a href="?page={{ records.previous_page_number }}">previous</a>
@@ -56,24 +48,5 @@
             <a><em>next</em></a>&nbsp;
         {% endif %}
     </span>
+  </div>
 </div>
-</div>
-<script type="text/javascript">
-  function delete_activity(id) {
-    if (confirm('Are you sure?'))
-    {
-    $.ajax({
-        url: '/a/' + id + '.delete',
-        type: 'POST',
-        timeout: 4000,
-        data: {'activity_id':id},
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-          alert('Error Deleting Activity ' + id +': ' + textStatus)
-        },
-        success: function(response){
-          $('#activity_'+id).fadeOut(500)
-        }
-    });
-    }
-  };
-</script>

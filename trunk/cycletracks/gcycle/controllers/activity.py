@@ -78,13 +78,28 @@ def tag(request, tag):
   """Like the index action but only shows activities with a certain tag"""
   acts = Activity.all()
   acts.filter('user =', request.user)
+
+  # TODO: change to gql to allow for multi tag match
   acts.filter('tags =', tag)
   acts.order('-start_time')
 
-  user_activities = acts
+  # TODO: DRY up this code and the same in index()
+  paginator = Paginator(acts, 15)
+  # Make sure page request is an int. If not, deliver first page.
+  try:
+    page = int(request.GET.get('page', '1'))
+  except ValueError:
+    page = 1
+  # If page request  is out of range, deliver last page of results.
+  try:
+    records = paginator.page(page)
+  except (EmptyPage, InvalidPage):
+    records = paginator.page(paginator.num_pages)
+
+
   return render_to_response(
       'activity/tag.html',
-      { 'user_activities': user_activities,
+      { 'records': records,
         'tag': tag,
         'user': request.user})
 

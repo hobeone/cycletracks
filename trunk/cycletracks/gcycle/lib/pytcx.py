@@ -1,5 +1,6 @@
 import re
 import os
+import time
 import datetime
 import sys
 import bz2
@@ -13,6 +14,9 @@ reopts = (re.MULTILINE | re.DOTALL)
 def parse_zulu(s):
     return datetime.datetime(int(s[0:4]), int(s[5:7]), int(s[8:10]),
         int(s[11:13]), int(s[14:16]), int(s[17:19]))
+
+def seconds_delta(t1, t2):
+  return int(time.mktime(t2.timetuple()) - time.mktime(t1.timetuple()))
 
 @memoized
 def make_tag_regex(tag, grouper = '.+?'):
@@ -122,8 +126,8 @@ def parse_lap(start_time, lap_string):
   altitude_list = []
   timepoints = []
   distance_list = []
-  starttime = None
-  prev_time = None
+  starttime = lap_record['starttime']
+  prev_time = lap_record['starttime']
   endtime = starttime
   prev_distance = 0
 
@@ -136,9 +140,6 @@ def parse_lap(start_time, lap_string):
 
     point_time = parse_zulu(point_time)
     endtime = point_time
-    if starttime is None:
-      starttime = point_time
-      prev_time = point_time
 
     dist = getTagVal(trackpoint, 'DistanceMeters', None)
     timedelta = (point_time - prev_time).seconds
@@ -147,17 +148,17 @@ def parse_lap(start_time, lap_string):
       # no distance delta == no speed
       speed_list.append(0)
       distance_list.append(distance_list[-1])
-      timepoints.append((point_time - starttime).seconds)
+      timepoints.append(seconds_delta(starttime, point_time))
     else:
       dist = float(dist)
       dist_delta = dist - prev_distance
       distance_list.append(dist)
       if dist_delta == 0:
         speed_list.append(0)
-        timepoints.append((point_time - starttime).seconds)
+        timepoints.append(seconds_delta(starttime, point_time))
       else:
         if timedelta > 0:
-          timepoints.append((point_time - starttime).seconds)
+          timepoints.append(seconds_delta(starttime, point_time))
           speed_list.append(dist_delta / timedelta * 3.6) # for kph
         else:
           speed_list.append(0)
@@ -229,7 +230,6 @@ def parse_lap(start_time, lap_string):
     else:
       total_descent += altitude_delta * -1
     prev_altitude = i
-
 
   lap_record.update({
     'total_time_seconds': timepoints[-1],

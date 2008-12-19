@@ -16,4 +16,4 @@ Tech:
 
 Notes:
   * I'm using svn versions of django and appengine_django plugins so there are a few warning of deprecated features when you start the server.
-  * I hate XML
+  * I hate XML, Python and Django

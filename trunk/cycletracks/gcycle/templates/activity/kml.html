@@ -1,5 +1,7 @@
 {% spaceless %}
 {% load extra_filters %}
+{% load timezone_filters %}
+
 <?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://earth.google.com/kml/2.2">
 <Document>
@@ -20,10 +22,10 @@
     <td>Name: {{ activity.name }}</td><td></td>
 </tr>
 <tr>
-  <td>Start Time:</td><td>{{ lap.starttime|time_to_offset:user.get_profile.tzoffset }}</td>
+  <td>Start Time:</td><td>{{ lap.starttime|localtime:user.get_profile.timezone }}</td>
 </tr>
 <tr>
-  <td>End Time:</td><td>{{ lap.endtime|time_to_offset:user.get_profile.tzoffset }}</td>
+  <td>End Time:</td><td>{{ lap.endtime|localtime:user.get_profile.timezone }}</td>
 </tr>
 <tr>
   <td>Distance:</td><td>{{ lap.total_meters|meters_to_prefered_distance:user.get_profile.use_imperial }}</td>

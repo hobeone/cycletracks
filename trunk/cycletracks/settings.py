@@ -98,6 +98,7 @@ TEMPLATE_DIRS = (
 
 INSTALLED_APPS = (
      'gcycle',
+     'timezones',
      'appengine_django',
      'django.contrib.auth',
 #    'django.contrib.sessions',

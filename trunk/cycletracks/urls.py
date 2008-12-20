@@ -26,5 +26,4 @@ urlpatterns = patterns('gcycle.controllers',
   url(r'^a/(\d+)\.data$',   'activity.data',   name='activity_data'),
   url(r'^t/(.+)$', 'activity.tag', name='tags_index'),
   (r'^user/settings/$', 'user.settings'),
-  (r'^user/update/$', 'user.update'),
 )

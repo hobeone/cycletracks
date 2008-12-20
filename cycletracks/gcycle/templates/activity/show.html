@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load extra_filters %}
+{% load timezone_filters %}
 
 {% block title %}CycleTracks: Activity {{ activity.name }}{% endblock %}
 
@@ -48,7 +49,7 @@
                     Start Time
                   </td>
                   <td>
-                    {{ activity.start_time|time_to_offset:activity.user.get_profile.tzoffset }}
+                    {{ activity.start_time|localtime:activity.user.get_profile.timezone }}
                   </td>
                 </tr>
 
@@ -57,7 +58,7 @@
                     End Time
                   </td>
                   <td>
-                    {{ activity.end_time|time_to_offset:activity.user.get_profile.tzoffset }}
+                    {{ activity.end_time|localtime:activity.user.get_profile.timezone }}
                   </td>
                 </tr>
 

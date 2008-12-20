@@ -6,33 +6,30 @@
 
 {% block content %}
 
-Username: {{ user.username }}
-<p>
-Use Imperial Units?: <span id="edit_units">{{user.get_profile.use_imperial}}</span>
-<script type="text/javascript">
-  $("#edit_units").editInPlace({
-    url: "/user/update/",
-    params: "ajax=yes",
-    value_required: true,
-    field_type: "select",
-    select_options: "True, False",
-    params: "user_id={{user.key}}&attribute=use_imperial",
-  });
-</script>
+<form action="/user/settings/" method="post">
+    {% for field in form.visible_fields %}
+        <div class="fieldWrapper">
+            {# Include the hidden fields in the form #}
+            {% if forloop.first %}
+                {% for hidden in form.hidden_fields %}
+                  {{ hidden }}
+                {% endfor %}
+            {% endif %}
+            {{ field.label_tag }}: {{ field }}
+        </div>
+    {% endfor %}
+  <input type="submit" value="Submit" />
+</form>
 
-<p>
-Time Zone Offset: <span id="edit_tzoffset">{{user.get_profile.tzoffset}}</span>
-<script type="text/javascript">
-  $("#edit_tzoffset").editInPlace({
-    url: "/user/update/",
-    params: "ajax=yes",
-    value_required: true,
-    field_type: "select",
-    select_options: "{{offsets}}",
-    params: "user_id={{user.key}}&attribute=tzoffset",
-  });
-</script>
+{% for field in form.visible_fields %}
+  {% if field.errors %}
+    {{ field.label_tag }}:
+    {% for error in field.errors %}
+      {{ error }},
+    {% endfor %}
+    {% endif %}
+    <br/>
+{% endfor %}
 
-<p>
-(Old settings will be cached for up to an hour)
+
 {% endblock %}

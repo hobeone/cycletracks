@@ -20,6 +20,8 @@ from gcycle.models import *
 from gcycle.templatetags.extra_filters import *
 from gcycle.lib.memoized import *
 
+import timezones.utils
+
 def require_valid_activity(f):
   def wrapper(request, *args, **kw):
     a = Activity.get_by_id(int(args[0]))
@@ -233,9 +235,8 @@ def data(request, activity):
         activity.bpm_list]
         )
     activity_data = []
-    st = activity.start_time + datetime.timedelta(
-        hours = activity.user.get_profile().tzoffset
-        )
+    st = timezones.utils.localtime_for_timezone(activity.start_time,
+        activity.user.get_profile().timezone)
 
     for t,a,s,c,d,b in data:
       activity_data.append('%s,%s,%s,%s,%s,%s' % (

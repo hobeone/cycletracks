@@ -16,6 +16,7 @@ import md5
 import bz2
 import datetime
 
+
 # Monkey patch appengine supplied User model.
 def new_getprofile(self):
   """
@@ -117,7 +118,7 @@ def getOrDefault(object, name, default):
 class UserProfile(BaseModel):
   user = db.ReferenceProperty(User, required=True)
   use_imperial = db.BooleanProperty(default=False)
-  tzoffset = db.IntegerProperty(default=0)
+  timezone = db.StringProperty()
   total_meters = db.FloatProperty(default=0.0)
   total_time = db.IntegerProperty(default=0)
   rolling_time = db.IntegerProperty(default=0)

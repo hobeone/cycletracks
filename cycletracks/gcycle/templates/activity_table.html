@@ -1,11 +1,12 @@
 {% load extra_filters %}
+{% load timezone_filters %}
 <table cellspacing="2" width="100%">
   <thead>
   <tr>
     <th><a href='{% url activity_sorted_index sorting="name"%}'>Activity Name</a></th>
     <th><a href='{% url activity_sorted_index sorting="start_time"%}'>Start Time</th>
-    <th><a href='{% url activity_sorted_index sorting="total_meters"%}'>Distance</a></th>
     <th><a href='{% url activity_sorted_index sorting="rolling_time"%}'>Rolling Time</a></th>
+    <th><a href='{% url activity_sorted_index sorting="total_meters"%}'>Distance</a></th>
     <th><a href='{% url activity_sorted_index sorting="average_speed"%}'>Avg Speed</a></th>
     <th>Tags</th>
   </tr>
@@ -14,9 +15,9 @@
     {% for entry in records.object_list %}
     <tr id="activity_{{entry.key.id}}">
       <td><a href="{{ entry.get_absolute_url }}">{{ entry.name }}</a></td>
-      <td>{{ entry.start_time|time_to_offset:user.get_profile.tzoffset|date:"n/j/y-H:i" }}</td>
-      <td>{{ entry.total_meters|meters_to_prefered_distance:user.get_profile.use_imperial}} {{user.get_profile.use_imperial|miles_or_km_units}}</td>
+      <td>{{ entry.start_time|localtime:user.get_profile.timezone|date:"n/j/y-H:i" }}</td>
       <td>{{ entry.rolling_time|seconds_to_human_readable }}</td>
+      <td>{{ entry.total_meters|meters_to_prefered_distance:user.get_profile.use_imperial}} {{user.get_profile.use_imperial|miles_or_km_units}}</td>
       <td>{{ entry.average_speed|kph_to_prefered_speed:user.get_profile.use_imperial }} {{user.get_profile.use_imperial|mph_or_kph_units}}</td>
       <td>
         {% for t in entry.tags %}

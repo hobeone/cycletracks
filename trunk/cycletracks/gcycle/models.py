@@ -473,6 +473,11 @@ class Lap(BaseModel):
           (len(self.geo_points), data_len)
       )
 
+
+    if self.average_speed > self.maximum_speed:
+      raise db.NotSavedError(
+          "Average speed can not be higher than maximum speed"
+          )
     return self
 
   def put(self):

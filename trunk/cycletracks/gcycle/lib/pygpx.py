@@ -108,16 +108,17 @@ def parse_segment(segment, starting_dist = 0):
   total_time = time_points[-1]
 
   # Weight the speeds by how long we were at that speed
-  avg = sum([ row[0] * row[1] for row in map(None,speed_list, delta_time)])
-  average_speed = avg / sum(delta_time) * 3.6
+  avg = sum([ row[0] * row[1] for row in map(None, speed_list, delta_time)])
+  average_speed = avg / total_time * 3.6
 
   rolling_time = total_time - paused_time
+
   lap_record = {
     'total_meters' : total_meters - starting_dist,
     'total_time_seconds': total_time,
     'total_rolling_time_seconds' : rolling_time,
     'starttime': start_time,
-    'maximum_speed': max(movingAverage3(speed_list)),
+    'maximum_speed': max(movingAverage3(speed_list)) * 3.6,
     'average_speed': average_speed,
     'endtime': start_time + datetime.timedelta(seconds=time_points[-1]),
     'geo_points' : geo_points,

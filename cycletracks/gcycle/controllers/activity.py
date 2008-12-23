@@ -243,9 +243,9 @@ def data(request, activity):
         (st + datetime.timedelta(seconds=t)).isoformat(),
         meters_or_feet(a,use_imperial),
         kph_to_prefered_speed(s,use_imperial),
-        c,
+        c or 0,
         meters_to_prefered_distance(d,use_imperial),
-        b
+        b or 0,
         )
       )
 

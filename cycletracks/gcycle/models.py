@@ -372,8 +372,6 @@ class Activity(BaseModel):
     )
     d.put()
     for lap_dict in act_dict['laps']:
-      lap_dict['geo_points'] = (
-          ['%f,%f' % tuple(i) for i in lap_dict['geo_points']])
       lap = Lap(
         parent = activity,
         activity = activity,

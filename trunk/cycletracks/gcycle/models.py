@@ -95,7 +95,53 @@ class CsvListProperty(db.Property):
   def make_value_from_datastore(self, value):
     if value is None:
       return []
-    return map(self.cast_type,value.split(self.split_on))
+    return map(self.cast_type, value.split(self.split_on))
+
+
+class GeoPointList(db.Property):
+  """Encodes a 2d list of floats for storage in bigtable.  Used to store the
+  geo_point property of laps."""
+  data_type = datastore_types.Text
+
+  def __init__(self, verbose_name=None, name=None, default=None,
+      required=False, validator=None, choices=None, split_on=':',
+      cast_type=float):
+    super(GeoPointList, self).__init__(verbose_name=None, name=None,
+        default=None, required=False, validator=None, choices=None)
+    self.cast_type = cast_type
+    self.split_on = split_on
+
+  def validate(self, value):
+    if value is not None and not isinstance(value, list):
+      try:
+        if isinstance(value, str):
+          value = self.make_value_from_datastore(value)
+        else:
+          value = list(value)
+      except TypeError, err:
+        raise BadValueError('Property %s must be convertible '
+                            'to a list instance (%s)' % (self.name, err))
+
+    if value is not None:
+      value = [map(self.cast_type,points) for points in value]
+    value = super(GeoPointList, self).validate(value)
+    if value is not None and not isinstance(value, list):
+      raise BadValueError('Property %s must be a Text instance' % self.name)
+    return value
+
+  def get_value_for_datastore(self, model_instance):
+    value = super(GeoPointList, self).get_value_for_datastore(
+        model_instance)
+    if value is None or len(value) == 0:
+      return None
+    return datastore_types.Text(
+        ':'.join([','.join(map(str,pts)) for pts in value])
+        )
+
+  def make_value_from_datastore(self, value):
+    if value is None:
+      return []
+    return [ map(self.cast_type, vstring.split(',')) for vstring in value.split(self.split_on)]
 
 
 class AutoStringListProperty(db.StringListProperty):
@@ -395,20 +441,12 @@ class Activity(BaseModel):
       dl.extend(d.distance_list)
     return dl
 
-  @property
-  def to_kml(self):
-    points = []
-    for l in self.lap_set:
-      points.extend(l.geo_points)
-
-    points =  ['%s,%s,0' % (l[1],l[0]) for l in [l.split(',') for l in points]]
-    return ' '.join(points)
-
 
 class SourceDataFile(BaseModel):
   activity = db.ReferenceProperty(Activity, required=True)
   data = BzipBlobProperty(required=True)
   timestamp = db.DateTimeProperty(auto_now=True)
+
 
 class Lap(BaseModel):
   activity = db.ReferenceProperty(Activity, required=True)
@@ -429,7 +467,7 @@ class Lap(BaseModel):
   speed_list = CsvListProperty(required=True, cast_type=float)
   distance_list = CsvListProperty(required=True, cast_type=float)
   cadence_list = CsvListProperty(cast_type=int)
-  geo_points = CsvListProperty(split_on=':')
+  geo_points = GeoPointList()
   timepoints = CsvListProperty(required=True, cast_type=int)
   total_ascent = db.FloatProperty(default=0.0)
   total_descent = db.FloatProperty(default=0.0)
@@ -487,8 +525,7 @@ class Lap(BaseModel):
   @property
   @memoized
   def to_kml(self):
-    pts = (l.split(',') for l in self.geo_points)
-    points = ['%s,%s,0' % (l[1],l[0]) for l in pts]
+    points = ['%s,%s,0' % (l[1],l[0]) for l in self.geo_points]
     return ' '.join(points)
 
 

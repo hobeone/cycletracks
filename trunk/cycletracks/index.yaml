@@ -10,6 +10,19 @@ indexes:
 # automatically uploaded to the admin console when you next deploy
 # your application using appcfg.py.
 
+# Used once in query history.
+- kind: Activity
+  properties:
+  - name: parsed_at
+    direction: desc
+
+# Used 4 times in query history.
+- kind: Activity
+  properties:
+  - name: source_type
+  - name: parsed_at
+    direction: desc
+
 # Unused in query history -- copied from input.
 - kind: Activity
   properties:
@@ -53,7 +66,7 @@ indexes:
   - name: rolling_time
     direction: desc
 
-# Used 2 times in query history.
+# Used 4 times in query history.
 - kind: Activity
   properties:
   - name: user

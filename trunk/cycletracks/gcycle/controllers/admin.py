@@ -7,6 +7,8 @@ from google.appengine.api import users
 
 from gcycle.models import *
 
+from gcycle.lib.pytcx import InvalidTCXFormat
+
 @auth_decorators.login_required
 def users(request):
   user = request.user
@@ -45,13 +47,18 @@ def reparse_activity(request):
   acts = Activity.all()
 
   acts.filter('parsed_at <',
-      datetime.datetime.utcnow() - datetime.timedelta(day=1))
+      datetime.datetime.utcnow() - datetime.timedelta(hours=2))
+#  acts.filter('source_type =', 'tcx')
+  acts.order('-parsed_at')
 
-  for a in acts.fetch(4):
+
+  for a in acts.fetch(6):
     try:
       a.reparse()
-      responses.append('reparsed %s' % a.key())
+      responses.append('reparsed %s' % a.key().id())
     except db.NotSavedError:
       responses.append('activity %s missing source file' % a.key())
+    except InvalidTCXFormat:
+      responses.append('not a tcx file')
 
   return HttpResponse('<br>'.join(responses))

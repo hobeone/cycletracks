@@ -24,6 +24,8 @@ pp = pprint.PrettyPrinter(indent=2)
 from gcycle.test.test_activity_controller import *
 from gcycle.test.test_site_controller import *
 from gcycle.test.test_activity_model import *
+from gcycle.test.test_lap_model import *
+from gcycle.test.test_custom_db_types import *
 
 class testModel(BaseModel):
   csv = CsvListProperty(str)

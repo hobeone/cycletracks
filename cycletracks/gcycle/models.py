@@ -311,7 +311,7 @@ class Activity(BaseModel):
     if source is None:
       raise db.NotSavedError('no source file to reparse')
 
-    laps = self.lap_set.fetch(self.lap_set.count())
+    laps = self.lap_set.fetch(100)
     return db.run_in_transaction(self._reparse, source, laps)
 
   def _reparse(self, source, laps):
@@ -324,7 +324,7 @@ class Activity(BaseModel):
 
     db.delete(laps)
     for lap_dict in activity_dict['laps']:
-      lap = Lap(activity = self, **lap_dict)
+      lap = Lap(parent = self, activity = self, **lap_dict)
       lap.put()
 
 

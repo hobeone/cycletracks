@@ -5,33 +5,34 @@ api_version: 1
 
 default_expiration: "2d"
 
-skip_files: |
- ^(.*/)?(
- (app\.yaml)|
- (app\.yml)|
- (index\.yaml)|
- (index\.yml)|
- (gcycle/test/.*)|
- (gcycle/tests.py)|
- (django/bin/.*)|
- (django/contrib/admin/.*)|
- (django/contrib/admindocs/.*)|
- (django/contrib/comments/.*)|
- (django/contrib/flatpages/.*)|
- (django/contrib/markup/.*)|
- (django/contrib/sitemaps/.*)|
- (django/contrib/syndication/.*)|
- (django/contrib/gis/.*)|
- (django/contrib/databrowse/.*)|
- (django/contrib/localflavor/.*)|
- (django/contrib/csrf/.*)|
- (django/conf/locale.*)|
- (#.*#)|
- (.*~)|
- (.*\.py[co])|
- (.*/RCS/.*)|
- (\..*)|
- )$
+skip_files:
+- ^(.*/)?app\.yaml
+- ^(.*/)?app\.yml
+- ^(.*/)?index\.yaml
+- ^(.*/)?index\.yml
+- ^(.*/)?#.*#
+- ^(.*/)?.*~
+- ^(.*/)?.*\.py[co]
+- ^(.*/)?.*/RCS/.*
+- ^(.*/)?\..*
+- ^(.*/)?.*\.bak$
+- ^(.*/)?gcycle/test/.*
+- ^(.*/)?gcycle/tests.py
+- ^(.*/)?django/bin/.*
+- ^(.*/)?django/contrib/admin/.*
+- ^(.*/)?django/contrib/admindocs/.*
+- ^(.*/)?django/contrib/comments/.*
+- ^(.*/)?django/contrib/flatpages/.*
+- ^(.*/)?django/contrib/markup/.*
+- ^(.*/)?django/contrib/sitemaps/.*
+- ^(.*/)?django/contrib/syndication/.*
+- ^(.*/)?django/contrib/gis/.*
+- ^(.*/)?django/contrib/databrowse/.*
+- ^(.*/)?django/contrib/localflavor/.*
+- ^(.*/)?django/contrib/csrf/.*
+- ^(.*/)?django/conf/locale.*
+- .svn
+
 
 handlers:
 - url: /static

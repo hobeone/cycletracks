@@ -20,12 +20,13 @@ datafixture = GoogleDatastoreFixture(env=models, style=NamedDataStyle())
 
 class TestActivityModel(TestCase):
   def setUp(self):
+    apiproxy_stub_map.apiproxy.GetStub('datastore_v3').Clear()
     self.data = datafixture.data(UserData, ActivityData, LapData,
         SourceDataFileData)
     self.data.setup()
 
   def tearDown(self):
-      self.data.teardown()
+    self.data.teardown()
 
   def testPermalink(self):
     a = models.Activity.all().get()

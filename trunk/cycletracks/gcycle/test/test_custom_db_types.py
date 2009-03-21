@@ -5,12 +5,11 @@ from django.core.urlresolvers import reverse
 
 from google.appengine.ext import db
 from google.appengine.api import apiproxy_stub_map
-from appengine_django.auth.models import User
-from appengine_django.models import BaseModel
+from ragendja.auth.google_models import User
 
 from gcycle import models
 
-class GeoPointTestModel(BaseModel):
+class GeoPointTestModel(db.Model):
   geo_points = models.GeoPointList()
 
 

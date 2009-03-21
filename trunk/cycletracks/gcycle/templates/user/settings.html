@@ -7,17 +7,11 @@
 {% block content %}
 
 <form action="/user/settings/" method="post">
-    {% for field in form.visible_fields %}
-        <div class="fieldWrapper">
-            {# Include the hidden fields in the form #}
-            {% if forloop.first %}
-                {% for hidden in form.hidden_fields %}
-                  {{ hidden }}
-                {% endfor %}
-            {% endif %}
-            {{ field.label_tag }}: {{ field }}
-        </div>
-    {% endfor %}
+  {% for field in form %}
+  <div class="fieldWrapper">
+    {% if not field.is_hidden %}{{ field.label_tag }}:{%endif%} {{ field }}
+  </div>
+  {% endfor %}
   <input type="submit" value="Submit" />
 </form>
 
@@ -30,6 +24,5 @@
     {% endif %}
     <br/>
 {% endfor %}
-
 
 {% endblock %}

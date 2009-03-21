@@ -1,4 +1,6 @@
 from django.conf.urls.defaults import *
+from ragendja.urlsauto import urlpatterns
+from ragendja.auth.urls import urlpatterns as auth_patterns
 
 from gcycle import controllers
 

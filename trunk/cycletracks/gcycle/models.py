@@ -1,6 +1,3 @@
-from appengine_django.models import BaseModel
-from appengine_django.auth.models import User
-
 from google.appengine.ext import db
 from google.appengine.api import datastore_types
 
@@ -11,6 +8,8 @@ from gcycle.lib.average import *
 
 from django.core.exceptions import ImproperlyConfigured
 from django.db import models
+
+from ragendja.auth.google_models import User
 
 import md5
 import bz2
@@ -161,7 +160,7 @@ def getOrDefault(object, name, default):
   if v is None: v = default
   return v
 
-class UserProfile(BaseModel):
+class UserProfile(db.Model):
   user = db.ReferenceProperty(User, required=True)
   use_imperial = db.BooleanProperty(default=False)
   timezone = db.StringProperty()
@@ -235,7 +234,7 @@ class UserProfile(BaseModel):
     return self.put()
 
 
-class Activity(BaseModel):
+class Activity(db.Model):
   user = db.ReferenceProperty(User, required=True)
   name = db.StringProperty(required=True)
   sport = db.StringProperty()
@@ -440,13 +439,13 @@ class Activity(BaseModel):
     return dl
 
 
-class SourceDataFile(BaseModel):
+class SourceDataFile(db.Model):
   activity = db.ReferenceProperty(Activity, required=True)
   data = BzipBlobProperty(required=True)
   timestamp = db.DateTimeProperty(auto_now=True)
 
 
-class Lap(BaseModel):
+class Lap(db.Model):
   activity = db.ReferenceProperty(Activity, required=True)
   total_meters = db.FloatProperty(required=True)
   total_time_seconds = db.IntegerProperty(required=True)

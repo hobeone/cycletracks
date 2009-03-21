@@ -20,7 +20,6 @@ from timezones import forms as tzforms
 
 class UserForm(forms.Form):
   user_id = forms.CharField(required=True, widget=forms.HiddenInput)
-  username = forms.CharField(max_length=100, required=True)
   timezone =  tzforms.TimeZoneField(required=True)
   use_imperial = forms.BooleanField(required=False)
 
@@ -37,7 +36,6 @@ def settings(request):
         return render_to_response('error.html',
         {'error': "You are not allowed to edit this user"})
 
-      update_user.username = form.cleaned_data['username']
       update_user.get_profile().timezone = str(form.cleaned_data['timezone'])
       update_user.get_profile().use_imperial = form.cleaned_data['use_imperial']
       update_user.put()
@@ -54,5 +52,6 @@ def settings(request):
   return render_to_response('user/settings.html',
       {
        'form': form,
+       'data': data,
       }
   )

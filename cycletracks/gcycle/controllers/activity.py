@@ -5,7 +5,6 @@ from django.shortcuts import render_to_response
 from django.template import loader, Context
 
 from django.utils import simplejson
-from django.contrib.auth import decorators as auth_decorators
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from django.core.urlresolvers import reverse
 
@@ -19,6 +18,7 @@ import datetime
 from gcycle.models import *
 from gcycle.templatetags.extra_filters import *
 from gcycle.lib.memoized import *
+from gcycle.lib import auth_decorators
 
 import timezones.utils
 
@@ -26,7 +26,7 @@ def require_valid_activity(f):
   def wrapper(request, *args, **kw):
     a = Activity.get_by_id(int(args[0]))
     if a is None:
-      raise Http404
+      return HttpResponseNotFound
     return f(request, a)
 
   return wrapper

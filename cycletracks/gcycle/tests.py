@@ -12,8 +12,7 @@ from google.appengine.ext import db
 from google.appengine.api import users
 from google.appengine.api import apiproxy_stub_map
 
-from appengine_django.auth.models import User
-from appengine_django.models import BaseModel
+from ragendja.auth.google_models import User
 
 from django.test.client import Client
 
@@ -27,7 +26,7 @@ from gcycle.test.test_activity_model import *
 from gcycle.test.test_lap_model import *
 from gcycle.test.test_custom_db_types import *
 
-class testModel(BaseModel):
+class testModel(db.Model):
   csv = CsvListProperty(str)
 
 class testCsvListPropery(unittest.TestCase):

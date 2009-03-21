@@ -119,6 +119,7 @@ class TestActivityController(TestCase):
   def test_delete_on_invalid_id(self):
     url = reverse('activity_delete', args=[1000000000])
     response = self.client.post(url)
+    print response.status_code
     self.failUnlessEqual(response.status_code, 404)
 
   def test_update_on_valid_id(self):

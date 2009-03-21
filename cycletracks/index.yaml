@@ -66,7 +66,7 @@ indexes:
   - name: rolling_time
     direction: desc
 
-# Used 2 times in query history.
+# Used 8 times in query history.
 - kind: Activity
   properties:
   - name: user
@@ -98,5 +98,27 @@ indexes:
 - kind: Activity
   ancestor: yes
   properties:
+  - name: start_time
+    direction: desc
+
+# Unused in query history -- copied from input.
+- kind: gcycle_activity
+  properties:
+  - name: tags
+  - name: user
+  - name: start_time
+    direction: desc
+
+# Unused in query history -- copied from input.
+- kind: gcycle_activity
+  properties:
+  - name: user
+  - name: desc
+    direction: desc
+
+# Unused in query history -- copied from input.
+- kind: gcycle_activity
+  properties:
+  - name: user
   - name: start_time
     direction: desc

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.5
 if __name__ == '__main__':
     from common.appenginepatch.aecmd import setup_env
     setup_env(manage_py_env=True)

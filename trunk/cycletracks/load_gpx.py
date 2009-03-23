@@ -1,12 +1,14 @@
-#!/usr/bin/python
-import main
+#!/usr/bin/python2.5
+from common.appenginepatch.aecmd import setup_env
+setup_env(manage_py_env=True)
 from gcycle.models import *
 
 from gcycle.lib import pygpx
 import glob
 import pprint
 pp = pprint.PrettyPrinter(indent=2)
-from appengine_django.auth.models import User
+from ragendja.auth.google_models import User
+
 from google.appengine.api import users
 import os
 import sys

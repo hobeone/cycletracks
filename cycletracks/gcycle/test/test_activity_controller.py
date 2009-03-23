@@ -91,13 +91,13 @@ class TestActivityController(TestCase):
     db.delete(activity.sourcedatafile_set.get())
     activity.put()
     url = reverse('activity_source', args=[activity.key().id()])
-    response = self.client.get(url)
+    response = self.client.get(url + '/')
     self.failUnlessEqual(response.status_code, 404)
 
   def test_shows_errror_on_invalid_id(self):
     for action in ['show', 'kml', 'data', 'public', 'source']:
       url = reverse('activity_%s' % action, args=[10000000000])
-      response = self.client.get(url)
+      response = self.client.get(url + '/')
       self.failUnlessEqual(response.status_code, 404)
 
 
@@ -118,8 +118,7 @@ class TestActivityController(TestCase):
 
   def test_delete_on_invalid_id(self):
     url = reverse('activity_delete', args=[1000000000])
-    response = self.client.post(url)
-    print response.status_code
+    response = self.client.post(url + '/')
     self.failUnlessEqual(response.status_code, 404)
 
   def test_update_on_valid_id(self):
@@ -138,7 +137,7 @@ class TestActivityController(TestCase):
 
   def test_update_on_invalid_id(self):
     url = reverse('activity_show', args=[10000000000000])
-    response = self.client.post(url)
+    response = self.client.post(url + '/')
     self.failUnlessEqual(response.status_code, 404)
 
   def test_update_on_invalid_args(self):

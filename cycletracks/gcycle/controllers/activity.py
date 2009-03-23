@@ -289,7 +289,6 @@ def update(request, activity):
 
 @auth_decorators.login_required
 @require_valid_activity
-
 def delete(request, activity):
   if request.method == 'POST':
     if request.user != activity.user:

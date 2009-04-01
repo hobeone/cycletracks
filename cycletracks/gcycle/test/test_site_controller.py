@@ -37,10 +37,22 @@ class TestSiteController(TestCase):
     response = self.client.get(url)
     self.assertContains(response, 'Upload', status_code=200)
 
-  def test_upload_with_valid_upload(self):
+  def test_upload_with_valid_upload_tcx(self):
     url = reverse('upload')
     tcx_file = open('gcycle/test/valid_multi_lap.tcx')
     response = self.client.post(url, {'tags' : 'test', 'file': tcx_file})
+    self.failUnlessEqual(response.status_code, 302)
+
+  def test_upload_with_valid_upload_gpx10(self):
+    url = reverse('upload')
+    gpx_file = open('gcycle/test/valid_single_segment_10.gpx')
+    response = self.client.post(url, {'tags' : 'test', 'file': gpx_file})
+    self.failUnlessEqual(response.status_code, 302)
+
+  def test_upload_with_valid_upload_gpx11(self):
+    url = reverse('upload')
+    gpx_file = open('gcycle/test/valid_single_segment_11.gpx')
+    response = self.client.post(url, {'tags' : 'test', 'file': gpx_file})
     self.failUnlessEqual(response.status_code, 302)
 
   def test_upload_with_invalid_post(self):

@@ -1,5 +1,6 @@
-#!/usr/bin/python
-import main
+#!/usr/bin/python2.5
+from common.appenginepatch.aecmd import setup_env
+setup_env(manage_py_env=True)
 from django.utils import simplejson
 
 import os

@@ -355,12 +355,13 @@ class Activity(db.Model):
     return activity
 
   @classmethod
-  def create_from_gpx(self, gpx_data, user, tags = []):
-    return db.run_in_transaction(self._create_from_gpx, gpx_data, user, tags)
+  def create_from_gpx(self, gpx_data, user, version, tags = []):
+    return db.run_in_transaction(self._create_from_gpx, gpx_data, user, version,
+                                 tags)
 
   @classmethod
-  def _create_from_gpx(self, gpx_data, user, tags = []):
-    act_dict = pygpx.parse_gpx(gpx_data)
+  def _create_from_gpx(self, gpx_data, user, version, tags):
+    act_dict = pygpx.parse_gpx(gpx_data, version)
     activity = Activity(user = user, **act_dict)
     activity.source_type = 'gpx'
     activity.put()

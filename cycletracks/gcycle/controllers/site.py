@@ -140,7 +140,9 @@ def handle_uploaded_file(user, filedata, tags=[]):
   for file in files:
     act = None
     if re.search(r'xmlns="http://www.topografix.com/GPX/1/0"', file):
-      act = Activity.create_from_gpx(file, user, tags)
+      act = Activity.create_from_gpx(file, user, version="1/0", tags=tags)
+    elif re.search(r'xmlns="http://www.topografix.com/GPX/1/1"', file):
+      act = Activity.create_from_gpx(file, user, version="1/1", tags=tags)
     else:
       act = Activity.create_from_tcx(file, user, tags)
     # belongs in the user or activity model, but Transaction semantics in app

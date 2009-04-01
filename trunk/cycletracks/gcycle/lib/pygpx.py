@@ -13,17 +13,18 @@ from gcycle.lib.average import *
 import pprint
 pp = pprint.PrettyPrinter(indent=2)
 
-mainNS=string.Template("{http://www.topografix.com/GPX/1/0}$tag")
-
-wptTag=mainNS.substitute(tag="trkpt")
-timeTag=mainNS.substitute(tag="time")
-elevationTag=mainNS.substitute(tag="ele")
-segmentTag=mainNS.substitute(tag="trkseg")
-
 
 EARTH_RADIUS = 6371 # km
 
 PAUSED_MIN_SPEED = 1.34112 # meters per second
+
+
+class GPXExpception(Exception):
+  pass
+
+class InvalidGPXFormat(GPXExpception):
+  pass
+
 
 def parse_zulu(s):
     return datetime.datetime(int(s[0:4]), int(s[5:7]), int(s[8:10]),
@@ -47,7 +48,7 @@ def calculate_speed(start_time, start_distance, end_time, end_distance):
   if tdelta == 0: return 0
   return (end_distance - start_distance) / tdelta
 
-def parse_segment(segment, starting_dist = 0):
+def parse_segment(segment, tags, starting_dist = 0):
   time_points = []
   delta_time = []
   geo_points = []
@@ -61,9 +62,9 @@ def parse_segment(segment, starting_dist = 0):
 
   start_time = None
   prev_time = None
-  for wpt in segment.findall(wptTag):
+  for wpt in segment.findall(tags['wpt']):
     geo_points.append([float(wpt.get("lat")),float(wpt.get("lon"))])
-    waypoint_time = parse_zulu(wpt.findtext(timeTag))
+    waypoint_time = parse_zulu(wpt.findtext(tags['time']))
     if start_time is None:
       start_time = waypoint_time
     time_points.append((waypoint_time - start_time).seconds)
@@ -72,7 +73,7 @@ def parse_segment(segment, starting_dist = 0):
     else:
       delta_time.append((waypoint_time - prev_time).seconds)
     prev_time = waypoint_time
-    altitude_list.append(float(wpt.findtext(elevationTag)))
+    altitude_list.append(float(wpt.findtext(tags['elevation'])))
     if len(geo_points) > 1:
       distance_list.append(
           distance_list[-1] +
@@ -92,6 +93,15 @@ def parse_segment(segment, starting_dist = 0):
     else:
       distance_list.append(starting_dist)
       speed_list.append(0)
+
+  if len(distance_list) < 2:
+    # Silently ignore segments without any movement.
+    # Garmin eTrex create these sometimes when warming up.
+    return None
+
+  if len(speed_list) < 3:
+    # movingAverage3 needs at least 3 points
+    return None
 
   total_ascent = 0.0
   total_descent = 0.0
@@ -131,18 +141,28 @@ def parse_segment(segment, starting_dist = 0):
     }
   return lap_record
 
-def parse_gpx(filedata):
+def parse_gpx(filedata, version):
   et=ET.parse(StringIO.StringIO(filedata))
+  mainNS=string.Template("{http://www.topografix.com/GPX/%s}$tag" % version)
+
+  tags = {
+    'wpt': mainNS.substitute(tag="trkpt"),
+    'time': mainNS.substitute(tag="time"),
+    'elevation': mainNS.substitute(tag="ele"),
+    'segment': mainNS.substitute(tag="trkseg")
+  }
 
   lap_records = []
   dist = 0
-  for lap in et.findall("//"+segmentTag):
-    lap_records.append(parse_segment(lap, starting_dist = dist))
+  for lap in et.findall("//"+tags['segment']):
+    lap_record = parse_segment(lap, tags, starting_dist = dist)
+    if lap_record:
+      lap_records.append(lap_record)
     dist = sum([l['total_meters'] for l in lap_records])
 
   if not lap_records:
-    raise InvalidTCXFormat(
-      "Activities must have at least 1 lap over 10 meters or 2 minutes.")
+    raise InvalidGPXFormat(
+      "Activity does not appear to contain any useful tracks.")
 
   encoded_activity = pytcx.encode_activity_points(
       [l['geo_points'] for l in lap_records])

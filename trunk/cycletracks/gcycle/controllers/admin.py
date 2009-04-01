@@ -8,6 +8,7 @@ from google.appengine.api import users
 from gcycle.models import *
 
 from gcycle.lib.pytcx import InvalidTCXFormat
+from gcycle.lib.pygpx import InvalidGPXFormat
 
 @auth_decorators.login_required
 def users(request):
@@ -60,5 +61,7 @@ def reparse_activity(request):
       responses.append('activity %s missing source file' % a.key())
     except InvalidTCXFormat:
       responses.append('not a tcx file')
+    except InvalidGPXFormat:
+      responses.append('not a gpx file')
 
   return HttpResponse('<br>'.join(responses))

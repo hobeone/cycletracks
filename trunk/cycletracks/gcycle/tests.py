@@ -6,6 +6,7 @@ from gcycle.models import *
 from gcycle.controllers import site
 from gcycle.controllers import activity
 from gcycle.lib import pytcx
+from gcycle.lib import pygpx
 
 from google.appengine.api import datastore_errors
 from google.appengine.ext import db
@@ -121,6 +122,123 @@ asd
 
     self.assertEqual(a.total_ascent, 0)
     self.assertAlmostEqual(a.total_descent, 18.263, 2)
+
+class testGpxParser(unittest.TestCase):
+  def Gpx10Contents(self, data):
+    """Return a GPX 1.0 file containing data."""
+    return ("""<?xml version="1.0"?><gpx version="1.0"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns="http://www.topografix.com/GPX/1/0"
+xsi:schemaLocation="http://www.topografix.com/GPX/1/0 http://www.topografix.com/GPX/1/0/gpx.xsd">"""
+            + data + """</gpx>""")
+
+  def Gpx11Contents(self, data):
+    """Return a GPX 1.1 file containing data."""
+    return ("""<?xml version="1.0"?><gpx version="1.1" creator="" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns="http://www.topografix.com/GPX/1/1"
+xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">"""
+            + data + """</gpx>""")
+
+  def testValidParse10(self):
+    testfile = open('gcycle/test/valid_single_segment_10.gpx').read()
+    act = pygpx.parse_gpx(testfile, '1/0')
+    self.assertFalse('maximum_bpm' in act)
+    self.assertFalse('total_calories' in act)
+    self.assertEqual(act['end_point'], '37.996776,-122.506612')
+    self.assertFalse('average_bpm' in act)
+    self.assertFalse('average_cadence' in act)
+    self.assertAlmostEqual(act['average_speed'], 10.141, 2)
+    self.assertFalse('maximum_bpm' in act)
+    self.assertFalse('maximum_cadence' in act)
+    self.assertAlmostEqual(act['maximum_speed'], 18.266, 2)
+    self.assertEqual(len(act['laps']), 1)
+    self.assertFalse('total_calories' in act)
+    self.assertAlmostEqual(act['total_meters'], 138.03, 2)
+    self.assertEqual(act['total_time'], 49)
+
+    u = User(username = 'test', user = users.User('test@ex.com'))
+    u.put()
+    a = Activity(user = u, **act)
+    self.assert_(a)
+    a.put()
+    for l in act['laps']:
+      lap = Lap(activity = a, **l)
+      lap.put()
+
+      self.assertEqual(len(lap.speed_list), len(lap.altitude_list))
+      self.assertFalse(lap.cadence_list)
+      self.assertFalse(lap.bpm_list)
+      self.assertEqual(len(lap.speed_list), len(lap.timepoints))
+      self.assertEqual(len(lap.speed_list), len(lap.geo_points))
+
+      self.assertAlmostEqual(lap.total_ascent, 12.8, 2)
+      self.assertAlmostEqual(lap.total_descent, 3.22, 2)
+
+    self.assertAlmostEqual(a.total_ascent, 12.8, 2)
+    self.assertAlmostEqual(a.total_descent, 3.22, 2)
+
+  def testEmptyLap(self):
+    self.assertRaises(pygpx.InvalidGPXFormat, pygpx.parse_gpx,
+                      self.Gpx10Contents(""), '1/0')
+    self.assertRaises(pygpx.InvalidGPXFormat, pygpx.parse_gpx,
+                      self.Gpx11Contents(""), '1/1')
+
+  def testOnePointSegment(self):
+    one_point_trk = """<trk>
+  <name>ACTIVE LOG105449</name>
+  <trkseg>
+  <trkpt lat="37.996256" lon="-122.507784">
+    <ele>272.165</ele>
+    <time>2009-03-21T18:42:45Z</time>
+  </trkpt>
+  </trkseg></trk>"""
+    self.assertRaises(pygpx.InvalidGPXFormat, pygpx.parse_gpx,
+                      self.Gpx10Contents(one_point_trk), '1/0')
+    self.assertRaises(pygpx.InvalidGPXFormat, pygpx.parse_gpx,
+                      self.Gpx11Contents(one_point_trk), '1/1')
+
+  def testTwoPointSegment(self):
+    two_point_trk = """<trk><trkseg>
+  <trkpt lat="37.996364" lon="-122.50774199999999">
+    <ele>273.50599999999997</ele>
+    <time>2009-03-21T18:42:51Z</time>
+  </trkpt>
+  <trkpt lat="37.996462999999999" lon="-122.507684">
+    <ele>273.89600000000002</ele>
+    <time>2009-03-21T18:42:57Z</time>
+  </trkpt>
+  </trkseg></trk>"""
+    self.assertRaises(pygpx.InvalidGPXFormat, pygpx.parse_gpx,
+                      self.Gpx10Contents(two_point_trk), '1/0')
+    self.assertRaises(pygpx.InvalidGPXFormat, pygpx.parse_gpx,
+                      self.Gpx11Contents(two_point_trk), '1/1')
+
+  def testThreePointSegment(self):
+    three_point_trk = """<trk><trkseg>
+  <trkpt lat="37.996364" lon="-122.50774199999999">
+    <ele>273.50599999999997</ele>
+    <time>2009-03-21T18:42:51Z</time>
+  </trkpt>
+  <trkpt lat="37.996462999999999" lon="-122.507684">
+    <ele>273.89600000000002</ele>
+    <time>2009-03-21T18:42:57Z</time>
+  </trkpt>
+  <trkpt lat="37.996588000000003" lon="-122.507561">
+    <ele>271.34199999999998</ele>
+    <time>2009-03-21T18:43:03Z</time>
+  </trkpt>
+  </trkseg></trk>"""
+    activity_record = pygpx.parse_gpx(self.Gpx10Contents(three_point_trk),
+                                      '1/0')
+    self.assertEqual(len(activity_record['laps']), 1)
+    self.assertAlmostEqual(activity_record['total_meters'], 29.71, 2)
+
+    activity_record = pygpx.parse_gpx(self.Gpx11Contents(three_point_trk),
+                                      '1/1')
+    self.assertEqual(len(activity_record['laps']), 1)
+    self.assertAlmostEqual(activity_record['total_meters'], 29.71, 2)
+
 
 class UserTestCase(unittest.TestCase):
   def test_required_fields(self):

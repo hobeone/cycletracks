@@ -151,6 +151,7 @@ def show_activity(request, activity):
       'use_imperial' : use_imperial,
       'pts': simplejson.dumps(activity.encoded_points),
       'levs' : simplejson.dumps(activity.encoded_levels),
+      'data' : simplejson.dumps(_activity_data(activity, use_imperial)),
     }
   activity_stats['show_locations'] = show_locations
   return render_to_response('activity/show.html', activity_stats)
@@ -225,32 +226,7 @@ def data(request, activity):
 
   if activity_data is None:
     use_imperial = activity.user.get_profile().use_imperial
-    data = []
-    data = map(None, *[
-        activity.time_list,
-        activity.altitude_list,
-        activity.speed_list,
-        activity.cadence_list,
-        activity.distance_list,
-        activity.bpm_list]
-        )
-    activity_data = []
-    st = timezones.utils.localtime_for_timezone(activity.start_time,
-        activity.user.get_profile().timezone)
-
-    for t,a,s,c,d,b in data:
-      activity_data.append('%s,%s,%s,%s,%s,%s' % (
-        (st + datetime.timedelta(seconds=t)).isoformat(),
-        meters_or_feet(a,use_imperial),
-        kph_to_prefered_speed(s,use_imperial),
-        c or 0,
-        meters_to_prefered_distance(d,use_imperial),
-        b or 0,
-        )
-      )
-
-  if not memcache.set(data_cache_key(activity), activity_data, 60 * 60):
-    logging.error("Memcache set failed for %s" % data_cache_key(activity))
+    activity_data = _activity_data(activity, use_imperial)
 
 
   return HttpResponse(
@@ -258,6 +234,36 @@ def data(request, activity):
         { 'data' : "\n".join(activity_data)}),
       mimetype='text/plain'
       )
+
+def _activity_data(activity, use_imperial):
+  data = []
+  data = map(None, *[
+      activity.time_list,
+      activity.altitude_list,
+      activity.speed_list,
+      activity.cadence_list,
+      activity.distance_list,
+      activity.bpm_list]
+      )
+  activity_data = []
+  st = timezones.utils.localtime_for_timezone(activity.start_time,
+      activity.user.get_profile().timezone)
+
+  for t,a,s,c,d,b in data:
+    activity_data.append('%s,%s,%s,%s,%s,%s' % (
+      (st + datetime.timedelta(seconds=t)).isoformat(),
+      meters_or_feet(a,use_imperial),
+      kph_to_prefered_speed(s,use_imperial),
+      c or 0,
+      meters_to_prefered_distance(d,use_imperial),
+      b or 0,
+      )
+    )
+
+  if not memcache.set(data_cache_key(activity), activity_data, 60 * 60):
+    logging.error("Memcache set failed for %s" % data_cache_key(activity))
+
+  return activity_data
 
 
 UPDATEABLE_ACTIVITY_ATTRIBUTES = ['comment', 'name', 'public', 'tags']

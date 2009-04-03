@@ -434,7 +434,8 @@
     bpmplot = Timeplot.create(document.getElementById("bpmchart"),
         bpmInfo);
 
-    altitudeplot.loadText("{% url activity_data activity.key.id %}", ",", eventSource);
+    var activity_data = {{data|safe}};
+    eventSource.loadText(activity_data.join('\n'), ',', document.location.href);
   };
 google.setOnLoadCallback(drawGraphs);
 

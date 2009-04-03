@@ -9,7 +9,7 @@ MEDIA_VERSION = 1
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = 'hvhxfm5u=^*v&doo#oq8x*eg8+1&9sxbye@=umutgn^t_sg_nx'
 
-DEBUG = True
+DEBUG = os.getenv('SERVER_SOFTWARE').split('/')[0] == "Development" if os.getenv('SERVER_SOFTWARE') else False
 TEMPLATE_DEBUG = DEBUG
 
 #ENABLE_PROFILER = True

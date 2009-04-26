@@ -148,13 +148,13 @@ xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/
     self.assertEqual(act['end_point'], '37.996776,-122.506612')
     self.assertFalse('average_bpm' in act)
     self.assertFalse('average_cadence' in act)
-    self.assertAlmostEqual(act['average_speed'], 10.141, 2)
+    self.assertAlmostEqual(act['average_speed'], 10.224, 2)
     self.assertFalse('maximum_bpm' in act)
     self.assertFalse('maximum_cadence' in act)
-    self.assertAlmostEqual(act['maximum_speed'], 18.266, 2)
+    self.assertAlmostEqual(act['maximum_speed'], 18.29, 2)
     self.assertEqual(len(act['laps']), 1)
     self.assertFalse('total_calories' in act)
-    self.assertAlmostEqual(act['total_meters'], 138.03, 2)
+    self.assertAlmostEqual(act['total_meters'], 139.16, 2)
     self.assertEqual(act['total_time'], 49)
 
     u = User(username = 'test', user = users.User('test@ex.com'))
@@ -232,12 +232,12 @@ xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/
     activity_record = pygpx.parse_gpx(self.Gpx10Contents(three_point_trk),
                                       '1/0')
     self.assertEqual(len(activity_record['laps']), 1)
-    self.assertAlmostEqual(activity_record['total_meters'], 29.71, 2)
+    self.assertAlmostEqual(activity_record['total_meters'], 29.9, 2)
 
     activity_record = pygpx.parse_gpx(self.Gpx11Contents(three_point_trk),
                                       '1/1')
     self.assertEqual(len(activity_record['laps']), 1)
-    self.assertAlmostEqual(activity_record['total_meters'], 29.71, 2)
+    self.assertAlmostEqual(activity_record['total_meters'], 29.9, 2)
 
 
 class UserTestCase(unittest.TestCase):

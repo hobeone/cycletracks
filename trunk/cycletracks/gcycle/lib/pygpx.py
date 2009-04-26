@@ -30,23 +30,31 @@ def parse_zulu(s):
     return datetime.datetime(int(s[0:4]), int(s[5:7]), int(s[8:10]),
         int(s[11:13]), int(s[14:16]), int(s[17:19]))
 
-# http://www.movable-type.co.uk/scripts/latlong.html
-def calculate_distance(start_lat, start_long, end_lat, end_long):
+# http://answers.google.com/answers/threadview/id/326655.html
+def calculate_distance(start_lat, start_long, start_ele,
+    end_lat, end_long, end_ele):
+  start_long = math.radians(start_long)
+  start_lat = math.radians(start_lat)
+  start_ele += 6370000 # radius of the earth
+  x0 = start_ele * math.cos(start_lat) * math.sin(start_long)
+  y0 = start_ele * math.sin(start_lat)
+  z0 = start_ele * math.cos(start_lat) * math.cos(start_long)
 
-  d = math.acos(
-        math.sin(math.radians(start_lat)) *
-        math.sin(math.radians(end_lat)) +
-        math.cos(math.radians(start_lat)) *
-        math.cos(math.radians(end_lat)) *
-        math.cos(math.radians(end_long - start_long))
-      ) * EARTH_RADIUS;
+  end_long = math.radians(end_long)
+  end_lat = math.radians(end_lat)
+  end_ele += 6370000 # radius of the earth
+  x1 = end_ele * math.cos(end_lat) * math.sin(end_long)
+  y1 = end_ele * math.sin(end_lat)
+  z1 = end_ele * math.cos(end_lat) * math.cos(end_long)
 
-  return d * 1000
+  dist = math.sqrt( (x1-x0)**2 + (y1-y0)**2 + (z1-z0)**2 )
+
+  return dist
 
 def calculate_speed(start_time, start_distance, end_time, end_distance):
   tdelta = end_time - start_time
   if tdelta == 0: return 0
-  return (end_distance - start_distance) / tdelta
+  return (end_distance - start_distance) / tdelta * 3.6
 
 def parse_segment(segment, tags, starting_dist = 0):
   time_points = []
@@ -80,8 +88,10 @@ def parse_segment(segment, tags, starting_dist = 0):
           calculate_distance(
             geo_points[-2][0],
             geo_points[-2][1],
+            altitude_list[-2],
             geo_points[-1][0],
-            geo_points[-1][1]
+            geo_points[-1][1],
+            altitude_list[-1]
           )
       )
       speed_list.append(calculate_speed(time_points[-2], distance_list[-2],
@@ -119,7 +129,7 @@ def parse_segment(segment, tags, starting_dist = 0):
 
   # Weight the speeds by how long we were at that speed
   avg = sum([ row[0] * row[1] for row in map(None, speed_list, delta_time)])
-  average_speed = avg / total_time * 3.6
+  average_speed = avg / total_time
 
   rolling_time = total_time - paused_time
 
@@ -128,7 +138,7 @@ def parse_segment(segment, tags, starting_dist = 0):
     'total_time_seconds': total_time,
     'total_rolling_time_seconds' : rolling_time,
     'starttime': start_time,
-    'maximum_speed': max(movingAverage3(speed_list)) * 3.6,
+    'maximum_speed': max(movingAverage3(speed_list)),
     'average_speed': average_speed,
     'endtime': start_time + datetime.timedelta(seconds=time_points[-1]),
     'geo_points' : geo_points,

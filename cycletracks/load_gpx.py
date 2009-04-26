@@ -23,6 +23,6 @@ files.sort()
 for file in files:
   print file
   stime = time.time()
-  act = Activity.create_from_gpx(open(file).read(), user)
+  act = Activity.create_from_gpx(open(file).read(), user, version = '1/0')
   act.user.get_profile().update_totals()
   print '%.4f seconds' % (time.time() - stime)

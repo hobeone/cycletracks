@@ -22,6 +22,8 @@ TEMPLATE_DEBUG = DEBUG
 USE_I18N = True
 LANGUAGE_CODE = 'en'
 
+TIME_ZONE = 'UTC'
+
 #Restrict supported languages (and JS media generation)
 LANGUAGES = (
 #    ('de', 'German'),

@@ -336,23 +336,7 @@ class Activity(db.Model):
   @classmethod
   def _create_from_tcx(self, tcx_data, user, tags = []):
     act_dict = pytcx.parse_tcx(tcx_data)[0]
-    activity = Activity(user = user, **act_dict)
-    activity.source_type = 'tcx'
-    activity.put()
-    d = SourceDataFile(
-        parent = activity,
-        data = tcx_data,
-        activity = activity
-    )
-    d.put()
-    for lap_dict in act_dict['laps']:
-      lap = Lap(
-        parent = activity,
-        activity = activity,
-        **lap_dict
-      )
-      lap.put()
-    return activity
+    return self._put_activity_record(act_dict, user, 'tcx', tcx_data)
 
   @classmethod
   def create_from_gpx(self, gpx_data, user, version, tags = []):
@@ -360,14 +344,18 @@ class Activity(db.Model):
                                  tags)
 
   @classmethod
-  def _create_from_gpx(self, gpx_data, user, version, tags):
-    act_dict = pygpx.parse_gpx(gpx_data, version)
+  def _create_from_gpx(self, gpx_data, user, gpx_version, tags):
+    act_dict = pygpx.parse_gpx(gpx_data, gpx_version)
+    return self._put_activity_record(act_dict, user, 'gpx', gpx_data)
+
+  @classmethod
+  def _put_activity_record(self, act_dict, user, source_type, source_data):
     activity = Activity(user = user, **act_dict)
-    activity.source_type = 'gpx'
+    activity.source_type = source_type
     activity.put()
     d = SourceDataFile(
         parent = activity,
-        data = gpx_data,
+        data = source_data,
         activity = activity
     )
     d.put()
@@ -379,7 +367,6 @@ class Activity(db.Model):
       )
       lap.put()
     return activity
-
 
   @models.permalink
   def get_absolute_url(self):

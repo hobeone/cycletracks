@@ -56,7 +56,7 @@ def calculate_speed(start_time, start_distance, end_time, end_distance):
   if tdelta == 0: return 0
   return (end_distance - start_distance) / tdelta * 3.6
 
-def parse_segment(segment, tags, starting_dist = 0):
+def parse_segment(segment, tags, starting_dist = 0.0):
   time_points = []
   delta_time = []
   geo_points = []
@@ -104,9 +104,11 @@ def parse_segment(segment, tags, starting_dist = 0):
       distance_list.append(starting_dist)
       speed_list.append(0)
 
-  if len(distance_list) < 2:
-    # Silently ignore segments without any movement.
+  if len(distance_list) < 2 or (distance_list[-1] - starting_dist < 10):
+    # Silently ignore segments less than 2 points or 10 meters total movement.
     # Garmin eTrex create these sometimes when warming up.
+    # TODO: Here and many other places, instead of ignoring errors record them
+    # and display to the user when the activity is accessed.
     return None
 
   if len(speed_list) < 3:
@@ -126,6 +128,10 @@ def parse_segment(segment, tags, starting_dist = 0):
     prev_altitude = i
   total_meters = distance_list[-1]
   total_time = time_points[-1]
+
+  if total_time < 10:
+    # Silently ignore segments that cover less than 10 seconds.
+    return None
 
   # Weight the speeds by how long we were at that speed
   avg = sum([ row[0] * row[1] for row in map(None, speed_list, delta_time)])
@@ -152,6 +158,7 @@ def parse_segment(segment, tags, starting_dist = 0):
   return lap_record
 
 def parse_gpx(filedata, version):
+  """Return a dict representing an activity record."""
   et=ET.parse(StringIO.StringIO(filedata))
   mainNS=string.Template("{http://www.topografix.com/GPX/%s}$tag" % version)
 
@@ -163,7 +170,7 @@ def parse_gpx(filedata, version):
   }
 
   lap_records = []
-  dist = 0
+  dist = 0.0
   for lap in et.findall("//"+tags['segment']):
     lap_record = parse_segment(lap, tags, starting_dist = dist)
     if lap_record:
@@ -181,11 +188,14 @@ def parse_gpx(filedata, version):
 
   average_speeds = [l['average_speed'] for l in lap_records]
   times = [l['total_rolling_time_seconds'] for l in lap_records]
+  rolling_time = sum(times)
+
+  if rolling_time < 1:
+    raise InvalidGPXFormat(
+      "Activity has total rolling time less than 1 second.")
 
   avg = sum([ row[0] * row[1] for row in map(None, average_speeds, times)])
-  average_speed = avg / sum(times)
-
-  rolling_time = sum(times)
+  average_speed = avg / rolling_time
 
   activity_record = {
       'name': '%s' % (lap_records[0]['starttime']),

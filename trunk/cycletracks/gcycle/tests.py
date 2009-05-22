@@ -123,6 +123,7 @@ asd
     self.assertEqual(a.total_ascent, 0)
     self.assertAlmostEqual(a.total_descent, 18.263, 2)
 
+
 class testGpxParser(unittest.TestCase):
   def Gpx10Contents(self, data):
     """Return a GPX 1.0 file containing data."""
@@ -139,6 +140,13 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xmlns="http://www.topografix.com/GPX/1/1"
 xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">"""
             + data + """</gpx>""")
+
+  def putActivity(self, activity_record):
+    """Make sure app engine doesn't barf when putting activity_record."""
+    user = User(username = 'test', user = users.User('test@ex.com'))
+    user.put()
+    return Activity._put_activity_record(activity_record, user, 'gpx',
+                                         'source, which is ignored')
 
   def testValidParse10(self):
     testfile = open('gcycle/test/valid_single_segment_10.gpx').read()
@@ -157,15 +165,8 @@ xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/
     self.assertAlmostEqual(act['total_meters'], 139.16, 2)
     self.assertEqual(act['total_time'], 49)
 
-    u = User(username = 'test', user = users.User('test@ex.com'))
-    u.put()
-    a = Activity(user = u, **act)
-    self.assert_(a)
-    a.put()
-    for l in act['laps']:
-      lap = Lap(activity = a, **l)
-      lap.put()
-
+    a = self.putActivity(act)
+    for lap in a.lap_set:
       self.assertEqual(len(lap.speed_list), len(lap.altitude_list))
       self.assertFalse(lap.cadence_list)
       self.assertFalse(lap.bpm_list)
@@ -214,8 +215,31 @@ xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/
     self.assertRaises(pygpx.InvalidGPXFormat, pygpx.parse_gpx,
                       self.Gpx11Contents(two_point_trk), '1/1')
 
-  def testThreePointSegment(self):
-    three_point_trk = """<trk><trkseg>
+  def testParseGpxZeroDivisionError(self):
+    three_point_trk = """
+ <trk>
+  <name>ACTIVE LOG002128</name>
+  <trkseg>
+   <trkpt lat="37.772741" lon="-122.451556">
+    <ele>2369.704</ele>
+    <time>2009-03-21T07:21:28Z</time>
+   </trkpt>
+   <trkpt lat="37.772695" lon="-122.451573">
+    <ele>2372.282</ele>
+    <time>2009-03-21T07:35:15Z</time>
+   </trkpt>
+   <trkpt lat="37.772697" lon="-122.451577">
+    <ele>2372.042</ele>
+    <time>2009-03-21T07:37:17Z</time>
+   </trkpt>
+  </trkseg>
+ </trk>
+"""
+    self.assertRaises(pygpx.InvalidGPXFormat, pygpx.parse_gpx,
+                      self.Gpx10Contents(three_point_trk), '1/0')
+
+  def testFourPointSegment(self):
+    four_point_trk = """<trk><trkseg>
   <trkpt lat="37.996364" lon="-122.50774199999999">
     <ele>273.50599999999997</ele>
     <time>2009-03-21T18:42:51Z</time>
@@ -228,16 +252,85 @@ xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/
     <ele>271.34199999999998</ele>
     <time>2009-03-21T18:43:03Z</time>
   </trkpt>
+  <trkpt lat="37.996668999999997" lon="-122.507492">
+    <ele>270.67200000000003</ele>
+    <time>2009-03-21T18:43:05Z</time>
+  </trkpt>
   </trkseg></trk>"""
-    activity_record = pygpx.parse_gpx(self.Gpx10Contents(three_point_trk),
+    activity_record = pygpx.parse_gpx(self.Gpx10Contents(four_point_trk),
                                       '1/0')
     self.assertEqual(len(activity_record['laps']), 1)
-    self.assertAlmostEqual(activity_record['total_meters'], 29.9, 2)
+    self.assertAlmostEqual(activity_record['total_meters'], 40.77, 2)
+    self.putActivity(activity_record)
 
-    activity_record = pygpx.parse_gpx(self.Gpx11Contents(three_point_trk),
+    activity_record = pygpx.parse_gpx(self.Gpx11Contents(four_point_trk),
                                       '1/1')
     self.assertEqual(len(activity_record['laps']), 1)
-    self.assertAlmostEqual(activity_record['total_meters'], 29.9, 2)
+    self.assertAlmostEqual(activity_record['total_meters'], 40.77, 2)
+    self.putActivity(activity_record)
+
+  def testNoRollingTime(self):
+    no_time_delta_trk = """<trk><trkseg>
+  <trkpt lat="37.996668999999997" lon="-122.507492">
+    <ele>270.67200000000003</ele>
+    <time>2009-03-21T18:43:05Z</time>
+  </trkpt>
+  <trkpt lat="37.996710999999998" lon="-122.507448">
+    <ele>270.74799999999999</ele>
+    <time>2009-03-21T18:43:05Z</time>
+  </trkpt>
+  <trkpt lat="37.996822000000002" lon="-122.507234">
+    <ele>272.46899999999999</ele>
+    <time>2009-03-21T18:43:05Z</time>
+  </trkpt>
+  <trkpt lat="37.996836000000002" lon="-122.507113">
+    <ele>274.017</ele>
+    <time>2009-03-21T18:43:05Z</time>
+  </trkpt>
+  </trkseg></trk>"""
+    self.assertRaises(pygpx.InvalidGPXFormat, pygpx.parse_gpx,
+                      self.Gpx10Contents(no_time_delta_trk), '1/0')
+
+  def testNoMovementSegment(self):
+    bad_good_segments = """<trk><name>No movement</name><trkseg>
+  <trkpt lat="37.996364" lon="-122.507741">
+    <ele>273.505999</ele>
+    <time>2009-03-21T18:42:51Z</time>
+  </trkpt>
+  <trkpt lat="37.996364" lon="-122.507741">
+    <ele>273.896000</ele>
+    <time>2009-03-21T18:42:57Z</time>
+  </trkpt>
+  <trkpt lat="37.996364" lon="-122.507741">
+    <ele>271.341999</ele>
+    <time>2009-03-21T18:43:03Z</time>
+  </trkpt>
+  </trkseg></trk>
+<trk><name>Good track to make sure parsing finishes</name><trkseg>
+  <trkpt lat="37.996668999999997" lon="-122.507492">
+    <ele>270.67200000000003</ele>
+    <time>2009-03-21T18:43:05Z</time>
+  </trkpt>
+  <trkpt lat="37.996710999999998" lon="-122.507448">
+    <ele>270.74799999999999</ele>
+    <time>2009-03-21T18:43:06Z</time>
+  </trkpt>
+  <trkpt lat="37.996822000000002" lon="-122.507234">
+    <ele>272.46899999999999</ele>
+    <time>2009-03-21T18:43:12Z</time>
+  </trkpt>
+  <trkpt lat="37.996836000000002" lon="-122.507113">
+    <ele>274.017</ele>
+    <time>2009-03-21T18:43:17Z</time>
+  </trkpt>
+</trkseg>
+</trk>
+"""
+    activity_record = pygpx.parse_gpx(self.Gpx11Contents(bad_good_segments),
+                                      '1/1')
+    a = self.putActivity(activity_record)
+    self.assertEqual(len(a.lap_set), 1)
+    self.assertAlmostEqual(activity_record['total_meters'], 39.395, 2)
 
 
 class UserTestCase(unittest.TestCase):

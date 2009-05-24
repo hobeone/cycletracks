@@ -146,6 +146,8 @@ class GeoPointList(db.Property):
 class AutoStringListProperty(db.StringListProperty):
   """Auto converts a csv value to a list before saving"""
   def validate(self, value):
+    if value == '':
+      value = []
     if value is not None and not isinstance(value, list):
       if isinstance(value, str) or isinstance(value, unicode):
         value = value.split(',')

@@ -11,6 +11,9 @@ from gcycle.lib.memoized import *
 
 reopts = (re.MULTILINE | re.DOTALL)
 
+MINIMUM_LAP_DISTANCE = 10 # meters
+MINIMUM_LAP_TIME = 60 # seconds
+
 def parse_zulu(s):
     return datetime.datetime(int(s[0:4]), int(s[5:7]), int(s[8:10]),
         int(s[11:13]), int(s[14:16]), int(s[17:19]))
@@ -83,6 +86,9 @@ class TCXExpception(Exception):
 class InvalidTCXFormat(TCXExpception):
   pass
 
+class TrackTooShort(InvalidTCXFormat):
+  pass
+
 def joinArrayOrNone(array, joinstr=','):
   """Return a string of the array joined by joinstr or None if the the array is
   empty"""
@@ -103,10 +109,13 @@ def parse_lap(start_time, lap_string):
   lap = lap_string
   # weed out laps that are too short for distance or time
   total_meters = float(getTagVal(lap, 'DistanceMeters'))
-  if total_meters < 10: return None
+  if total_meters < MINIMUM_LAP_DISTANCE:
+    raise TrackTooShort('Lap is less than %i meters, ignoring' %
+        MINIMUM_LAP_DISTANCE)
 
   total_time = int(float(getTagVal(lap, 'TotalTimeSeconds')))
-  if total_time < 60: return None
+  if total_time < MINIMUM_LAP_TIME:
+    raise TrackTooShort('Lap is less than %i seconds' % MINIMUM_LAP_TIME)
 
   lap_record = {
     'total_meters': total_meters,
@@ -258,6 +267,8 @@ def parse_tcx(filedata):
     r = re.compile('<Lap StartTime="(.*?)">(.*?)</Lap>',
         re.MULTILINE | re.DOTALL)
     lap_records = []
+    parse_errors = []
+    lap_count = 1
     activity_sport = activity.group(1)
 
     for l in r.finditer(activity.group()):
@@ -265,9 +276,12 @@ def parse_tcx(filedata):
       # we are interested in for each trackpoint (speed, cadence, bpm etc).
       # this way we should have an equal number of them and can match them up
       # to a the trackpoint time.
-      lap_record = parse_lap(l.group(1), l.group(2))
-      if lap_record:
-        lap_records.append(lap_record)
+      try:
+        lap_records.append(parse_lap(l.group(1), l.group(2)))
+      except TCXExpception, e:
+        parse_errors.append("Lap %i couldn't be parsed: %s" % (lap_count, e))
+
+      lap_count += 1
 
     if not lap_records:
       raise InvalidTCXFormat(
@@ -300,7 +314,8 @@ def parse_tcx(filedata):
         'total_descent': sum([l['total_descent'] for l in lap_records]),
         'laps': lap_records,
         'source_hash': md5.new(filedata).hexdigest(),
-        'tcxdata': filedata
+        'tcxdata': filedata,
+        'parse_errors': parse_errors,
     }
     activity_record.update(encoded_activity)
 

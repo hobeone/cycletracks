@@ -83,6 +83,18 @@ asd
         testfile
         )
 
+  def testParseOfTcxWithErrors(self):
+    testfile = open('gcycle/test/valid_multi_lap_with_short_lap.tcx').read()
+    acts = pytcx.parse_tcx(testfile)
+    act = acts[0]
+    u = User(username = 'test', user = users.User('test@ex.com'))
+    u.put()
+    a = Activity._put_activity_record(act, u, 'tcx',
+                                      'source, which is ignored')
+
+    self.assert_(a)
+    self.assertEqual(len(a.sourcedatafile_set.get().parse_errors), 1)
+
   def testValidParse(self):
     testfile = open('gcycle/test/valid_multi_lap.tcx').read()
     acts = pytcx.parse_tcx(testfile)
@@ -104,9 +116,11 @@ asd
 
     u = User(username = 'test', user = users.User('test@ex.com'))
     u.put()
-    a = Activity(user = u, **act)
+
+    a = Activity._put_activity_record(act, u, 'tcx',
+                                      'source, which is ignored')
+
     self.assert_(a)
-    a.put()
     for l in act['laps']:
       lap = Lap(activity = a, **l)
       lap.put()

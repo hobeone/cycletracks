@@ -358,7 +358,8 @@ class Activity(db.Model):
     d = SourceDataFile(
         parent = activity,
         data = source_data,
-        activity = activity
+        activity = activity,
+        parse_errors = act_dict['parse_errors']
     )
     d.put()
     for lap_dict in act_dict['laps']:
@@ -433,6 +434,7 @@ class SourceDataFile(db.Model):
   activity = db.ReferenceProperty(Activity, required=True)
   data = BzipBlobProperty(required=True)
   timestamp = db.DateTimeProperty(auto_now=True)
+  parse_errors = db.StringListProperty()
 
 
 class Lap(db.Model):
@@ -501,7 +503,8 @@ class Lap(db.Model):
 
     if self.average_speed > self.maximum_speed:
       raise db.NotSavedError(
-          "Average speed can not be higher than maximum speed"
+          "Average speed can not be higher than maximum speed (%s vs %s)" %
+          (self.average_speed , self.maximum_speed)
           )
     return self
 

@@ -14,10 +14,10 @@ import pprint
 pp = pprint.PrettyPrinter(indent=2)
 
 
-EARTH_RADIUS = 6371 # km
-
+EARTH_RADIUS = 6370000 # meters
 PAUSED_MIN_SPEED = 1.34112 # meters per second
-
+MINIMUM_LAP_DISTANCE = 10 # meters
+MINIMUM_LAP_TIME = 10 # seconds
 
 class GPXExpception(Exception):
   pass
@@ -25,6 +25,8 @@ class GPXExpception(Exception):
 class InvalidGPXFormat(GPXExpception):
   pass
 
+class TrackTooShort(GPXExpception):
+  pass
 
 def parse_zulu(s):
     return datetime.datetime(int(s[0:4]), int(s[5:7]), int(s[8:10]),
@@ -35,14 +37,14 @@ def calculate_distance(start_lat, start_long, start_ele,
     end_lat, end_long, end_ele):
   start_long = math.radians(start_long)
   start_lat = math.radians(start_lat)
-  start_ele += 6370000 # radius of the earth
+  start_ele += EARTH_RADIUS
   x0 = start_ele * math.cos(start_lat) * math.sin(start_long)
   y0 = start_ele * math.sin(start_lat)
   z0 = start_ele * math.cos(start_lat) * math.cos(start_long)
 
   end_long = math.radians(end_long)
   end_lat = math.radians(end_lat)
-  end_ele += 6370000 # radius of the earth
+  end_ele += EARTH_RADIUS
   x1 = end_ele * math.cos(end_lat) * math.sin(end_long)
   y1 = end_ele * math.sin(end_lat)
   z1 = end_ele * math.cos(end_lat) * math.cos(end_long)
@@ -104,16 +106,22 @@ def parse_segment(segment, tags, starting_dist = 0.0):
       distance_list.append(starting_dist)
       speed_list.append(0)
 
-  if len(distance_list) < 2 or (distance_list[-1] - starting_dist < 10):
-    # Silently ignore segments less than 2 points or 10 meters total movement.
-    # Garmin eTrex create these sometimes when warming up.
-    # TODO: Here and many other places, instead of ignoring errors record them
-    # and display to the user when the activity is accessed.
-    return None
-
   if len(speed_list) < 3:
     # movingAverage3 needs at least 3 points
-    return None
+    raise TrackTooShort('Too few points in lap')
+
+  if len(distance_list) < 2:
+    # ignore segments less than 2 points or 10 meters total movement.
+    # Garmin eTrex create these sometimes when warming up.
+    raise TrackTooShort('Too few points in lap')
+
+  d = distance_list[-1] - starting_dist
+  if d < MINIMUM_LAP_DISTANCE:
+    # Silently ignore segments less than 2 points or 10 meters total movement.
+    # Garmin eTrex create these sometimes when warming up.
+    raise TrackTooShort('lap too short: (%i < %i meters)' %
+        (d, MINIMUM_LAP_DISTANCE))
+
 
   total_ascent = 0.0
   total_descent = 0.0
@@ -129,9 +137,9 @@ def parse_segment(segment, tags, starting_dist = 0.0):
   total_meters = distance_list[-1]
   total_time = time_points[-1]
 
-  if total_time < 10:
-    # Silently ignore segments that cover less than 10 seconds.
-    return None
+  if total_time < MINIMUM_LAP_TIME:
+    raise TrackTooShort('track to short (less than %s seconds)' %
+        MINIMUM_LAP_TIME)
 
   # Weight the speeds by how long we were at that speed
   avg = sum([ row[0] * row[1] for row in map(None, speed_list, delta_time)])
@@ -170,13 +178,17 @@ def parse_gpx(filedata, version):
   }
 
   lap_records = []
+  parse_errors = []
+  lap_count = 1
   dist = 0.0
   for lap in et.findall("//"+tags['segment']):
-    lap_record = parse_segment(lap, tags, starting_dist = dist)
-    if lap_record:
-      lap_records.append(lap_record)
-    dist = sum([l['total_meters'] for l in lap_records])
+    try:
+      lap_records.append(parse_segment(lap, tags, starting_dist = dist))
+    except GPXExpception, e:
+      parse_errors.append("Lap %i couldn't be parsed: %s" % (lap_count, e))
+    lap_count += 1
 
+  dist = sum([l['total_meters'] for l in lap_records])
   if not lap_records:
     raise InvalidGPXFormat(
       "Activity does not appear to contain any useful tracks.")
@@ -210,7 +222,8 @@ def parse_gpx(filedata, version):
       'total_descent': sum([l['total_descent'] for l in lap_records]),
       'laps': lap_records,
       'source_hash': md5.new(filedata).hexdigest(),
-      'tcxdata': filedata
+      'tcxdata': filedata,
+      'parse_errors': parse_errors
   }
   activity_record.update(encoded_activity)
 

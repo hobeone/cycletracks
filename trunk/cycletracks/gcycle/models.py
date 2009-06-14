@@ -155,6 +155,7 @@ class UserProfile(db.Model):
   user = db.ReferenceProperty(User, required=True)
   use_imperial = db.BooleanProperty(default=False)
   timezone = db.StringProperty()
+  default_public = db.BooleanProperty(default=False)
   total_meters = db.FloatProperty(default=0.0)
   total_time = db.IntegerProperty(default=0)
   rolling_time = db.IntegerProperty(default=0)
@@ -331,30 +332,35 @@ class Activity(db.Model):
 
   @classmethod
   def create_from_tcx(self, tcx_data, user, tags = []):
+    public = user.get_profile().default_public
     return db.run_in_transaction(
-        self._create_from_tcx, tcx_data, user, tags
+        self._create_from_tcx, tcx_data, user, tags, public = public
     )
 
   @classmethod
-  def _create_from_tcx(self, tcx_data, user, tags = []):
+  def _create_from_tcx(self, tcx_data, user, tags = [], public = False):
     act_dict = pytcx.parse_tcx(tcx_data)[0]
-    return self._put_activity_record(act_dict, user, 'tcx', tcx_data)
+    return self._put_activity_record(act_dict, user, 'tcx', tcx_data,
+        public = public)
 
   @classmethod
   def create_from_gpx(self, gpx_data, user, version, tags = []):
+    public = user.get_profile().default_public
     return db.run_in_transaction(self._create_from_gpx, gpx_data, user, version,
-                                 tags)
+                                 tags, public = public)
 
   @classmethod
-  def _create_from_gpx(self, gpx_data, user, gpx_version, tags):
+  def _create_from_gpx(self, gpx_data, user, gpx_version, tags, public = False):
     act_dict = pygpx.parse_gpx(gpx_data, gpx_version)
-    return self._put_activity_record(act_dict, user, 'gpx', gpx_data)
+    return self._put_activity_record(act_dict, user, 'gpx', gpx_data, public = public)
 
   @classmethod
-  def _put_activity_record(self, act_dict, user, source_type, source_data):
+  def _put_activity_record(self, act_dict, user, source_type, source_data,
+      public = False):
     activity = Activity(user = user, **act_dict)
     activity.source_type = source_type
     activity.parsed_at = datetime.datetime.utcnow()
+    activity.public = public
     activity.put()
     d = SourceDataFile(
         parent = activity,

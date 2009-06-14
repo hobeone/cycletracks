@@ -45,14 +45,20 @@ def update_acts(request):
 @auth_decorators.login_required
 def reparse_activity(request):
   responses = []
-  acts = Activity.all()
+  #acts = Activity.all()
+  #for i in acts.fetch(1000):
+  #  if i.parsed_at != datetime.datetime(2009, 6, 14, 15, 44, 57, 181874):
+  #    i.parsed_at = datetime.datetime(2009, 6, 14, 15, 44, 57, 181874)
+  #    i.put()
+  #    responses.append('updated act with no parsed_at')
 
+  acts = Activity.all()
   acts.filter('parsed_at <',
       datetime.datetime.utcnow() - datetime.timedelta(hours=2))
-#  acts.filter('source_type =', 'tcx')
   acts.order('-parsed_at')
 
-
+  count = acts.count()
+  responses.append('Found %i remaining activities to reparse' % count)
   for a in acts.fetch(6):
     try:
       a.reparse()
@@ -64,4 +70,16 @@ def reparse_activity(request):
     except InvalidGPXFormat:
       responses.append('not a gpx file')
 
-  return HttpResponse('<br>'.join(responses))
+  page = """
+  <html>
+<head>
+  <meta http-equiv="refresh" content="5"/>
+</head>
+<body>
+  <h3>Update Datastore</h3>
+  %s
+</body>
+</html>
+""" % '<br>'.join(responses)
+
+  return HttpResponse(page)

@@ -39,4 +39,4 @@ class User(GoogleUserTraits):
 
     @classmethod
     def create_djangouser_for_user(cls, user):
-        return cls(user=user)
+        return cls(user=user, username=user.email())

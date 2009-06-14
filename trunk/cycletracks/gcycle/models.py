@@ -1,5 +1,6 @@
 from google.appengine.ext import db
 from google.appengine.api import datastore_types
+from google.appengine.api import datastore_errors
 
 from gcycle.lib import pytcx
 from gcycle.lib import pygpx
@@ -11,10 +12,11 @@ from django.db import models
 
 from ragendja.auth.google_models import User
 
-import md5
+import array
 import bz2
 import datetime
-
+import md5
+import re
 
 # Monkey patch appengine supplied User model.
 def new_getprofile(self):
@@ -53,48 +55,6 @@ class BzipBlobProperty(db.BlobProperty):
 
   def make_value_from_datastore(self, value):
     return bz2.decompress(value)
-
-
-class CsvListProperty(db.Property):
-  data_type = datastore_types.Text
-
-  def __init__(self, verbose_name=None, name=None, default=None,
-               required=False, validator=None, choices=None, split_on=',',
-               cast_type=str):
-    super(CsvListProperty, self).__init__(verbose_name=None, name=None,
-        default=None, required=False, validator=None, choices=None)
-    self.cast_type = cast_type
-    self.split_on = split_on
-
-  def validate(self, value):
-    if value is not None and not isinstance(value, list):
-      try:
-        if isinstance(value, str):
-          value = self.make_value_from_datastore(value)
-        else:
-          value = list(value)
-      except TypeError, err:
-        raise BadValueError('Property %s must be convertible '
-                            'to a list instance (%s)' % (self.name, err))
-
-    if value is not None:
-      value = map(self.cast_type,value)
-    value = super(CsvListProperty, self).validate(value)
-    if value is not None and not isinstance(value, list):
-      raise BadValueError('Property %s must be a Text instance' % self.name)
-    return value
-
-  def get_value_for_datastore(self, model_instance):
-    value = super(CsvListProperty, self).get_value_for_datastore(
-        model_instance)
-    if value is None or len(value) == 0:
-      return None
-    return datastore_types.Text(self.split_on.join(map(str,value)))
-
-  def make_value_from_datastore(self, value):
-    if value is None:
-      return []
-    return map(self.cast_type, value.split(self.split_on))
 
 
 class GeoPointList(db.Property):
@@ -161,6 +121,35 @@ def getOrDefault(object, name, default):
   v = getattr(object, name, default)
   if v is None: v = default
   return v
+
+
+class ArrayProperty(db.Property):
+  def __init__(self, typecode, default=None, **kwargs):
+    self.typecode = typecode
+    if default is None:
+      default = array.array(typecode)
+    super(ArrayProperty, self).__init__(default=default, **kwargs)
+
+  def validate(self, value):
+    if not isinstance(value, array.array) or value.typecode != self.typecode:
+      raise datastore_errors.BadValueError(
+        "Property %s must be an array instance with typecode %s"
+        % (self.name, self.typecode))
+    value = super(ArrayProperty, self).validate(value)
+    return value
+
+  def get_value_for_datastore(self, model_instance):
+    value = self.__get__(model_instance, model_instance.__class__)
+    return db.Blob(value.tostring())
+
+  def make_value_from_datastore(self, value):
+    a = array.array(self.typecode)
+    if value is None: return a
+    a.fromstring(value)
+    return a
+
+  data_type=db.Blob
+
 
 class UserProfile(db.Model):
   user = db.ReferenceProperty(User, required=True)
@@ -270,7 +259,7 @@ class Activity(db.Model):
 
   created_at = db.DateTimeProperty(auto_now_add=True)
   updated_at = db.DateTimeProperty(auto_now=True)
-  parsed_at = db.DateTimeProperty(auto_now_add=True)
+  parsed_at = db.DateTimeProperty()
 
   @classmethod
   def hash_exists(cls, source_hash, user):
@@ -312,11 +301,22 @@ class Activity(db.Model):
     if source is None:
       raise db.NotSavedError('no source file to reparse')
 
-    laps = self.lap_set.fetch(100)
-    return db.run_in_transaction(self._reparse, source, laps)
+    # by not instantiating the laps we can reparse to a new schema
+    q = db.GqlQuery("SELECT __key__ FROM Lap WHERE activity = :1", self)
+    return db.run_in_transaction(self._reparse, source, q.fetch(500))
 
   def _reparse(self, source, laps):
-    activity_dict = pytcx.parse_tcx(source.data)[0]
+    activity_dict = {}
+    if self.source_type == 'tcx':
+      activity_dict = pytcx.parse_tcx(source.data)[0]
+    else:
+      version = ''
+      if re.search(r'xmlns="http://www.topografix.com/GPX/1/0"', source.data):
+        version = '1/0'
+      elif re.search(r'xmlns="http://www.topografix.com/GPX/1/1"', source.data):
+        version = '1/1'
+      activity_dict = pygpx.parse_gpx(source.data, version)
+
     for k,v in activity_dict.iteritems():
       if k in self.fields():
         setattr(self,k,v)
@@ -354,6 +354,7 @@ class Activity(db.Model):
   def _put_activity_record(self, act_dict, user, source_type, source_data):
     activity = Activity(user = user, **act_dict)
     activity.source_type = source_type
+    activity.parsed_at = datetime.datetime.utcnow()
     activity.put()
     d = SourceDataFile(
         parent = activity,
@@ -451,13 +452,13 @@ class Lap(db.Model):
   calories = db.FloatProperty()
   starttime = db.DateTimeProperty(required=True)
   endtime = db.DateTimeProperty(required=True)
-  bpm_list = CsvListProperty(cast_type=int)
-  altitude_list = CsvListProperty(required=True, cast_type=float)
-  speed_list = CsvListProperty(required=True, cast_type=float)
-  distance_list = CsvListProperty(required=True, cast_type=float)
-  cadence_list = CsvListProperty(cast_type=int)
+  bpm_list = ArrayProperty('H')
+  altitude_list = ArrayProperty('f')
+  speed_list = ArrayProperty('f')
+  distance_list = ArrayProperty('f')
+  cadence_list = ArrayProperty('H')
   geo_points = GeoPointList()
-  timepoints = CsvListProperty(required=True, cast_type=int)
+  timepoints = ArrayProperty('i')
   total_ascent = db.FloatProperty(default=0.0)
   total_descent = db.FloatProperty(default=0.0)
   timestamp = db.DateTimeProperty(auto_now=True)

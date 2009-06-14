@@ -66,6 +66,12 @@ indexes:
   - name: rolling_time
     direction: desc
 
+# Unused in query history -- copied from input.
+- kind: Activity
+  properties:
+  - name: user
+  - name: start_time
+
 # Used 2 times in query history.
 - kind: Activity
   properties:

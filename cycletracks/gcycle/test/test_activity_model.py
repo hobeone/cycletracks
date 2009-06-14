@@ -33,6 +33,17 @@ class TestActivityModel(TestCase):
     url = reverse('activity_show', args=[a.key().id()])
     self.failUnlessEqual(url, a.get_absolute_url())
 
+  def testCreateFromTcxDefaultPublic(self):
+    testfile = open('gcycle/test/valid_multi_lap.tcx').read()
+    user = models.User.all().get()
+    profile = user.get_profile()
+    profile.default_public = True
+    profile.put()
+    delattr(user, '_profile_cache')
+    a = models.Activity.create_from_tcx(testfile, user)
+    self.assertEqual(user.get_profile().default_public, True)
+    self.assertEqual(a.public, True)
+
   def testCreateFromTcx(self):
     testfile = open('gcycle/test/valid_multi_lap.tcx').read()
     a = models.Activity.create_from_tcx(testfile, models.User.all().get())

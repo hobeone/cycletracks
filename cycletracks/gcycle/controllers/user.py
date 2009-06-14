@@ -22,6 +22,7 @@ class UserForm(forms.Form):
   user_id = forms.CharField(required=True, widget=forms.HiddenInput)
   timezone =  tzforms.TimeZoneField(required=True)
   use_imperial = forms.BooleanField(required=False)
+  default_public = forms.BooleanField(required=False)
 
 @auth_decorators.login_required
 def settings(request):
@@ -38,6 +39,8 @@ def settings(request):
 
       update_user.get_profile().timezone = str(form.cleaned_data['timezone'])
       update_user.get_profile().use_imperial = form.cleaned_data['use_imperial']
+      update_user.get_profile().default_public = \
+          form.cleaned_data['default_public']
       update_user.put()
       update_user.get_profile().put()
       return HttpResponseRedirect('/a/') # Redirect after POST
@@ -45,6 +48,7 @@ def settings(request):
     data = {'username' : request.user.username,
             'timezone' : request.user.get_profile().timezone,
             'use_imperial' : request.user.get_profile().use_imperial,
+            'default_public' : request.user.get_profile().default_public,
             'user_id': str(request.user.key()),
            }
     form = UserForm(data) # An unbound form

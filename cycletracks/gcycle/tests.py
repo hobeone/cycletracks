@@ -27,24 +27,6 @@ from gcycle.test.test_activity_model import *
 from gcycle.test.test_lap_model import *
 from gcycle.test.test_custom_db_types import *
 
-class testModel(db.Model):
-  csv = CsvListProperty(str)
-
-class testCsvListPropery(unittest.TestCase):
-
-  def testModel(self):
-    list = range(1,1000)
-    list = map(str,list)
-    c = testModel( csv = list)
-    key = c.put()
-    c = testModel.get(key)
-    self.failUnlessEqual(c.csv, list)
-
-    c.csv.append('testing')
-    c.put()
-    c = testModel.get(key)
-    self.failUnlessEqual(c.csv[-1], 'testing')
-
 
 class testTcxParser(unittest.TestCase):
   multiline_tag = """<b>

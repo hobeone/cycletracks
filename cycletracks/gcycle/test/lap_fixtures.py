@@ -1,6 +1,6 @@
 from fixture import DataSet
 import datetime
-
+import array
 from gcycle.test.activity_fixtures import ActivityData
 
 class LapData(DataSet):
@@ -18,9 +18,9 @@ class LapData(DataSet):
     calories = 2000.0
     starttime = datetime.datetime(2008,11,1,15,44,21)
     endtime = datetime.datetime(2008,11,1,17,44,21)
-    bpm_list = '1,2,3'
-    altitude_list = '0,10,20'
-    speed_list = '1, 10, 10'
-    distance_list = '0, 10, 20'
-    cadence_list = '60, 80, 80'
-    timepoints = '0, 1, 2'
+    bpm_list = array.array('H', [1,2,3])
+    altitude_list = array.array('f', [0,10,20])
+    speed_list = array.array('f', [1, 10, 10])
+    distance_list = array.array('f', [0, 10, 20])
+    cadence_list = array.array('H', [60, 80, 80])
+    timepoints = array.array('i', [0, 1, 2])

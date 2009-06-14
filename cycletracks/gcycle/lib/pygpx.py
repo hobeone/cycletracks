@@ -6,6 +6,7 @@ import math
 import datetime
 import StringIO
 import md5
+import array
 
 from gcycle.lib import glineenc
 from gcycle.lib import pytcx
@@ -156,10 +157,10 @@ def parse_segment(segment, tags, starting_dist = 0.0):
     'average_speed': average_speed,
     'endtime': start_time + datetime.timedelta(seconds=time_points[-1]),
     'geo_points' : geo_points,
-    'speed_list' : [ '%.2f' % s for s in speed_list],
-    'altitude_list' : altitude_list,
-    'distance_list' : [ '%.2f' % s for s in distance_list],
-    'timepoints' : time_points,
+    'speed_list' : array.array('f', speed_list),
+    'altitude_list' :array.array('f',  altitude_list),
+    'distance_list' : array.array('f', distance_list),
+    'timepoints' : array.array('i',time_points),
     'total_ascent' : total_ascent,
     'total_descent' : total_descent
     }

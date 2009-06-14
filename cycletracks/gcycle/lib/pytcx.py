@@ -8,6 +8,7 @@ import md5
 from gcycle.lib import glineenc
 from gcycle.lib.average import *
 from gcycle.lib.memoized import *
+import array
 
 reopts = (re.MULTILINE | re.DOTALL)
 
@@ -196,8 +197,8 @@ def parse_lap(start_time, lap_string):
     bpm = getIntTagSubVal(trackpoint, 'HeartRateBpm', None)
     if bpm:
       if len(bpm_list) == 0 and len(timepoints) > 0:
-        bpm_list = fill_list(bpm_list, '0', len(timepoints)-1)
-      bpm_list.append(str(bpm))
+        bpm_list = fill_list(bpm_list, 0, len(timepoints)-1)
+      bpm_list.append(bpm)
     else:
       if bpm_list:
         bpm_list.append(bpm_list[-1])
@@ -245,13 +246,13 @@ def parse_lap(start_time, lap_string):
     'endtime': endtime,
     'average_cadence': int(average(cadence_list)),
     'maximum_cadence': max_cadence,
-    'bpm_list' : bpm_list,
+    'bpm_list' : array.array('H', bpm_list),
     'geo_points' : geo_points,
-    'cadence_list' : cadence_list,
-    'speed_list' : [ '%.2f' % s for s in speed_list],
-    'altitude_list' : altitude_list,
-    'distance_list' : [ '%.2f' % s for s in distance_list],
-    'timepoints' : timepoints,
+    'cadence_list' : array.array('H', cadence_list),
+    'speed_list' : array.array('f', speed_list),
+    'altitude_list' :array.array('f',  altitude_list),
+    'distance_list' : array.array('f', distance_list),
+    'timepoints' : array.array('i',timepoints),
     'total_ascent' : total_ascent,
     'total_descent' : total_descent
     })

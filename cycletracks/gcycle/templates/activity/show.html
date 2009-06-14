@@ -226,6 +226,16 @@
                     {% endif %}
                   </td>
                 </tr>
+                <tr>
+                  <td>
+                    Parse Errors:
+                  </td>
+                  <td>
+                    {% for e in activity.sourcedatafile_set.get.parse_errors %}
+                    {{e}}</br>
+                    {% endfor %}
+                  </td>
+                </tr>
               </table>
             </div>
           </div>

@@ -151,6 +151,93 @@ class ArrayProperty(db.Property):
   data_type=db.Blob
 
 
+# Holds user stats by Month,
+class MonthlyUserStats(db.Model):
+  user = db.ReferenceProperty(User, required=True)
+  number_of_activities = db.IntegerProperty(required=True)
+  # first day of month for this entry
+  start_date = db.DateProperty(required=True)
+  # last updated field
+  timestamp = db.DateTimeProperty(auto_now=True)
+  total_meters = db.FloatProperty(default=0.0)
+  total_time = db.IntegerProperty(default=0)
+  rolling_time = db.IntegerProperty(default=0)
+  average_speed = db.FloatProperty(default=0.0)
+  maximum_speed = db.FloatProperty(default=0.0)
+  total_ascent = db.FloatProperty(default=0.0)
+  total_descent = db.FloatProperty(default=0.0)
+  total_calories = db.FloatProperty(default=0.0)
+  totals_updated_at = db.DateTimeProperty()
+
+  @classmethod
+  def find_by_user_and_month_offset(cls, user, offset = 0):
+    """Find the stats for a given user and month offset from the current one. So an offset of 0 is the current month
+    """
+    query = MonthlyUserStats.all()
+    query.filter('user =', user)
+    today = datetime.date.today()
+    #TODO: fix to do real month calculations
+    delta = datetime.timedelta(days=30*offset)
+    d = today - delta
+    start_date = datetime.date(year = d.year, month = d.month, day = 1)
+    query.filter('start_date =', start_date)
+    return query.get()
+
+
+  # return an already existing stat or instantiate a new one based on a user and
+  # the start date of the activity
+  @classmethod
+  def find_by_user_and_activity(cls, user, activity):
+    # find the month of the activity.  See if there is a MonthlyUserStat for
+    # that month an user.
+    query = MonthlyUserStats.all()
+    query.filter('user =', user)
+    d = activity.start_time
+    start_date = datetime.date(year = d.year, month = d.month, day = 1)
+    query.filter('start_date =', start_date)
+    stats = query.get()
+    if not stats:
+      stats = MonthlyUserStats(
+          user = user,
+          number_of_activities = 0,
+          start_date = start_date
+          )
+
+    return stats
+
+  def update_from_activity(self, activity):
+    self.total_meters += getOrDefault(activity, 'total_meters', 0)
+    self.total_time += activity.total_time
+    self.rolling_time += activity.rolling_time
+    self.total_calories += getOrDefault(activity, 'total_calories', 0)
+    self.total_ascent += activity.total_ascent
+    self.total_descent += activity.total_descent
+    self.number_of_activities += 1
+    if activity.maximum_speed > self.maximum_speed:
+      self.maximum_speed = activity.maximum_speed
+
+    self.average_speed = self.total_meters / self.rolling_time
+
+    return self.put()
+
+  def delete_activity_stats(self, activity):
+    self.total_meters -= getOrDefault(activity, 'total_meters', 0)
+    self.total_time -= activity.total_time
+    self.rolling_time -= activity.rolling_time
+    self.total_calories -= getOrDefault(activity, 'total_calories', 0)
+    self.total_ascent -= activity.total_ascent
+    self.total_descent -= activity.total_descent
+    self.number_of_activities -= 1
+
+    # TODO: fix max_speed calcs
+    #if activity.maximum_speed > self.maximum_speed:
+    #  self.maximum_speed = activity.maximum_speed
+
+    self.average_speed = self.total_meters / self.rolling_time
+
+    return self.put()
+
+
 class UserProfile(db.Model):
   user = db.ReferenceProperty(User, required=True)
   use_imperial = db.BooleanProperty(default=False)
@@ -161,10 +248,6 @@ class UserProfile(db.Model):
   rolling_time = db.IntegerProperty(default=0)
   average_speed = db.FloatProperty(default=0.0)
   maximum_speed = db.FloatProperty(default=0.0)
-  average_cadence = db.IntegerProperty(default=0)
-  maximum_cadence = db.IntegerProperty(default=0)
-  average_bpm = db.IntegerProperty(default=0)
-  maximum_bpm = db.IntegerProperty(default=0)
   total_ascent = db.FloatProperty(default=0.0)
   total_descent = db.FloatProperty(default=0.0)
   total_calories = db.FloatProperty(default=0.0)
@@ -184,13 +267,43 @@ class UserProfile(db.Model):
     self.rolling_time = 0
     self.average_speed = 0.0
     self.maximum_speed = 0.0
-    self.average_cadence = 0
-    self.maximum_cadence = 0
-    self.average_bpm = 0
-    self.maximum_bpm = 0
     self.total_ascent = 0.0
     self.total_descent = 0.0
     self.total_calories = 0.0
+
+  def update_totals_with_activity(self, activity):
+    self.totals_updated_at = datetime.datetime.utcnow()
+    self.total_meters += getOrDefault(activity, 'total_meters', 0)
+    self.total_time += activity.total_time
+    self.rolling_time += activity.rolling_time
+    self.total_calories += getOrDefault(activity, 'total_calories', 0)
+    self.total_ascent += activity.total_ascent
+    self.total_descent += activity.total_descent
+
+    if activity.maximum_speed > self.maximum_speed:
+      self.maximum_speed = activity.maximum_speed
+
+    self.average_speed = self.total_meters / self.rolling_time
+
+    stats = MonthlyUserStats.find_by_user_and_activity(self.user, activity)
+    stats.update_from_activity(activity)
+    return self.put()
+
+  def delete_activity_from_totals(self, activity):
+    self.totals_updated_at = datetime.datetime.utcnow()
+    self.total_meters -= getOrDefault(activity, 'total_meters', 0)
+    self.total_time -= activity.total_time
+    self.rolling_time -= activity.rolling_time
+    self.total_calories -= getOrDefault(activity, 'total_calories', 0)
+    self.total_ascent -= activity.total_ascent
+    self.total_descent -= activity.total_descent
+
+    # TODO: fix max speed calculations
+    self.average_speed = self.total_meters / self.rolling_time
+
+    stats = MonthlyUserStats.find_by_user_and_activity(self.user, activity)
+    stats.delete_activity_stats(activity)
+    return self.put()
 
   def update_totals(self):
     query = Activity.all()
@@ -211,14 +324,6 @@ class UserProfile(db.Model):
       speeds.append(activity.average_speed)
       if activity.maximum_speed > self.maximum_speed:
         self.maximum_speed = activity.maximum_speed
-
-      cadences.append(activity.average_cadence)
-      if activity.maximum_cadence > self.maximum_cadence:
-        self.maximum_cadence = activity.maximum_cadence
-
-      bpms.append(activity.average_bpm)
-      if activity.maximum_bpm > self.maximum_bpm:
-        self.maximum_bpm = activity.maximum_bpm
 
     self.average_speed = average(speeds, 0.0)
     self.average_cadence = int(average(cadences))
@@ -283,19 +388,16 @@ class Activity(db.Model):
         (self.rolling_time, self.total_time)
       )
 
-
   def put(self):
     self.is_valid()
     return_status = super(Activity, self).put()
     return return_status
-
 
   def delete(self):
     to_del = [self]
     to_del.extend(self.lap_set)
     to_del.extend(self.sourcedatafile_set)
     return db.delete(to_del)
-
 
   def reparse(self):
     source = self.sourcedatafile_set.get()
@@ -328,7 +430,6 @@ class Activity(db.Model):
     for lap_dict in activity_dict['laps']:
       lap = Lap(parent = self, activity = self, **lap_dict)
       lap.put()
-
 
   @classmethod
   def create_from_tcx(self, tcx_data, user, tags = []):
@@ -524,5 +625,3 @@ class Lap(db.Model):
   def to_kml(self):
     points = ['%s,%s,0' % (l[1],l[0]) for l in self.geo_points]
     return ' '.join(points)
-
-

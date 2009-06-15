@@ -43,6 +43,38 @@ def update_acts(request):
   return HttpResponse('<br/>'.join(response))
 
 @auth_decorators.login_required
+def create_stats(request):
+  responses = []
+  d = datetime.datetime(year=2009,month=6,day=13)
+  acts = Activity.all()
+  acts.filter('parsed_at !=', d)
+  acts.order('-parsed_at')
+
+  count = acts.count()
+  responses.append('Found %i remaining activities to reparse' % count)
+
+  for activity in acts.fetch(6):
+    stats = MonthlyUserStats.find_by_user_and_activity(activity.user, activity)
+    stats.update_from_activity(activity)
+    activity.parsed_at = d
+    activity.put()
+    responses.append('added %s' % activity.key().id())
+
+  page = """
+  <html>
+<head>
+  <meta http-equiv="refresh" content="5"/>
+</head>
+<body>
+  <h3>Update Datastore</h3>
+  %s
+</body>
+</html>
+""" % '<br>'.join(responses)
+
+  return HttpResponse(page)
+
+@auth_decorators.login_required
 def reparse_activity(request):
   responses = []
   #acts = Activity.all()

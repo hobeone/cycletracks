@@ -147,5 +147,5 @@ def handle_uploaded_file(user, filedata, tags=[]):
       act = Activity.create_from_tcx(file, user, tags)
     # belongs in the user or activity model, but Transaction semantics in app
     # engine prevent doing the query needed inside the transaction.
-    act.user.get_profile().update_totals()
+    act.user.get_profile().update_totals_with_activity(act)
     return act

@@ -72,7 +72,7 @@ indexes:
   - name: user
   - name: start_time
 
-# Used 6 times in query history.
+# Used 38 times in query history.
 - kind: Activity
   properties:
   - name: user

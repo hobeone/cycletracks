@@ -34,32 +34,7 @@
         <div id="primaryContent_2columns">
           <div id="columnA_2columns">
             <div id="activity_table">
-              <table width="100%" id="userSummary">
-                <tr>
-                  <th colspan="4" align="left"><div id="summaryTitle">Totals for {{user.username}}:</div></th>
-                </tr>
-                <tr>
-                  <td>Total Distance:</td>
-                  <td>{{ user_totals.total_meters|meters_to_prefered_distance:user.get_profile.use_imperial }} {{user.get_profile.use_imperial|miles_or_km_units}}</td>
-                  <td>Total Climbing:</td>
-                  <td>{{ user_totals.total_ascent|meters_to_prefered_distance:user.get_profile.use_imperial }} {{user.get_profile.use_imperial|miles_or_km_units}}</td>
-                  </tr><tr>
-                  <td>Total Time:</td>
-                  <td>{{ user_totals.total_time|seconds_to_human_readable }}</td>
-                  <td>Rolling Time:</td>
-                  <td>{{ user_totals.rolling_time|seconds_to_human_readable }}</td>
-                  </tr><tr>
-                  <td>Heart Rate:</td>
-                  <td>{{ user_totals.average_bpm|floatformat:"-2" }} / {{ user_totals.maximum_bpm|floatformat:"-2" }} bpm</td>
-                  <td>Average Speed:</td>
-                  <td>{{ user_totals.average_speed|kph_to_prefered_speed:user.get_profile.use_imperial }} {{user.get_profile.use_imperial|mph_or_kph_units}}</td>
-                  </tr><tr>
-                  <td>Max Speed:</td>
-                  <td>{{ user_totals.maximum_speed|kph_to_prefered_speed:user.get_profile.use_imperial }} {{user.get_profile.use_imperial|mph_or_kph_units}}</td>
-                  <td>Calories:</td>
-                  <td>{{ user_totals.total_calories|floatformat:"-2" }} Cal</td>
-                </tr>
-              </table>
+              {% include "stats_table.html" %}
               <br/>
               <div class="datatable">
                 {% include "activity_table.html" %}

@@ -68,10 +68,30 @@ def index(request, sorting=None, user=None):
   except (EmptyPage, InvalidPage):
     records = paginator.page(paginator.num_pages)
 
+  current_month = MonthlyUserStats.find_by_user_and_month_offset(user,0)
+  last_month = MonthlyUserStats.find_by_user_and_month_offset(user,1)
+
+  stats_list = [
+      {
+        'name': 'Current Month',
+        'stats': current_month
+      },
+      {
+        'name': 'Last Month',
+        'stats': last_month
+      },
+      {
+        'name': 'Totals',
+        'stats': user.get_profile()
+      },
+
+
+      ]
   return render_to_response(
     'dashboard.html',
     {'records' : records,
      'user_totals': user.get_profile(),
+     'stats_list' : stats_list,
      'user' : user,
     })
 
@@ -303,7 +323,7 @@ def delete(request, activity):
     activity.delete()
     if not memcache.delete(str(activity.key())):
       logging.error("Memcache delete failed.")
-    activity.user.get_profile().update_totals()
+    activity.user.get_profile().delete_activity_from_totals(activity)
     return HttpResponse('')
   else:
     return HttpResponse('Must use POST', status=501)

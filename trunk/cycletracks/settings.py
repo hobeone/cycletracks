@@ -10,7 +10,9 @@ MEDIA_VERSION = 1
 SECRET_KEY = 'hvhxfm5u=^*v&doo#oq8x*eg8+1&9sxbye@=umutgn^t_sg_nx'
 
 DEBUG = os.getenv('SERVER_SOFTWARE').split('/')[0] == "Development" if os.getenv('SERVER_SOFTWARE') else False
+#DEBUG=True
 TEMPLATE_DEBUG = DEBUG
+#DEBUG_PROPAGATE_EXCEPTIONS = True
 
 #ENABLE_PROFILER = True
 #ONLY_FORCED_PROFILE = True
@@ -19,7 +21,7 @@ TEMPLATE_DEBUG = DEBUG
 #PROFILE_PATTERN = 'ext.db..+\((?:get|get_by_key_name|fetch|count|put)\)'
 
 # Enable I18N and set default language to 'en'
-USE_I18N = True
+USE_I18N = False
 LANGUAGE_CODE = 'en'
 
 TIME_ZONE = 'UTC'
@@ -63,7 +65,6 @@ AUTH_PROFILE_MODULE = 'gcycle.UserProfile'
 
 GLOBALTAGS = (
     'ragendja.templatetags.ragendjatags',
-    'django.templatetags.i18n',
 )
 
 LOGIN_URL = '/account/login/'
@@ -91,5 +92,6 @@ IGNORE_APP_SETTINGS = IGNORE_APP_URLSAUTO = (
     # 'django.contrib.auth',
     # 'yetanotherapp',
 )
+
 
 from ragendja.settings_post import *

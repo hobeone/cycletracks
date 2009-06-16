@@ -2,6 +2,7 @@ from django.http import *
 from django.shortcuts import render_to_response
 from django.contrib.auth import decorators as auth_decorators
 from google.appengine.ext import db
+from google.appengine.api import datastore_errors
 from google.appengine.api import memcache
 from google.appengine.api import users
 
@@ -39,7 +40,17 @@ def update_acts(request):
   for a in Activity.all():
     a.delete()
 
+  return HttpResponse('<br/>'.join(response))
 
+@auth_decorators.login_required
+def find_big_source(request):
+  response = []
+  srcs = SourceDataFile.all()
+  for s in srcs:
+    try:
+      response.append("%s -> %s" % (s.activity.key(), str(len(s.data))))
+    except datastore_errors.Error:
+      response.append("%s ref property" % s.key())
   return HttpResponse('<br/>'.join(response))
 
 @auth_decorators.login_required

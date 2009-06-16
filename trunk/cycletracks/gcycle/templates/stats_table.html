@@ -1,0 +1,38 @@
+{% load extra_filters %}
+{% load timezone_filters %}
+<table width="100%" id="userSummary">
+  {% for stats in stats_list %}
+  <tr>
+    <th colspan="4" align="left"><div id="summaryTitle">{{stats.name}}</div></th>
+  </tr>
+  {% if stats.stats %}
+  <tr>
+    <td>Total Distance:</td>
+    <td>{{ stats.stats.total_meters|meters_to_prefered_distance:user.get_profile.use_imperial }} {{user.get_profile.use_imperial|miles_or_km_units}}</td>
+    <td>Total Climbing:</td>
+    <td>{{ stats.stats.total_ascent|meters_to_prefered_distance:user.get_profile.use_imperial }} {{user.get_profile.use_imperial|miles_or_km_units}}</td>
+  </tr>
+  <tr>
+    <td>Total Time:</td>
+    <td>{{ stats.stats.total_time|seconds_to_human_readable }}</td>
+    <td>Rolling Time:</td>
+    <td>{{ stats.stats.rolling_time|seconds_to_human_readable }}</td>
+  </tr>
+  <tr>
+    <td>Average Speed:</td>
+    <td>{{ stats.stats.average_speed|kph_to_prefered_speed:user.get_profile.use_imperial }} {{user.get_profile.use_imperial|mph_or_kph_units}}</td>
+    <td>Calories:</td>
+    <td>{{ stats.stats.total_calories|floatformat:"-2" }} Cal</td>
+  </tr>
+  <tr>
+    <td>Max Speed:</td>
+    <td>{{ stats.stats.maximum_speed|kph_to_prefered_speed:user.get_profile.use_imperial }} {{user.get_profile.use_imperial|mph_or_kph_units}}</td>
+  </tr>
+  {% else %}
+    <tr colspan="4">
+      <td>No Stats Found</td>
+    </tr>
+  {% endif %}
+  {% endfor %}
+
+</table>

@@ -72,7 +72,7 @@ indexes:
   - name: user
   - name: start_time
 
-# Unused in query history -- copied from input.
+# Used 7 times in query history.
 - kind: Activity
   properties:
   - name: user

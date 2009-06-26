@@ -14,6 +14,9 @@ reopts = (re.MULTILINE | re.DOTALL)
 
 MINIMUM_LAP_DISTANCE = 10 # meters
 MINIMUM_LAP_TIME = 60 # seconds
+MAX_VALID_SPEED_PER_SECOND = 40 # 40 meters per second = ~90 mph,
+                                # are you really going faster than that on
+                                # your bike?
 
 def parse_zulu(s):
     return datetime.datetime(int(s[0:4]), int(s[5:7]), int(s[8:10]),
@@ -169,14 +172,20 @@ def parse_lap(start_time, lap_string):
       else:
         if timedelta > 0:
           timepoints.append(seconds_delta(starttime, point_time))
-          speed_list.append(dist_delta / timedelta * 3.6) # for kph
+          raw_speed = dist_delta / timedelta
+          if raw_speed > MAX_VALID_SPEED_PER_SECOND:
+            if len(speed_list) > 0:
+              speed_list.append(speed_list[-1])
+            else:
+              speed_list.append(0)
+          else:
+            speed_list.append(raw_speed * 3.6) # for kph
         else:
           speed_list.append(0)
           if timepoints:
             timepoints.append(timepoints[-1])
           else:
             timepoints.append(0)
-
       prev_distance = dist
     prev_time = point_time
 

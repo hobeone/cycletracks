@@ -369,11 +369,14 @@ class Activity(db.Model):
 
   @classmethod
   def hash_exists(cls, source_hash, user):
-    q = Activity.all()
-    q.filter('source_hash =', source_hash)
-    q.filter('user =', user)
-    activity_count = q.count(1)
-    return activity_count > 0
+    # v1.2.3 breaks this with:
+    # BadRequestError: Only ancestor queries are allowed inside transactions.
+    #q = Activity.all()
+    #q.filter('source_hash =', source_hash)
+    #q.filter('user =', user)
+    #activity_count = q.count(1)
+    #return activity_count > 0
+    return False
 
   def is_valid(self):
     # TODO: when app engine bigtable libs pull their heads out, add real

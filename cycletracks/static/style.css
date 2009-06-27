@@ -533,3 +533,12 @@ span.summaryLabel {
   position:relative;
   width:450px;
 }
+
+span.redlabel {
+  color: #ff0000;
+  font-weight: 900;
+}
+span.bluelabel {
+  color: #0000CC;
+  font-weight: 900;
+}

@@ -55,6 +55,21 @@ def getIntTagSubVal(string, tag, default=None):
   else:
     return default
 
+@memoized
+def make_extension_tag_regex(value_name):
+  return re.compile(r"<Extensions>\s*?<TPX(?:.+)?>\s*?<%s>\s*?(\d+?)\s*?</%s>\s*?</TPX>\s*?</Extensions>" %
+      (value_name,value_name), reopts)
+
+def getExtensionValue(string, ext_name, default=None):
+  """Get an value from the extensions section of a trackpoint"""
+  r = make_extension_tag_regex(ext_name)
+  m = r.search(string)
+  if m:
+    return int(m.group(1))
+  else:
+    return default
+
+
 def encode_activity_points(laps_points):
   points = []
   for lap in laps_points:
@@ -139,6 +154,7 @@ def parse_lap(start_time, lap_string):
   altitude_list = []
   timepoints = []
   distance_list = []
+  power_list = []
   starttime = lap_record['starttime']
   prev_time = lap_record['starttime']
   endtime = starttime
@@ -212,6 +228,16 @@ def parse_lap(start_time, lap_string):
       if bpm_list:
         bpm_list.append(bpm_list[-1])
 
+    power = getExtensionValue(trackpoint, 'Watts', default=None)
+    if power:
+      if len(power_list) == 0 and len(timepoints) > 0:
+        power_list = fill_list(power_list, 0, len(timepoints)-1)
+      power_list.append(power)
+    else:
+      if power_list:
+        power_list.append(power_list[-1])
+
+
     alt = getTagVal(trackpoint, 'AltitudeMeters', None)
     if alt:
       if len(altitude_list) == 0 and len(timepoints) > 0:
@@ -250,12 +276,19 @@ def parse_lap(start_time, lap_string):
       total_descent += altitude_delta * -1
     prev_altitude = i
 
+  max_power = None
+  if power_list:
+    max_power = max(power_list)
+
   lap_record.update({
     'total_time_seconds': timepoints[-1],
     'endtime': endtime,
     'average_cadence': int(average(cadence_list)),
     'maximum_cadence': max_cadence,
     'bpm_list' : array.array('H', bpm_list),
+    'power_list': array.array('H', power_list),
+    'average_power': int(average(power_list)),
+    'maximum_power': max_power,
     'geo_points' : geo_points,
     'cadence_list' : array.array('H', cadence_list),
     'speed_list' : array.array('f', speed_list),
@@ -319,6 +352,8 @@ def parse_tcx(filedata):
         'maximum_cadence': max([l['maximum_cadence'] for l in lap_records]),
         'average_bpm': int(average([l['average_bpm'] for l in lap_records])),
         'maximum_bpm': max([l['maximum_bpm'] for l in lap_records]),
+        'average_power': int(average([l['average_power'] for l in lap_records])),
+        'maximum_power': max([l['maximum_power'] for l in lap_records]),
         'total_calories': sum([l['calories'] for l in lap_records]),
         'total_ascent': sum([l['total_ascent'] for l in lap_records]),
         'total_descent': sum([l['total_descent'] for l in lap_records]),

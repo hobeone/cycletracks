@@ -39,6 +39,12 @@ asd
 <Value>123</Value>
 </b>"""
 
+  power_tag = """<Extensions>
+  <TPX xmlns="http://www.garmin.com/xmlschemas/ActivityExtension/v2">
+    <Watts>404</Watts>
+  </TPX>
+</Extensions>"""
+
   def testParseZulu(self):
     valid_format = '2008-06-01T13:55:04Z'
     invalid_format = 'fooT13:55:04Z'
@@ -55,8 +61,12 @@ asd
     self.assertEqual('123', pytcx.getIntTagVal('<int>123</int>','int', None))
 
   def testGetTagSubVal(self):
-    val = pytcx.getIntTagSubVal(self.multiline_val_tag, 'b', None)
+    val = pytcx.getIntTagSubVal(self.multiline_val_tag, 'b', default=None)
     self.assertEqual(123, val)
+
+  def testGetExtensionValue(self):
+    val = pytcx.getExtensionValue(self.power_tag, 'Watts')
+    self.assertEqual(404, val)
 
   def testParseOfShortTcx(self):
     testfile = open('gcycle/test/invalid_tcx.tcx').read()
@@ -77,6 +87,26 @@ asd
 
     self.assert_(a)
     self.assertEqual(len(a.sourcedatafile_set.get().parse_errors), 1)
+
+  def testValidPowerParse(self):
+    testfile = open('gcycle/test/valid_activity_with_power.tcx').read()
+    acts = pytcx.parse_tcx(testfile)
+    self.assertEqual(len(acts), 1)
+    activity = acts[0]
+    self.assertEqual(activity['average_power'], 242)
+    self.assertEqual(activity['maximum_power'], 794)
+    u = User(username = 'test', user = users.User('test@ex.com'))
+    u.put()
+
+    a = Activity._put_activity_record(activity, u, 'tcx',
+                                      'source, which is ignored')
+
+    self.assertEqual(a.lap_set.count(), 2)
+    laps = a.lap_set.fetch(2)
+    self.assertEqual(laps[0].maximum_power, 585)
+    self.assertEqual(laps[1].maximum_power, 794)
+    self.assertEqual(laps[0].average_power, 322)
+    self.assertEqual(laps[1].average_power, 162)
 
   def testValidParse(self):
     testfile = open('gcycle/test/valid_multi_lap.tcx').read()

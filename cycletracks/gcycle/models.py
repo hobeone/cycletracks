@@ -346,6 +346,8 @@ class Activity(db.Model):
   maximum_cadence = db.IntegerProperty(default=0)
   average_bpm = db.IntegerProperty(default=0)
   maximum_bpm = db.IntegerProperty(default=0)
+  average_power = db.IntegerProperty(default=0)
+  maximum_power = db.IntegerProperty(default=0)
   total_ascent = db.FloatProperty(default=0.0)
   total_descent = db.FloatProperty(default=0.0)
   total_calories = db.FloatProperty(default=0.0)
@@ -540,6 +542,13 @@ class Activity(db.Model):
       dl.extend(d.distance_list)
     return dl
 
+  @property
+  @memoized
+  def power_list(self):
+    pl = []
+    for lap in self.lap_set:
+      pl.extend(lap.power_list)
+    return pl
 
 class SourceDataFile(db.Model):
   activity = db.ReferenceProperty(Activity, required=True)
@@ -557,12 +566,15 @@ class Lap(db.Model):
   maximum_cadence = db.IntegerProperty()
   average_bpm = db.IntegerProperty()
   maximum_bpm = db.IntegerProperty()
+  average_power = db.IntegerProperty()
+  maximum_power = db.IntegerProperty()
   average_speed = db.FloatProperty(required=True)
   maximum_speed = db.FloatProperty(required=True)
   calories = db.FloatProperty()
   starttime = db.DateTimeProperty(required=True)
   endtime = db.DateTimeProperty(required=True)
   bpm_list = ArrayProperty('H')
+  power_list = ArrayProperty('H')
   altitude_list = ArrayProperty('f')
   speed_list = ArrayProperty('f')
   distance_list = ArrayProperty('f')
@@ -580,6 +592,12 @@ class Lap(db.Model):
       raise db.NotSavedError(
           "bpm_list has the wrong number of entries (%i != %i)" %
           (len(self.bpm_list), data_len)
+       )
+
+    if self.power_list and len(self.power_list) != 0 and len(self.power_list) != data_len:
+      raise db.NotSavedError(
+          "power_list has the wrong number of entries (%i != %i)" %
+          (len(self.power_list), data_len)
        )
 
     if self.altitude_list and len(self.altitude_list) != data_len:
@@ -615,7 +633,13 @@ class Lap(db.Model):
     if self.average_speed > self.maximum_speed:
       raise db.NotSavedError(
           "Average speed can not be higher than maximum speed (%s vs %s)" %
-          (self.average_speed , self.maximum_speed)
+          (self.average_speed, self.maximum_speed)
+          )
+
+    if self.maximum_power and (self.average_power > self.maximum_power):
+      raise db.NotSavedError(
+          "Average power can not be higher than maximum power (%s vs %s)" %
+          (self.average_power, self.maximum_power)
           )
     return self
 

@@ -4,7 +4,7 @@ from ragendja.settings_pre import *
 # Increase this when you update your media on the production site, so users
 # don't have to refresh their cache. By setting this your MEDIA_URL
 # automatically becomes /media/MEDIA_VERSION/
-MEDIA_VERSION = 1
+MEDIA_VERSION = 2
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = 'hvhxfm5u=^*v&doo#oq8x*eg8+1&9sxbye@=umutgn^t_sg_nx'

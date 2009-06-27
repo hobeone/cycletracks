@@ -13,12 +13,6 @@ indexes:
 # Unused in query history -- copied from input.
 - kind: Activity
   properties:
-  - name: parsed_at
-    direction: desc
-
-# Unused in query history -- copied from input.
-- kind: Activity
-  properties:
   - name: source_type
   - name: parsed_at
     direction: desc
@@ -72,7 +66,7 @@ indexes:
   - name: user
   - name: start_time
 
-# Used 7 times in query history.
+# Used 5 times in query history.
 - kind: Activity
   properties:
   - name: user

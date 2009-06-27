@@ -122,6 +122,15 @@
 
                 <tr>
                   <td>
+                    Power
+                  </td>
+                  <td>
+                    Avg: {{ activity.average_power }}, Max: {{ activity.maximum_power }} Watts
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
                     Calories
                   </td>
                   <td>
@@ -242,7 +251,7 @@
         </div>
     </td>
     <td>
-      <div id="map" style="width: 460px; height: 400px"></div>
+      <div id="map" style="width: 100%; height: 400px"></div>
       <div>
         <a href="{% url activity_kml activity.key.id %}">Download KML</a> -
         <a href="{% url activity_source activity.key.id %}">Source File</a> -
@@ -258,20 +267,13 @@
     </td>
   </tr>
   <tr>
-    <td valign="top">
-      Altitude ({{use_imperial|meters_or_feet_units}}):
-      <div id="altitudechart" style="width: 430px; height: 200px"></div>
-      Speed ({{use_imperial|mph_or_kph_units}}):
-<div id="speedchart" style="width: 430px; height: 200px"></div>
-
-    </td>
-    <td>
-      Distance ({{use_imperial|miles_or_km_units}}):
-      <div id="distancechart" style="width: 430px; height: 200px"></div>
-      Heart Rate (BPM):
-      <div id="bpmchart" style="width: 430px; height: 200px"></div>
-      Cadence (RPM):
-      <div id="cadencechart" style="width: 430px; height: 200px"></div>
+    <td valign="top" colspan="2">
+      <span class="redlabel">Altitude</span> ({{use_imperial|meters_or_feet_units}}) vs <span class="bluelabel">Distance</span> ({{use_imperial|miles_or_km_units}}):
+      <div id="altitudechart" style="width: 920px; height: 200px"></div>
+      <span class="redlabel">Cadence</span> (RPM) vs <span class="bluelabel">Speed</span> ({{use_imperial|mph_or_kph_units}}):
+      <div id="speedchart" style="width: 920px; height: 200px"></div>
+      <span class="redlabel">Heart Rate</span> (BPM) vs <span class="bluelabel">Power</span> (Watts):
+      <div id="bpmchart" style="width: 920px; height: 200px"></div>
     </td>
   </tr>
 </table>
@@ -343,61 +345,67 @@
 
     var timeGeometry = new Timeplot.DefaultTimeGeometry({
       gridColor: new Timeplot.Color("#000000"),
-      axisLabelsPlacement: "top"
+      axisLabelsPlacement: "bottom"
     });
 
     var altitudeGeometry = new Timeplot.DefaultValueGeometry({
-      gridColor: "#000000",
+      gridColor: "#ff0000",
       axisLabelsPlacement: "left",
-    });
-    var speedGeometry = new Timeplot.DefaultValueGeometry({
-      gridColor: "#000000",
-      axisLabelsPlacement: "left",
-      min: 0,
     });
     var distanceGeometry = new Timeplot.DefaultValueGeometry({
-      gridColor: "#000000",
-      axisLabelsPlacement: "left",
+      gridColor: "#0000CC",
+      axisLabelsPlacement: "right",
       min: 0,
-    });
-    var cadenceGeometry = new Timeplot.DefaultValueGeometry({
-      gridColor: "#000000",
-      axisLabelsPlacement: "left",
-      min: 0,
-    });
-    var bpmGeometry = new Timeplot.DefaultValueGeometry({
-      gridColor: "#000000",
-      axisLabelsPlacement: "left",
-      min: 0,
-    });
+      });
 
+    var speedGeometry = new Timeplot.DefaultValueGeometry({
+      gridColor: "#0000CC",
+      axisLabelsPlacement: "right",
+      min: 0,
+      });
+    var cadenceGeometry = new Timeplot.DefaultValueGeometry({
+      gridColor: "#ff0000",
+      axisLabelsPlacement: "left",
+      min: 0,
+      });
+
+    var bpmGeometry = new Timeplot.DefaultValueGeometry({
+      gridColor: "#FF0000",
+      axisLabelsPlacement: "left",
+      min: 0,
+    });
+    var powerGeometry = new Timeplot.DefaultValueGeometry({
+      gridColor: "#0000CC",
+      axisLabelsPlacement: "right",
+      min: 0,
+    });
     var altitudeInfo = [
+
       Timeplot.createPlotInfo({
-        id: "plot1",
+        id: "distance_plot",
+        dataSource: new Timeplot.ColumnSource(eventSource,4),
+        valueGeometry: distanceGeometry,
+        timeGeometry: timeGeometry,
+        lineColor: "#0000CC",
+        showValues: true
+      }),
+
+      Timeplot.createPlotInfo({
+        id: "altitude_plot",
         dataSource: new Timeplot.ColumnSource(eventSource,1),
         valueGeometry: altitudeGeometry,
         timeGeometry: timeGeometry,
         lineColor: "#ff0000",
         fillColor: "#cc8080",
         showValues: true
-      }),
+        }),
+
+
+
       ];
     var speedInfo = [
       Timeplot.createPlotInfo({
-        id: "plot2",
-        dataSource: new Timeplot.Processor(
-          new Timeplot.ColumnSource(eventSource,2),
-            Timeplot.Operator.average, { size: 3 }),
-        valueGeometry: speedGeometry,
-        timeGeometry: timeGeometry,
-        lineColor: "#D0A825",
-        fillColor: "#D0A825",
-        showValues: true
-      }),
-      ];
-    var cadenceInfo = [
-      Timeplot.createPlotInfo({
-        id: "plot3",
+        id: "cadence_plot",
         dataSource: new Timeplot.Processor(
           new Timeplot.ColumnSource(eventSource,3),
             Timeplot.Operator.average, { size: 30 }),
@@ -406,41 +414,50 @@
         lineColor: "#ff0000",
         fillColor: "#cc8080",
         showValues: true
-      }),
-      ];
-    var distanceInfo = [
+        }),
+
       Timeplot.createPlotInfo({
-        id: "plot4",
-        dataSource: new Timeplot.ColumnSource(eventSource,4),
-        valueGeometry: distanceGeometry,
+        id: "speed_plot",
+        dataSource: new Timeplot.Processor(
+          new Timeplot.ColumnSource(eventSource,2),
+            Timeplot.Operator.average, { size: 5 }),
+        valueGeometry: speedGeometry,
         timeGeometry: timeGeometry,
-        lineColor: "#99B3CC",
-        fillColor: "#99B3CC",
+        lineColor: "#0000FF",
         showValues: true
-      }),
+        }),
+
       ];
     var bpmInfo = [
       Timeplot.createPlotInfo({
-        id: "plot5",
+        id: "bpm_plot",
         dataSource: new Timeplot.Processor(
           new Timeplot.ColumnSource(eventSource,5),
             Timeplot.Operator.average, { size: 15 }),
         valueGeometry: bpmGeometry,
         timeGeometry: timeGeometry,
-        lineColor: "#99B386",
-        fillColor: "#99B386",
+        lineColor: "#FF0000",
+        fillColor: "#CC8080",
         showValues: true
-      }),
+        }),
+
+      Timeplot.createPlotInfo({
+        id: "power_plot",
+        dataSource: new Timeplot.Processor(
+          new Timeplot.ColumnSource(eventSource,6),
+            Timeplot.Operator.average, { size: 15 }),
+        valueGeometry: powerGeometry,
+        timeGeometry: timeGeometry,
+        lineColor: "#0000FF",
+        showValues: true
+        }),
+
     ];
 
     altitudeplot = Timeplot.create(document.getElementById("altitudechart"),
         altitudeInfo);
     speedplot = Timeplot.create(document.getElementById("speedchart"),
         speedInfo);
-    cadenceplot = Timeplot.create(document.getElementById("cadencechart"),
-        cadenceInfo);
-    distanceplot = Timeplot.create(document.getElementById("distancechart"),
-        distanceInfo);
     bpmplot = Timeplot.create(document.getElementById("bpmchart"),
         bpmInfo);
 

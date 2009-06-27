@@ -263,20 +263,22 @@ def _activity_data(activity, use_imperial):
       activity.speed_list,
       activity.cadence_list,
       activity.distance_list,
-      activity.bpm_list]
+      activity.bpm_list,
+      activity.power_list,]
       )
   activity_data = []
   st = timezones.utils.localtime_for_timezone(activity.start_time,
       activity.user.get_profile().timezone)
 
-  for t,a,s,c,d,b in data:
-    activity_data.append('%s,%s,%s,%s,%s,%s' % (
+  for t,a,s,c,d,b,p in data:
+    activity_data.append('%s,%s,%s,%s,%s,%s,%s' % (
       (st + datetime.timedelta(seconds=t)).isoformat(),
       meters_or_feet(a,use_imperial),
       kph_to_prefered_speed(s,use_imperial),
       c or 0,
       meters_to_prefered_distance(d,use_imperial),
       b or 0,
+      p or 0,
       )
     )
 

@@ -380,16 +380,6 @@
       min: 0,
     });
     var altitudeInfo = [
-
-      Timeplot.createPlotInfo({
-        id: "distance_plot",
-        dataSource: new Timeplot.ColumnSource(eventSource,4),
-        valueGeometry: distanceGeometry,
-        timeGeometry: timeGeometry,
-        lineColor: "#0000CC",
-        showValues: true
-      }),
-
       Timeplot.createPlotInfo({
         id: "altitude_plot",
         dataSource: new Timeplot.ColumnSource(eventSource,1),
@@ -399,9 +389,14 @@
         fillColor: "#cc8080",
         showValues: true
         }),
-
-
-
+      Timeplot.createPlotInfo({
+        id: "distance_plot",
+        dataSource: new Timeplot.ColumnSource(eventSource,4),
+        valueGeometry: distanceGeometry,
+        timeGeometry: timeGeometry,
+        lineColor: "#0000CC",
+        showValues: true
+      }),
       ];
     var speedInfo = [
       Timeplot.createPlotInfo({

@@ -5,9 +5,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://earth.google.com/kml/2.2">
 <Document>
-  <Style id="lapstyle">
+  <Style id="lapstyle0">
     <LineStyle>
       <color>ffff0000</color>
+      <width>4</width>
+    </LineStyle>
+  </Style>
+  <Style id="lapstyle1">
+    <LineStyle>
+      <color>ffffff00</color>
+      <width>4</width>
+    </LineStyle>
+  </Style>
+  <Style id="lapstyle2">
+    <LineStyle>
+      <color>ff00ff00</color>
+      <width>4</width>
+    </LineStyle>
+  </Style>
+  <Style id="lapstyle3">
+    <LineStyle>
+      <color>ff006633</color>
       <width>4</width>
     </LineStyle>
   </Style>
@@ -52,7 +70,7 @@
 <a href="http://cycletracks.appspot.com/{{ activity.get_absolute_url }}">View at CycleTracks</a>
 ]]>
 </description>
-  <styleUrl>#lapstyle</styleUrl>
+  <styleUrl>#lapstyle{{forloop.counter0}}</styleUrl>
   <LineString>
       <coordinates>{{ lap.to_kml }}</coordinates>
       <extrude>1</extrude>

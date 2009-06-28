@@ -77,7 +77,7 @@ def index(request, sorting=None, user=None):
         'stats': current_month
       },
       {
-        'name': 'Last Month',
+        'name': 'Previous Month',
         'stats': last_month
       },
       {

@@ -51,23 +51,6 @@ asd
     self.assert_(pytcx.parse_zulu(valid_format))
     self.assertRaises(ValueError, pytcx.parse_zulu, invalid_format)
 
-  def testGetTagVal(self):
-    self.assert_(pytcx.getTagVal('<b>foo</b>', 'b', None))
-    self.assertEqual("asd\nasd", pytcx.getTagVal(self.multiline_tag, 'b', None))
-    # Default to None
-    self.assertEqual(None, pytcx.getTagVal('','b'))
-
-  def testGetIntTagVal(self):
-    self.assertEqual('123', pytcx.getIntTagVal('<int>123</int>','int', None))
-
-  def testGetTagSubVal(self):
-    val = pytcx.getIntTagSubVal(self.multiline_val_tag, 'b', default=None)
-    self.assertEqual(123, val)
-
-  def testGetExtensionValue(self):
-    val = pytcx.getExtensionValue(self.power_tag, 'Watts')
-    self.assertEqual(404, val)
-
   def testParseOfShortTcx(self):
     testfile = open('gcycle/test/invalid_tcx.tcx').read()
     self.assertRaises(

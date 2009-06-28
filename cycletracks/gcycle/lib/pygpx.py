@@ -11,9 +11,6 @@ import array
 from gcycle.lib import glineenc
 from gcycle.lib import pytcx
 from gcycle.lib.average import *
-import pprint
-pp = pprint.PrettyPrinter(indent=2)
-
 
 EARTH_RADIUS = 6370000 # meters
 PAUSED_MIN_SPEED = 1.34112 # meters per second
@@ -28,10 +25,6 @@ class InvalidGPXFormat(GPXExpception):
 
 class TrackTooShort(GPXExpception):
   pass
-
-def parse_zulu(s):
-    return datetime.datetime(int(s[0:4]), int(s[5:7]), int(s[8:10]),
-        int(s[11:13]), int(s[14:16]), int(s[17:19]))
 
 # http://answers.google.com/answers/threadview/id/326655.html
 def calculate_distance(start_lat, start_long, start_ele,
@@ -75,7 +68,7 @@ def parse_segment(segment, tags, starting_dist = 0.0):
   prev_time = None
   for wpt in segment.findall(tags['wpt']):
     geo_points.append([float(wpt.get("lat")),float(wpt.get("lon"))])
-    waypoint_time = parse_zulu(wpt.findtext(tags['time']))
+    waypoint_time = pytcx.parse_zulu(wpt.findtext(tags['time']))
     if start_time is None:
       start_time = waypoint_time
     time_points.append((waypoint_time - start_time).seconds)

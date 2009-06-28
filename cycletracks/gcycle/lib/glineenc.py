@@ -96,7 +96,7 @@ def encode_unsigned(n):
     tmp = [(i + 63) for i in tmp]
     tmp = [chr(i) for i in tmp]
     tmp = ''.join(tmp)
-    return tmp    
+    return tmp
 
 def douglas_peucker_distances(points):
     distances = [None] * len(points)
@@ -124,29 +124,29 @@ def douglas_peucker_distances(points):
 def distance(point, A, B):
     """Compute distance of ``point`` from line ``A``, ``B``."""
     if A == B:
-        out = math.sqrt(
+        out = (
             (B[0] - point[0]) ** 2 +
             (B[1] - point[1]) ** 2
-        )
+        )**.5
     else:
         u = (
             (((point[0] - A[0]) * (B[0] - A[0])) +
-             ((point[1] - A[1]) * (B[1] - A[1]))) / 
+             ((point[1] - A[1]) * (B[1] - A[1]))) /
             (((B[0] - A[0]) ** 2) +  ((B[1] - A[1]) ** 2))
         )
         if u <= 0:
-            out = math.sqrt(
+            out = (
                 ((point[0] - A[0]) ** 2) + ((point[1] - A[1]) ** 2)
-            )
+            )**.5
         elif u >= 1:
-            out = math.sqrt(
+            out = (
                 ((point[0] - B[0]) ** 2) + ((point[1] - B[1]) ** 2)
-            )
+            )**.5
         elif 0 < u < 1:
-            out = math.sqrt(
+            out = (
                 ((((point[0] - A[0]) - (u * (B[0] - A[0]))) ** 2)) +
                 ((((point[1] - A[1]) - (u * (B[1] - A[1]))) ** 2))
-            )
+            )**.5
     return out
 
 def compute_level(distance):

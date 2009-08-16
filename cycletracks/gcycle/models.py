@@ -216,7 +216,10 @@ class MonthlyUserStats(db.Model):
     if activity.maximum_speed > self.maximum_speed:
       self.maximum_speed = activity.maximum_speed
 
-    self.average_speed = self.total_meters / self.rolling_time
+    if self.rolling_time > 0:
+      self.average_speed = self.total_meters / self.rolling_time * 3.6
+    else:
+      self.average_speed = 0
 
     return self.put()
 
@@ -233,7 +236,10 @@ class MonthlyUserStats(db.Model):
     #if activity.maximum_speed > self.maximum_speed:
     #  self.maximum_speed = activity.maximum_speed
 
-    self.average_speed = self.total_meters / self.rolling_time
+    if self.rolling_time > 0:
+      self.average_speed = self.total_meters / self.rolling_time * 3.6
+    else:
+      self.average_speed = 0
 
     return self.put()
 
@@ -283,7 +289,10 @@ class UserProfile(db.Model):
     if activity.maximum_speed > self.maximum_speed:
       self.maximum_speed = activity.maximum_speed
 
-    self.average_speed = self.total_meters / self.rolling_time
+    if self.rolling_time > 0:
+      self.average_speed = self.total_meters / self.rolling_time * 3.6
+    else:
+      self.average_speed = 0
 
     stats = MonthlyUserStats.find_by_user_and_activity(self.user, activity)
     stats.update_from_activity(activity)
@@ -299,7 +308,10 @@ class UserProfile(db.Model):
     self.total_descent -= activity.total_descent
 
     # TODO: fix max speed calculations
-    self.average_speed = self.total_meters / self.rolling_time
+    if self.rolling_time > 0:
+      self.average_speed = self.total_meters / self.rolling_time * 3.6
+    else:
+      self.average_speed = 0
 
     stats = MonthlyUserStats.find_by_user_and_activity(self.user, activity)
     stats.delete_activity_stats(activity)

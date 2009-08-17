@@ -6,7 +6,7 @@ from django.core.urlresolvers import reverse
 
 from google.appengine.ext import db
 from google.appengine.api import apiproxy_stub_map
-from ragendja.auth.google_models import User
+from django.contrib.auth.models import User
 
 from gcycle import models
 from gcycle.test.user_fixtures import UserData

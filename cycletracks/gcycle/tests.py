@@ -13,7 +13,7 @@ from google.appengine.ext import db
 from google.appengine.api import users
 from google.appengine.api import apiproxy_stub_map
 
-from ragendja.auth.google_models import User
+from django.contrib.auth.models import User
 
 from django.test.client import Client
 

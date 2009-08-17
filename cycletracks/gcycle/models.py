@@ -10,7 +10,7 @@ from gcycle.lib.average import *
 from django.core.exceptions import ImproperlyConfigured
 from django.db import models
 
-from ragendja.auth.google_models import User
+from django.contrib.auth.models import User
 
 import array
 import bz2

@@ -3,11 +3,17 @@ version: 1
 runtime: python
 api_version: 1
 
-default_expiration: "2d"
+default_expiration: "3650d"
 
 handlers:
+- url: /remote_api
+  script: $PYTHON_LIB/google/appengine/ext/remote_api/handler.py
+  secure: optional
+  login: admin
+
 - url: /media
   static_dir: _generated_media
+  secure: optional
 
 - url: /static
   static_dir: static/
@@ -18,20 +24,26 @@ handlers:
 
 - url: /a/\d+.kml
   script: common/appenginepatch/main.py
+  secure: optional
 
 - url: /a/\d+.pub
   script: common/appenginepatch/main.py
+  secure: optional
 
 - url: /a/\d+.data
   script: common/appenginepatch/main.py
+  secure: optional
 
 - url: /about.*
   script: common/appenginepatch/main.py
+  secure: optional
 
 - url: /admin/.*
   script: common/appenginepatch/main.py
   login: admin
+  secure: optional
 
 - url: /.*
   script: common/appenginepatch/main.py
   login: required
+  secure: optional

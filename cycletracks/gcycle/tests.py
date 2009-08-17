@@ -166,13 +166,13 @@ xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/
     self.assertEqual(act['end_point'], '37.996776,-122.506612')
     self.assertFalse('average_bpm' in act)
     self.assertFalse('average_cadence' in act)
-    self.assertAlmostEqual(act['average_speed'], 10.224, 2)
+    self.assertAlmostEqual(act['average_speed'], 10.14, 1)
     self.assertFalse('maximum_bpm' in act)
     self.assertFalse('maximum_cadence' in act)
-    self.assertAlmostEqual(act['maximum_speed'], 18.29, 2)
+    self.assertAlmostEqual(act['maximum_speed'], 18.26, 1)
     self.assertEqual(len(act['laps']), 1)
     self.assertFalse('total_calories' in act)
-    self.assertAlmostEqual(act['total_meters'], 139.16, 2)
+    self.assertAlmostEqual(act['total_meters'], 138.13, 1)
     self.assertEqual(act['total_time'], 49)
 
     a = self.putActivity(act)
@@ -270,13 +270,13 @@ xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/
     activity_record = pygpx.parse_gpx(self.Gpx10Contents(four_point_trk),
                                       '1/0')
     self.assertEqual(len(activity_record['laps']), 1)
-    self.assertAlmostEqual(activity_record['total_meters'], 40.77, 2)
+    self.assertAlmostEqual(activity_record['total_meters'], 40.53, 1)
     self.putActivity(activity_record)
 
     activity_record = pygpx.parse_gpx(self.Gpx11Contents(four_point_trk),
                                       '1/1')
     self.assertEqual(len(activity_record['laps']), 1)
-    self.assertAlmostEqual(activity_record['total_meters'], 40.77, 2)
+    self.assertAlmostEqual(activity_record['total_meters'], 40.53, 1)
     self.putActivity(activity_record)
 
   def testNoRollingTime(self):
@@ -340,7 +340,7 @@ xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/
                                       '1/1')
     a = self.putActivity(activity_record)
     self.assertEqual(len(a.lap_set), 1)
-    self.assertAlmostEqual(activity_record['total_meters'], 39.395, 2)
+    self.assertAlmostEqual(activity_record['total_meters'], 39.27, 2)
 
 
 class UserTestCase(unittest.TestCase):

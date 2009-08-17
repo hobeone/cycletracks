@@ -8,6 +8,8 @@ import StringIO
 import md5
 import array
 
+from geopy import distance
+
 from gcycle.lib import glineenc
 from gcycle.lib import pytcx
 from gcycle.lib.average import *
@@ -25,27 +27,6 @@ class InvalidGPXFormat(GPXExpception):
 
 class TrackTooShort(GPXExpception):
   pass
-
-# http://answers.google.com/answers/threadview/id/326655.html
-def calculate_distance(start_lat, start_long, start_ele,
-    end_lat, end_long, end_ele):
-  start_long = math.radians(start_long)
-  start_lat = math.radians(start_lat)
-  start_ele += EARTH_RADIUS
-  x0 = start_ele * math.cos(start_lat) * math.sin(start_long)
-  y0 = start_ele * math.sin(start_lat)
-  z0 = start_ele * math.cos(start_lat) * math.cos(start_long)
-
-  end_long = math.radians(end_long)
-  end_lat = math.radians(end_lat)
-  end_ele += EARTH_RADIUS
-  x1 = end_ele * math.cos(end_lat) * math.sin(end_long)
-  y1 = end_ele * math.sin(end_lat)
-  z1 = end_ele * math.cos(end_lat) * math.cos(end_long)
-
-  dist = math.sqrt( (x1-x0)**2 + (y1-y0)**2 + (z1-z0)**2 )
-
-  return dist
 
 def calculate_speed(start_time, start_distance, end_time, end_distance):
   tdelta = end_time - start_time
@@ -81,14 +62,7 @@ def parse_segment(segment, tags, starting_dist = 0.0):
     if len(geo_points) > 1:
       distance_list.append(
           distance_list[-1] +
-          calculate_distance(
-            geo_points[-2][0],
-            geo_points[-2][1],
-            altitude_list[-2],
-            geo_points[-1][0],
-            geo_points[-1][1],
-            altitude_list[-1]
-          )
+          distance.distance(geo_points[-2], geo_points[-1]).meters
       )
       speed_list.append(calculate_speed(time_points[-2], distance_list[-2],
           time_points[-1], distance_list[-1]))

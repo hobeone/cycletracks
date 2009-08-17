@@ -68,7 +68,6 @@ class TestSiteController(TestCase):
 
   def test_upload_with_activity_limit(self):
     u = User.all().filter('username = ', UserData.admin_user.username).get()
-    assert u
     p = u.get_profile()
     p.total_allowed_activities = 0
     p.put()

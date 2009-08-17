@@ -7,4 +7,6 @@ class MonthlyUserStatsData(DataSet):
   class stats_one:
     user = UserData.admin_user
     number_of_activities = 0
-    start_date = datetime.date(year=2009,month=6,day=1)
+    start_date = datetime.date(year=datetime.datetime.now().year,
+        month=datetime.datetime.now().month,
+        day=1)

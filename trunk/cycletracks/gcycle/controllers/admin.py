@@ -5,6 +5,7 @@ from google.appengine.ext import db
 from google.appengine.api import datastore_errors
 from google.appengine.api import memcache
 from google.appengine.api import users
+from ragendja.auth.google_models import User
 
 from gcycle.models import *
 

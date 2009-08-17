@@ -120,7 +120,7 @@ def handle_uploaded_file(user, filedata, tags=[]):
   if not files:
     try:
       filedata.seek(0)
-      files = [gzip.GzipFile(fileobj=filedata).read()]
+      files = [gzip.GzipFile(fileobj=filedata, mode='r').read()]
     except IOError, e:
       pass
 

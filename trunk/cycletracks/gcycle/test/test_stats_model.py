@@ -31,6 +31,7 @@ class TestStatsModel(TestCase):
 
   def testFindByUserAndMonthReturnsNoneOnNoStats(self):
     u = User.all().filter('username =', 'joe').get()
+    assert(u)
     s = models.MonthlyUserStats.find_by_user_and_month_offset(u, 0)
     self.assertEqual(s, None)
 

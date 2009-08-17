@@ -11,6 +11,7 @@ from django.core.urlresolvers import reverse
 from google.appengine.api import datastore_errors
 from google.appengine.api import memcache
 from google.appengine.api import users
+#from ragendja.auth.google_models import User
 
 import logging
 import datetime
@@ -44,8 +45,8 @@ def json_index(activity_query):
 def index(request, sorting=None, user=None):
   if user is None:
     user = request.user
-  else:
-    user = User.get(user)
+#  else:
+#    user = User.get(user)
 
   if sorting is None or sorting not in Activity.properties():
     sorting = 'start_time'

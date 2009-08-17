@@ -349,33 +349,34 @@
     });
 
     var altitudeGeometry = new Timeplot.DefaultValueGeometry({
-      gridColor: "#ff0000",
+      gridColor: "#48992C",
       axisLabelsPlacement: "left",
     });
     var distanceGeometry = new Timeplot.DefaultValueGeometry({
-      gridColor: "#0000CC",
+      gridColor: "#3291EB",
       axisLabelsPlacement: "right",
       min: 0,
       });
 
-    var speedGeometry = new Timeplot.DefaultValueGeometry({
-      gridColor: "#ff0000",
+
+    var cadenceGeometry = new Timeplot.DefaultValueGeometry({
+      gridColor: "#48992C",
       axisLabelsPlacement: "left",
       min: 0,
       });
-    var cadenceGeometry = new Timeplot.DefaultValueGeometry({
-      gridColor: "#0000CC",
+    var speedGeometry = new Timeplot.DefaultValueGeometry({
+      gridColor: "#3291EB",
       axisLabelsPlacement: "right",
       min: 0,
       });
 
     var bpmGeometry = new Timeplot.DefaultValueGeometry({
-      gridColor: "#FF0000",
+      gridColor: "#48992C",
       axisLabelsPlacement: "left",
       min: 0,
     });
     var powerGeometry = new Timeplot.DefaultValueGeometry({
-      gridColor: "#0000CC",
+      gridColor: "#3291EB",
       axisLabelsPlacement: "right",
       min: 0,
     });
@@ -385,8 +386,8 @@
         dataSource: new Timeplot.ColumnSource(eventSource,1),
         valueGeometry: altitudeGeometry,
         timeGeometry: timeGeometry,
-        lineColor: "#ff0000",
-        fillColor: "#cc8080",
+        lineColor: "#48992C",
+        fillColor: "#DCECD7",
         showValues: true
         }),
       Timeplot.createPlotInfo({
@@ -394,7 +395,7 @@
         dataSource: new Timeplot.ColumnSource(eventSource,4),
         valueGeometry: distanceGeometry,
         timeGeometry: timeGeometry,
-        lineColor: "#0000CC",
+        lineColor: "#3291EB",
         showValues: true
       }),
       ];
@@ -406,8 +407,8 @@
             Timeplot.Operator.average, { size: 30 }),
         valueGeometry: cadenceGeometry,
         timeGeometry: timeGeometry,
-        lineColor: "#ff0000",
-        fillColor: "#cc8080",
+        lineColor: "#48992C",
+        fillColor: "#DCECD7",
         showValues: true
         }),
 
@@ -418,7 +419,7 @@
             Timeplot.Operator.average, { size: 5 }),
         valueGeometry: speedGeometry,
         timeGeometry: timeGeometry,
-        lineColor: "#0000FF",
+        lineColor: "#3291EB",
         showValues: true
         }),
 
@@ -431,8 +432,8 @@
             Timeplot.Operator.average, { size: 15 }),
         valueGeometry: bpmGeometry,
         timeGeometry: timeGeometry,
-        lineColor: "#FF0000",
-        fillColor: "#CC8080",
+        lineColor: "#48992C",
+        fillColor: "#DCECD7",
         showValues: true
         }),
 

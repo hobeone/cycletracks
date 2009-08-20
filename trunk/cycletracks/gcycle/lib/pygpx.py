@@ -109,11 +109,8 @@ def parse_segment(segment, tags, starting_dist = 0.0):
     raise TrackTooShort('track to short (less than %s seconds)' %
         MINIMUM_LAP_TIME)
 
-  # Weight the speeds by how long we were at that speed
-  avg = sum([ row[0] * row[1] for row in map(None, speed_list, delta_time)])
-  average_speed = avg / total_time
-
   rolling_time = total_time - paused_time
+  average_speed = (total_meters - starting_dist) / rolling_time * 3.6
 
   lap_record = {
     'total_meters' : total_meters - starting_dist,
@@ -166,7 +163,6 @@ def parse_gpx(filedata, version):
   total_meters = sum([l['total_meters'] for l in lap_records])
   total_time = sum([l['total_time_seconds'] for l in lap_records])
 
-  average_speeds = [l['average_speed'] for l in lap_records]
   times = [l['total_rolling_time_seconds'] for l in lap_records]
   rolling_time = sum(times)
 
@@ -174,8 +170,7 @@ def parse_gpx(filedata, version):
     raise InvalidGPXFormat(
       "Activity has total rolling time less than 1 second.")
 
-  avg = sum([ row[0] * row[1] for row in map(None, average_speeds, times)])
-  average_speed = avg / rolling_time
+  average_speed = pytcx.average_lap_values('average_speed', lap_records)
 
   activity_record = {
       'name': '%s' % (lap_records[0]['starttime']),
@@ -196,4 +191,3 @@ def parse_gpx(filedata, version):
   activity_record.update(encoded_activity)
 
   return activity_record
-

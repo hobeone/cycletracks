@@ -76,7 +76,7 @@ asd
     acts = pytcx.parse_tcx(testfile)
     self.assertEqual(len(acts), 1)
     activity = acts[0]
-    self.assertEqual(activity['average_power'], 242)
+    self.assertEqual(activity['average_power'], 173)
     self.assertEqual(activity['maximum_power'], 794)
     u = User(username = 'test', user = users.User('test@ex.com'))
     u.put()
@@ -166,6 +166,7 @@ xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/
     self.assertEqual(act['end_point'], '37.996776,-122.506612')
     self.assertFalse('average_bpm' in act)
     self.assertFalse('average_cadence' in act)
+    self.assertEqual(act['rolling_time'], 49)
     self.assertAlmostEqual(act['average_speed'], 10.14, 1)
     self.assertFalse('maximum_bpm' in act)
     self.assertFalse('maximum_cadence' in act)

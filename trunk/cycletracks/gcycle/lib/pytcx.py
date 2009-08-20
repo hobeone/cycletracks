@@ -27,6 +27,29 @@ def fill_list(list, fill_data, amount):
   )
   return list
 
+def average_lap_values(key, laps):
+  """Return the time weighted average for the given key over the list of laps.
+  Averaged over the rolling time of the lap.
+
+  Args:
+  - key: string, name of data to average
+  - laps: list of laps
+
+  Returns:
+  - average of values, float
+  """
+  total = 0
+  total_time = 0
+  average = 0
+  for l in laps:
+    total += l[key] * l['total_rolling_time_seconds']
+    total_time += l['total_rolling_time_seconds']
+
+  if total_time > 0:
+    average = total / total_time
+
+  return average
+
 MAIN_NS = "{http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2}%s"
 TRACK_EXT_NS = "{http://www.garmin.com/xmlschemas/ActivityExtension/v2}%s"
 LAP_EXT_NS = "{http://www.garmin.com/xmlschemas/ActivityLapExtension/v2}%s"
@@ -302,12 +325,12 @@ def parse_tcx(filedata):
         'rolling_time': rolling_time,
         'average_speed': total_meters / rolling_time * 3.6,
         'maximum_speed': max([l['maximum_speed'] for l in lap_records]),
-        'average_cadence':
-          int(average([l['average_cadence'] for l in lap_records])),
+        'average_cadence': int(average_lap_values('average_cadence',
+          lap_records)),
         'maximum_cadence': max([l['maximum_cadence'] for l in lap_records]),
-        'average_bpm': int(average([l['average_bpm'] for l in lap_records])),
+        'average_bpm': int(average_lap_values('average_bpm', lap_records)),
         'maximum_bpm': max([l['maximum_bpm'] for l in lap_records]),
-        'average_power': int(average([l['average_power'] for l in lap_records])),
+        'average_power': int(average_lap_values('average_power', lap_records)),
         'maximum_power': max([l['maximum_power'] for l in lap_records]),
         'total_calories': sum([l['calories'] for l in lap_records]),
         'total_ascent': sum([l['total_ascent'] for l in lap_records]),

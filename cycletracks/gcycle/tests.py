@@ -158,6 +158,12 @@ xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/
     return Activity._put_activity_record(activity_record, user, 'gpx',
                                          'source, which is ignored')
 
+  def  assertAlmostEqualIter(self, iterable_a, iterable_b, places):
+    """Assert that two iterables have same length and almost equal elements."""
+    self.assertEqual(len(iterable_a), len(iterable_b))
+    for a, b in zip(iterable_a, iterable_b):
+      self.assertAlmostEqual(a, b, places)
+
   def testValidParse10(self):
     testfile = open('gcycle/test/valid_single_segment_10.gpx').read()
     act = pygpx.parse_gpx(testfile, '1/0')
@@ -342,6 +348,70 @@ xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/
     a = self.putActivity(activity_record)
     self.assertEqual(len(a.lap_set), 1)
     self.assertAlmostEqual(activity_record['total_meters'], 39.27, 2)
+
+  def testAverageSpeedGreaterThanMax(self):
+    # An older algorithm for finding speed from a list of points caused the
+    # average speed to be greater than the max speed for this data. This
+    # happened because the speed list was found using a moving average over 3 
+    # calculated speeds and sometimes the speed was incorrectly calculated to
+    # be 0.
+    odd_trk = """
+ <trk>
+  <name>ACTIVE LOG211421</name>
+  <trkseg>
+   <trkpt lat="38.378753" lon="-108.934550">
+    <ele>1631.432</ele>
+    <time>2009-08-27T03:14:21Z</time>
+   </trkpt>
+   <trkpt lat="38.379000" lon="-108.934602">
+    <ele>1631.244</ele>
+    <time>2009-08-27T03:14:28Z</time>
+   </trkpt>
+   <trkpt lat="38.379461" lon="-108.934525">
+    <ele>1632.419</ele>
+    <time>2009-08-27T03:14:49Z</time>
+   </trkpt>
+  </trkseg>
+ </trk>"""
+    activity_record = pygpx.parse_gpx(self.Gpx11Contents(odd_trk),
+                                      '1/1')
+    a = self.putActivity(activity_record)
+    self.assertEqual(len(a.lap_set), 1)
+    #self.assertEqual(a.lap_set[0].speed_list, 1)
+    self.assertAlmostEqual(activity_record['total_meters'], 79.405, 2)
+
+  def testDuplicateTimes(self):
+    """Make sure the speed calculation removes the first duplicated time."""
+    odd_trk = """
+ <trk>
+  <name>ACTIVE LOG211421</name>
+  <trkseg>
+   <trkpt lat="38.378753" lon="-108.934550">
+    <ele>1631.432</ele>
+    <time>2009-08-27T03:14:21Z</time>
+   </trkpt>
+   <trkpt lat="38.378753" lon="-108.934550">
+    <ele>1631.432</ele>
+    <time>2009-08-27T03:14:21Z</time>
+   </trkpt>
+   <trkpt lat="38.379000" lon="-108.934602">
+    <ele>1631.244</ele>
+    <time>2009-08-27T03:14:28Z</time>
+   </trkpt>
+   <trkpt lat="38.379461" lon="-108.934525">
+    <ele>1632.419</ele>
+    <time>2009-08-27T03:14:49Z</time>
+   </trkpt>
+  </trkseg>
+ </trk>"""
+    activity_record = pygpx.parse_gpx(self.Gpx11Contents(odd_trk),
+                                      '1/1')
+    a = self.putActivity(activity_record)
+    self.assertEqual(len(a.lap_set), 1)
+    self.assertEqual(len(a.lap_set[0].speed_list), 3)
+    self.assertAlmostEqualIter(
+        a.lap_set[0].speed_list, [14.29, 14.29, 8.85], 2)
+    self.assertAlmostEqual(activity_record['total_meters'], 79.405, 2)
 
 
 class UserTestCase(unittest.TestCase):

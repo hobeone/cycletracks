@@ -28,55 +28,72 @@ class InvalidGPXFormat(GPXExpception):
 class TrackTooShort(GPXExpception):
   pass
 
-def calculate_speed(start_time, start_distance, end_time, end_distance):
-  tdelta = end_time - start_time
-  if tdelta == 0: return 0
-  return (end_distance - start_distance) / tdelta * 3.6
+class TimeDeltaTooSmall(GPXExpception):
+  pass
+
 
 def parse_segment(segment, tags, starting_dist = 0.0):
-  time_points = []
-  delta_time = []
-  geo_points = []
-  altitude_list = []
-  distance_list = []
-  speed_list = []
-  paused_time = 0
-
   # TODO: error on no time data
   # record time as total delta since start in seconds
 
+  # A segment is a list of location and time points. From the gpx make a list
+  # of (lat, lon) tuples, a list of elevation in meters and a list of times in
+  # seconds relative to the first time in the segment.
   start_time = None
-  prev_time = None
+  time_points = []
+  geo_points = []
+  altitude_list = []
   for wpt in segment.findall(tags['wpt']):
     geo_points.append([float(wpt.get("lat")),float(wpt.get("lon"))])
     waypoint_time = pytcx.parse_zulu(wpt.findtext(tags['time']))
     if start_time is None:
       start_time = waypoint_time
     time_points.append((waypoint_time - start_time).seconds)
-    if not delta_time:
-      delta_time.append(0)
-    else:
-      delta_time.append((waypoint_time - prev_time).seconds)
-    prev_time = waypoint_time
     altitude_list.append(float(wpt.findtext(tags['elevation'])))
-    if len(geo_points) > 1:
-      distance_list.append(
-          distance_list[-1] +
-          distance.distance(geo_points[-2], geo_points[-1]).meters
-      )
-      speed_list.append(calculate_speed(time_points[-2], distance_list[-2],
-          time_points[-1], distance_list[-1]))
-      if speed_list[-1] < PAUSED_MIN_SPEED:
-        paused_time += time_points[-1] - time_points[-2]
-        distance_list[-1] = distance_list[-2]
-        speed_list[-1] = 0.0
-    else:
-      distance_list.append(starting_dist)
+
+  # Only the first element of time_points may be 0. Remove extra points
+  # from the start so this is true.
+  if time_points[-1] == 0:
+    raise TimeDeltaTooSmall('No time change found')
+  i = 1
+  while time_points[i] == 0:
+    i += 1
+  if i > 1:
+    time_points = time_points[i - 1:]
+    geo_points = geo_points[i - 1:]
+    altitude_list = altitude_list[i - 1:]
+
+  # From the location and time points calculate derived measurements.
+  distance_list = [starting_dist]
+  paused_time = 0
+  # Speed from geo_points[i - 1] to geo_points[i], 0 if less than
+  # PAUSED_MIN_SPEED and speed_list[i - 1] if speed_list[i] is not defined.
+  # speed_list[0] will be fixed later.
+  speed_list = [None]
+  # Preserve speed between iterations.
+  speed = None
+  for i in xrange(1, len(geo_points)):
+    distance_delta = distance.distance(geo_points[i], geo_points[i - 1]).meters
+    time_delta = time_points[i] - time_points[i - 1]
+    if time_delta > 0:
+      # Some time has passed so calculate a new speed in km/h. If time_delta is
+      # 0 the speed from the previous iteration is used again.
+      speed = distance_delta / time_delta * 3.6
+    if speed < PAUSED_MIN_SPEED:
+      paused_time += time_delta
+      distance_list.append(distance_list[-1])
       speed_list.append(0)
+    else:
+      distance_list.append(distance_list[-1] + distance_delta)
+      speed_list.append(speed)
 
   if len(speed_list) < 3:
     # movingAverage3 needs at least 3 points
     raise TrackTooShort('Too few points in lap')
+  
+  # speed_list[1] is guaranteed to have a float value because time_points
+  # starts with [0, a value > 0, ...].
+  speed_list[0] = speed_list[1]
 
   if len(distance_list) < 2:
     # ignore segments less than 2 points or 10 meters total movement.

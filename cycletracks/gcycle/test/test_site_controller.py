@@ -55,6 +55,18 @@ class TestSiteController(TestCase):
     response = self.client.post(url, {'tags' : 'test', 'file': gpx_file})
     self.failUnlessEqual(response.status_code, 302)
 
+  def test_upload_with_valid_upload_gpx11_tpx(self):
+    url = reverse('upload')
+    gpx_file = open('gcycle/test/valid_single_segment_11_tpx.gpx')
+    response = self.client.post(url, {'tags' : 'test', 'file': gpx_file})
+    self.failUnlessEqual(response.status_code, 302)
+
+  def test_upload_with_valid_upload_gpx_garmin_colorado(self):
+    url = reverse('upload')
+    gpx_file = open('gcycle/test/valid_single_segment_garmin_colorado.gpx')
+    response = self.client.post(url, {'tags' : 'test', 'file': gpx_file})
+    self.failUnlessEqual(response.status_code, 302)
+
   def test_upload_with_invalid_post(self):
     url = reverse('upload')
     response = self.client.post(url, {'tags' : 'test'})

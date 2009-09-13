@@ -43,6 +43,8 @@ def parse_segment(segment, tags, starting_dist = 0.0):
   time_points = []
   geo_points = []
   altitude_list = []
+  cadence_list = []
+  bpm_list = []
   for wpt in segment.findall(tags['wpt']):
     geo_points.append([float(wpt.get("lat")),float(wpt.get("lon"))])
     waypoint_time = pytcx.parse_zulu(wpt.findtext(tags['time']))
@@ -50,6 +52,38 @@ def parse_segment(segment, tags, starting_dist = 0.0):
       start_time = waypoint_time
     time_points.append((waypoint_time - start_time).seconds)
     altitude_list.append(float(wpt.findtext(tags['elevation'])))
+    for extensions in wpt.findall(tags['extensions']):
+      for tpx in extensions.findall(tags['TrackPointExtension']):
+        cad = tpx.findtext(tags['cadence'])
+        if cad:
+          try:
+            if len(cadence_list) == 0 and len(time_points) > 0:
+              cadence_list = pytcx.fill_list(cadence_list, 0,
+                  len(time_points)-1)
+            cadence_list.append(int(cad))
+          except ValueError, e:
+            raise InvalidGPXFormat("Cadence must be an integer")
+        else:
+          if cadence_list:
+            cadence_list.append(cadence_list[-1])
+          else:
+            cadence_list.append(0)
+
+        bpm = tpx.findtext(tags['heartrate'])
+        if bpm:
+          try:
+            if len(bpm_list) == 0 and len(time_points) > 0:
+              bpm_list = pytcx.fill_list(bpm_list, int(bpm), len(time_points)-1)
+            bpm_list.append(int(bpm))
+          except ValueError, e:
+            raise InvalidGPXFormat("Heartrate must be an integer")
+        else:
+          # If there are entries in the list, repeat the last valid value until
+          # we get some new data.
+          if bpm_list:
+            bpm_list.append(bpm_list[-1])
+          # Otherwise, leave bpm_list empty so that it can be backfilled with
+          # the first valid heartrate we get.
 
   # Only the first element of time_points may be 0. Remove extra points
   # from the start so this is true.
@@ -62,6 +96,8 @@ def parse_segment(segment, tags, starting_dist = 0.0):
     time_points = time_points[i - 1:]
     geo_points = geo_points[i - 1:]
     altitude_list = altitude_list[i - 1:]
+    cadence_list = cadence_list[i - 1:]
+    bpm_list = bpm_list[i - 1:]
 
   # From the location and time points calculate derived measurements.
   distance_list = [starting_dist]
@@ -129,6 +165,14 @@ def parse_segment(segment, tags, starting_dist = 0.0):
   rolling_time = total_time - paused_time
   average_speed = (total_meters - starting_dist) / rolling_time * 3.6
 
+  max_cadence = 0
+  if cadence_list:
+    max_cadence = max(cadence_list)
+
+  max_bpm = 0
+  if bpm_list:
+    max_bpm = max(bpm_list)
+
   lap_record = {
     'total_meters' : total_meters - starting_dist,
     'total_time_seconds': total_time,
@@ -136,11 +180,17 @@ def parse_segment(segment, tags, starting_dist = 0.0):
     'starttime': start_time,
     'maximum_speed': max(movingAverage3(speed_list)),
     'average_speed': average_speed,
+    'average_cadence': int(average(cadence_list)),
+    'maximum_cadence': max_cadence,
+    'average_bpm': int(average(bpm_list)),
+    'maximum_bpm': max_bpm,
     'endtime': start_time + datetime.timedelta(seconds=time_points[-1]),
     'geo_points' : geo_points,
     'speed_list' : array.array('f', speed_list),
     'altitude_list' :array.array('f',  altitude_list),
     'distance_list' : array.array('f', distance_list),
+    'cadence_list' : array.array('H', cadence_list),
+    'bpm_list' : array.array('H', bpm_list),
     'timepoints' : array.array('i',time_points),
     'total_ascent' : total_ascent,
     'total_descent' : total_descent
@@ -151,12 +201,17 @@ def parse_gpx(filedata, version):
   """Return a dict representing an activity record."""
   et=ET.parse(StringIO.StringIO(filedata))
   mainNS=string.Template("{http://www.topografix.com/GPX/%s}$tag" % version)
+  tpxNS=string.Template("{http://www.garmin.com/xmlschemas/TrackPointExtension/v1}$tag")
 
   tags = {
     'wpt': mainNS.substitute(tag="trkpt"),
     'time': mainNS.substitute(tag="time"),
     'elevation': mainNS.substitute(tag="ele"),
-    'segment': mainNS.substitute(tag="trkseg")
+    'segment': mainNS.substitute(tag="trkseg"),
+    'extensions': mainNS.substitute(tag="extensions"),
+    'TrackPointExtension': tpxNS.substitute(tag="TrackPointExtension"),
+    'heartrate': tpxNS.substitute(tag="hr"),
+    'cadence': tpxNS.substitute(tag="cad"),
   }
 
   lap_records = []
@@ -198,6 +253,11 @@ def parse_gpx(filedata, version):
       'rolling_time': rolling_time,
       'average_speed': average_speed,
       'maximum_speed': max([l['maximum_speed'] for l in lap_records]),
+      'average_cadence':
+        int(pytcx.average_lap_values('average_cadence', lap_records)),
+      'maximum_cadence': max([l['maximum_cadence'] for l in lap_records]),
+      'average_bpm': int(pytcx.average_lap_values('average_bpm', lap_records)),
+      'maximum_bpm': max([l['maximum_bpm'] for l in lap_records]),
       'total_ascent': sum([l['total_ascent'] for l in lap_records]),
       'total_descent': sum([l['total_descent'] for l in lap_records]),
       'laps': lap_records,

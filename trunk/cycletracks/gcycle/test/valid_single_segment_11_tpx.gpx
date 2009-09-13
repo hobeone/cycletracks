@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<gpx xmlns="http://www.topografix.com/GPX/1/1" creator="" version="1.1" xmlns:gpxtpx="http://www.garmin.com/xmlschemas/TrackPointExtension/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www8.garmin.com/xmlschemas/TrackPointExtensionv1.xsd">
+<trk>
+  <name>ACTIVE LOG105449</name>
+  <trkseg>
+  <trkpt lat="37.996256000000002" lon="-122.507784">
+    <ele>272.16500000000002</ele>
+    <time>2009-03-21T18:42:45Z</time>
+    <extensions>
+      <gpxtpx:TrackPointExtension>
+        <gpxtpx:cad>47</gpxtpx:cad>
+      </gpxtpx:TrackPointExtension>
+    </extensions>
+  </trkpt>
+  <trkpt lat="37.996364" lon="-122.50774199999999">
+    <ele>273.50599999999997</ele>
+    <time>2009-03-21T18:42:51Z</time>
+    <extensions>
+      <gpxtpx:TrackPointExtension>
+        <gpxtpx:hr>110</gpxtpx:hr>
+        <gpxtpx:cad>48</gpxtpx:cad>
+      </gpxtpx:TrackPointExtension>
+    </extensions>
+  </trkpt>
+  <trkpt lat="37.996462999999999" lon="-122.507684">
+    <ele>273.89600000000002</ele>
+    <time>2009-03-21T18:42:57Z</time>
+    <extensions>
+      <gpxtpx:TrackPointExtension>
+        <gpxtpx:hr>120</gpxtpx:hr>
+        <gpxtpx:cad>80</gpxtpx:cad>
+      </gpxtpx:TrackPointExtension>
+    </extensions>
+  </trkpt>
+  <trkpt lat="37.996588000000003" lon="-122.507561">
+    <ele>271.34199999999998</ele>
+    <time>2009-03-21T18:43:03Z</time>
+    <extensions>
+      <gpxtpx:TrackPointExtension>
+        <gpxtpx:cad>81</gpxtpx:cad>
+      </gpxtpx:TrackPointExtension>
+    </extensions>
+  </trkpt>
+  <trkpt lat="37.996668999999997" lon="-122.507492">
+    <ele>270.67200000000003</ele>
+    <time>2009-03-21T18:43:05Z</time>
+    <extensions>
+      <gpxtpx:TrackPointExtension>
+        <gpxtpx:hr>130</gpxtpx:hr>
+        <gpxtpx:cad>90</gpxtpx:cad>
+      </gpxtpx:TrackPointExtension>
+    </extensions>
+  </trkpt>
+  <trkpt lat="37.996710999999998" lon="-122.507448">
+    <ele>270.74799999999999</ele>
+    <time>2009-03-21T18:43:06Z</time>
+    <extensions>
+      <gpxtpx:TrackPointExtension>
+        <gpxtpx:hr>131</gpxtpx:hr>
+        <gpxtpx:cad>91</gpxtpx:cad>
+      </gpxtpx:TrackPointExtension>
+    </extensions>
+  </trkpt>
+  <trkpt lat="37.996822000000002" lon="-122.507234">
+    <ele>272.46899999999999</ele>
+    <time>2009-03-21T18:43:12Z</time>
+    <extensions>
+      <gpxtpx:TrackPointExtension>
+        <gpxtpx:hr>140</gpxtpx:hr>
+        <gpxtpx:cad>60</gpxtpx:cad>
+      </gpxtpx:TrackPointExtension>
+    </extensions>
+  </trkpt>
+  <trkpt lat="37.996836000000002" lon="-122.507113">
+    <ele>274.017</ele>
+    <time>2009-03-21T18:43:17Z</time>
+    <extensions>
+      <gpxtpx:TrackPointExtension>
+        <gpxtpx:hr>139</gpxtpx:hr>
+        <gpxtpx:cad>59</gpxtpx:cad>
+      </gpxtpx:TrackPointExtension>
+    </extensions>
+  </trkpt>
+  <trkpt lat="37.996859999999998" lon="-122.506924">
+    <ele>276.42500000000001</ele>
+    <time>2009-03-21T18:43:23Z</time>
+    <extensions>
+      <gpxtpx:TrackPointExtension>
+        <gpxtpx:hr>135</gpxtpx:hr>
+        <gpxtpx:cad>65</gpxtpx:cad>
+      </gpxtpx:TrackPointExtension>
+    </extensions>
+  </trkpt>
+  <trkpt lat="37.996825999999999" lon="-122.50677899999999">
+    <ele>279.46199999999999</ele>
+    <time>2009-03-21T18:43:28Z</time>
+    <extensions>
+      <gpxtpx:TrackPointExtension>
+        <gpxtpx:hr>147</gpxtpx:hr>
+        <gpxtpx:cad>68</gpxtpx:cad>
+      </gpxtpx:TrackPointExtension>
+    </extensions>
+  </trkpt>
+  <trkpt lat="37.996819000000002" lon="-122.506753">
+    <ele>279.65499999999997</ele>
+    <time>2009-03-21T18:43:29Z</time>
+    <extensions>
+      <gpxtpx:TrackPointExtension>
+        <gpxtpx:hr>172</gpxtpx:hr>
+        <gpxtpx:cad>103</gpxtpx:cad>
+      </gpxtpx:TrackPointExtension>
+    </extensions>
+  </trkpt>
+  <trkpt lat="37.996775999999997" lon="-122.506612">
+    <ele>281.74299999999999</ele>
+    <time>2009-03-21T18:43:34Z</time>
+    <extensions>
+      <gpxtpx:TrackPointExtension>
+        <gpxtpx:hr>163</gpxtpx:hr>
+        <gpxtpx:cad>50</gpxtpx:cad>
+      </gpxtpx:TrackPointExtension>
+    </extensions>
+  </trkpt>
+</trkseg>
+</trk>
+</gpx>

@@ -126,7 +126,7 @@ def parse_segment(segment, tags, starting_dist = 0.0):
   if len(speed_list) < 3:
     # movingAverage3 needs at least 3 points
     raise TrackTooShort('Too few points in lap')
-  
+
   # speed_list[1] is guaranteed to have a float value because time_points
   # starts with [0, a value > 0, ...].
   speed_list[0] = speed_list[1]
@@ -224,11 +224,12 @@ def parse_gpx(filedata, version):
     except GPXExpception, e:
       parse_errors.append("Lap %i couldn't be parsed: %s" % (lap_count, e))
     lap_count += 1
+    dist = sum([l['total_meters'] for l in lap_records])
 
-  dist = sum([l['total_meters'] for l in lap_records])
   if not lap_records:
     raise InvalidGPXFormat(
       "Activity does not appear to contain any useful tracks.")
+
 
   encoded_activity = pytcx.encode_activity_points(
       [l['geo_points'] for l in lap_records])
